@@ -804,7 +804,7 @@ async function muatTransaksi() {
     });
     tbody.innerHTML = html;
   } catch(e) {
-    tbody.innerHTML = '<tr><td colspan="5" style="color:red;">Error memuat transaksi</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="5" style="color:red;text-align:center;">Error memuat trx: ${e.message || JSON.stringify(e)}</td></tr>`; console.error('Trx err:', e);
   }
 }
 
@@ -814,6 +814,7 @@ async function muatDaftarPengguna() {
      const { data, error } = await supabase.from('users').select('*');
      if (error) throw error;
      
+     if(!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Belum ada pengguna (Tabel kosong)</td></tr>'; return; }
      let html = "";
      data.forEach(u => {
         let bg = u.role === 'Admin' ? 'background:#8B5CF6;color:white' : (u.role === 'Owner' ? 'background:#F59E0B;color:white' : 'background:#E5E7EB;color:black');
@@ -825,7 +826,7 @@ async function muatDaftarPengguna() {
      });
      tbody.innerHTML = html;
   } catch(e) {
-     tbody.innerHTML = '<tr><td colspan="3" style="color:red;">Error memuat user</td></tr>';
+     tbody.innerHTML = `<tr><td colspan="3" style="color:red;">Error memuat user: ${e.message || JSON.stringify(e)}</td></tr>`; console.error('Users err:', e);
   }
 }
 
