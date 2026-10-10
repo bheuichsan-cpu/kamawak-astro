@@ -1,0 +1,1542 @@
+---
+import GASPolyfill from '../components/GASPolyfill.astro';
+---
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Kamawak</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style is:inline>
+    :root { --primary: #FF5E1F; --bg-color: #F5F7FA; --text-dark: #1C2430; --text-gray: #6B7280; --white: #FFFFFF; --shadow: 0 4px 20px rgba(0,0,0,0.08); --radius: 12px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-dark); padding-bottom: 50px; }
+    .navbar { background: var(--white); padding: 16px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .logo { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 700; color: var(--primary); text-decoration: none; }
+    .container { max-width: 1000px; margin: 30px auto; padding: 0 5%; }
+    .admin-header { margin-bottom: 25px; }
+    .admin-header h1 { font-family: 'Poppins', sans-serif; font-size: 24px; margin-bottom: 5px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .stat-card { background: var(--white); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); border-left: 5px solid var(--primary); }
+    .stat-title { font-size: 13px; color: var(--text-gray); font-weight: 600; text-transform: uppercase; margin-bottom: 8px; }
+    .stat-value { font-size: 26px; font-weight: 700; color: var(--text-dark); }
+    .card-section { background: var(--white); border-radius: var(--radius); padding: 25px; box-shadow: var(--shadow); margin-bottom: 25px; }
+    .form-group { margin-bottom: 15px; }
+    .full-width { grid-column: 1 / -1; }
+    .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .form-control { width: 100%; padding: 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 14px; outline: none; }
+    .btn-admin { background: var(--primary); color: var(--white); border: none; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn-logout { background: #EF4444; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+    /* Style untuk Tabel */
+    table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; }
+    th { background: #F3F4F6; padding: 12px; color: var(--text-dark); font-weight: 600; border-bottom: 2px solid #E5E7EB; }
+    td { padding: 12px; border-bottom: 1px solid #E5E7EB; color: var(--text-gray); }
+    .badge-aktif { background: #D1FAE5; color: #065F46; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+    .badge-nonaktif { background: #FEE2E2; color: #991B1B; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+  </style>
+  <script is:inline>
+    window.onerror = function(msg, src, ln, col, err) {
+      alert("JS Error: " + msg + " di baris " + ln);
+    };
+  </script>
+
+  <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <GASPolyfill />
+</head>
+<body id="mainBody">
+
+  <nav class="navbar">
+    <a href="" class="logo">Kamawak. <span style="font-size: 12px; background: #FF5E1F20; color: var(--primary); padding: 3px 8px; border-radius: 4px;">Admin Panel</span></a>
+    <div>
+      <button onclick="window.location.href='/'" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:600; margin-right: 10px; font-size:14px;"><i class="fa-solid fa-plane"></i> Halaman Utama</button>
+      <span id="adminName" style="font-size: 14px; font-weight: 600; margin-right: 15px; color: var(--text-dark);"></span>
+      <button onclick="logout()" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="admin-header">
+      <h1>Pusat Kendali Admin</h1>
+      <p style="color: var(--text-gray); font-size: 14px;">Pantau performa platform dan kelola status langganan mitra secara real-time.</p>
+    </div>
+
+    <!-- Navigasi Tabs -->
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+      <button id="btnTabDashboard" onclick="switchTab('tabDashboard')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:var(--primary); color:white; transition: 0.3s;"><i class="fa-solid fa-chart-line"></i> Dasbor & Mitra</button>
+      <button id="btnTabCMS" onclick="switchTab('tabCMS')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-pen-to-square"></i> Konten (CMS PDP)</button>
+      <button id="btnTabTransaksi" onclick="switchTab('tabTransaksi')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-file-invoice-dollar"></i> Payout OTA</button>
+      <button id="btnTabKeuangan" onclick="switchTab('tabKeuangan')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-book-open"></i> Buku Kas & Laporan</button>
+      <button id="btnTabUsers" onclick="switchTab('tabUsers')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-users-gear"></i> Hak Akses Pengguna</button>
+      <button id="btnTabAds" onclick="switchTab('tabAds')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-rectangle-ad"></i> Ad Space</button>
+      <button id="btnTabComposer" onclick="switchTab('tabComposer')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-layer-group"></i> Desain Halaman (UI)</button>
+      <button id="btnTabPengaturan" onclick="switchTab('tabPengaturan')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-gear"></i> Pengaturan</button>
+    </div>
+
+    <div id="tabDashboard">
+    <!-- Statistik Global -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-title"><i class="fa-solid fa-store"></i> Total Mitra Aktif</div>
+        <div class="stat-value" id="valMitra"><i class="fa-solid fa-spinner fa-spin" style="font-size: 20px;"></i></div>
+      </div>
+      <div class="stat-card" style="border-left-color: #3B82F6;">
+        <div class="stat-title"><i class="fa-solid fa-fire"></i> Total Leads Konversi</div>
+        <div class="stat-value" id="valLeads"><i class="fa-solid fa-spinner fa-spin" style="font-size: 20px;"></i></div>
+      </div>
+      <div class="stat-card" style="border-left-color: #10B981;">
+        <div class="stat-title"><i class="fa-solid fa-wallet"></i> Total Pendapatan OTA</div>
+        <div class="stat-value" id="valPendapatan"><i class="fa-solid fa-spinner fa-spin" style="font-size: 20px;"></i></div>
+      </div>
+    </div>
+
+    <!-- Kelola Status Langganan Mitra -->
+    <div class="card-section">
+      <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-user-gear" style="color: var(--primary);"></i> Perbarui Status Langganan Mitra</h3>
+      <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+        <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+          <label>Pilih/Ketik ID Mitra</label>
+          <input type="text" id="inputIDMitra" class="form-control" placeholder="Contoh: M001">
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+          <label>Ubah Status Menjadi</label>
+          <select id="selectStatus" class="form-control">
+            <option value="Aktif">Aktif</option>
+            <option value="Nonaktif">Nonaktif / Berakhir</option>
+          </select>
+        </div>
+        <button class="btn-admin" onclick="prosesUpdateStatus()">Perbarui Status</button>
+      </div>
+      <div id="statusInfo" style="margin-top: 15px; font-size: 14px; font-weight: 600;"></div>
+    </div>
+
+    <!-- Tabel Daftar Mitra -->
+    <div class="card-section">
+      <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-list" style="color: var(--primary);"></i> Daftar Seluruh Mitra</h3>
+      
+      <div style="display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px;">
+        <button id="btnFilterSemua" onclick="filterMitra('Semua')" style="padding: 6px 12px; border:none; background:var(--primary); color:white; border-radius:6px; cursor:pointer; font-weight:600; white-space: nowrap;">Semua Mitra</button>
+        <button id="btnFilterPending" onclick="filterMitra('Pending')" style="padding: 6px 12px; border:none; background:#F3F4F6; color:var(--text-dark); border-radius:6px; cursor:pointer; font-weight:600; white-space: nowrap;">Menunggu (Pending)</button>
+        <button id="btnFilterKadaluarsa" onclick="filterMitra('Kadaluarsa')" style="padding: 6px 12px; border:none; background:#F3F4F6; color:var(--text-dark); border-radius:6px; cursor:pointer; font-weight:600; white-space: nowrap;">Kadaluarsa / Nonaktif</button>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID Mitra</th>
+              <th>Nama Usaha</th>
+              <th>Kategori</th>
+              <th>Rincian Leads</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tableMitraBody">
+            <tr><td colspan="5" style="text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data mitra...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    </div>
+
+    <div id="tabCMS" style="display:none;">
+    <!-- CMS Input Produk Baru -->
+    <div class="card-section" style="border-top: 5px solid #10B981;">
+      <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-pen-to-square" style="color: #10B981;"></i> CMS: Input Produk / PDP Baru</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div class="form-group">
+          <label>ID Produk / Usaha</label>\n          <input type="text" id="cmsID" class="form-control" placeholder="Kosongkan agar diisi otomatis oleh sistem">
+        </div>
+        <div class="form-group">
+          <label>ID Owner / Mitra Utama (Opsional)</label>\n          <input type="text" id="cmsIDOwner" class="form-control" placeholder="Kosongkan agar diisi otomatis oleh sistem">
+        </div>
+        <div class="form-group">
+          <label>Nama Produk / Usaha</label>
+          <input type="text" id="cmsNama" class="form-control" placeholder="Nama Lengkap">
+        </div>
+        
+        <div class="form-group">
+          <label>Status Langganan</label>
+          <select id="cmsStatusLangganan" class="form-control">
+            <option value="Aktif">Aktif (Tampilkan)</option>
+            <option value="Nonaktif">Nonaktif (Sembunyikan)</option>
+            <option value="Pending">Pending (Menunggu)</option>
+          </select>
+        </div>
+\n        <div class="form-group">\n          <label>Kategori</label>
+          <select id="cmsKategori" class="form-control">
+            <option value="Tur">Paket Tur</option>
+            <option value="Penginapan">Penginapan / Hotel</option>
+            <option value="Rental">Rental Kendaraan</option>
+            <option value="Atraksi">Atraksi / Wahana</option>
+            <option value="Kuliner">Kuliner / Oleh-oleh</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nama Kota (Filter Utama)</label>
+          <input type="text" id="cmsDestinasi" class="form-control" placeholder="Misal: Bukittinggi">
+        </div>
+        <div class="form-group">
+          <label>Harga Jual Dasar (Rp)</label>
+          <input type="number" id="cmsHarga" class="form-control" placeholder="Tanpa titik (Misal: 150000)">
+        </div>
+        <div class="form-group full-width">
+          <label>Galeri Foto (Upload dari Komputer/HP)</label>
+          <input type="file" id="cmsFotoUpload" class="form-control" accept="image/*" multiple>
+          <small style="color:var(--text-gray); font-size:12px;">Bisa pilih banyak foto sekaligus. Akan otomatis diunggah ke Google Drive saat disimpan.</small>
+        </div>
+        <div class="form-group">
+          <label>Harga Coret (Rp)</label>
+          <input type="number" id="cmsHargaCoret" class="form-control" placeholder="Opsional (Misal: 200000)">
+        </div>
+        <div class="form-group">
+          <label>Durasi (Khusus Tur)</label>
+          <input type="text" id="cmsDurasi" class="form-control" placeholder="Misal: 1 Hari Penuh">
+        </div>
+        <div class="form-group">
+          <label>Link Google Maps</label>
+          <input type="text" id="cmsMaps" class="form-control" placeholder="URL Google Maps">
+        </div>
+        <div class="form-group">
+          <label>Nomor WhatsApp Owner</label>
+          <input type="text" id="cmsWA" class="form-control" placeholder="Mulai dengan 62...">
+        </div>
+        <div class="form-group">
+          <label>Tautan Instagram</label>
+          <input type="text" id="cmsIG" class="form-control" placeholder="URL Instagram (Opsional)">
+        </div>
+        <div class="form-group">
+          <label>Tautan TikTok</label>
+          <input type="text" id="cmsTikTok" class="form-control" placeholder="URL TikTok (Opsional)">
+        </div>
+        <div class="form-group">
+          <label>Tautan Facebook</label>
+          <input type="text" id="cmsFB" class="form-control" placeholder="URL Facebook (Opsional)">
+        </div>
+        <div class="form-group full-width">
+          <label>Deskripsi Lengkap Produk</label>
+          <textarea id="cmsDeskripsi" class="form-control" rows="4" placeholder="Jelaskan daya tarik produk ini..."></textarea>
+        </div>
+        <div class="form-group full-width">
+          <label>Daftar Fasilitas (Pisahkan dengan koma)</label>
+          <textarea id="cmsFasilitas" class="form-control" rows="2" placeholder="Tiket masuk, Asuransi perjalanan, Guide lokal, Makan siang"></textarea>
+        </div>
+        <div class="form-group full-width" style="background: #FFF4ED; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary);">
+          <label style="color:var(--primary); font-weight:600;"><i class="fa-solid fa-tags"></i> Variasi Paket & Split Payment Engine</label>
+          <input type="text" id="cmsVarian" class="form-control" placeholder="Reguler:0, Bundling VIP:250000[M-001:150000,M-002:100000]">
+          <small style="color:var(--text-gray); font-size:12px;">Format Biasa: <code>Nama:Harga</code>. Format Split: <code>Nama:Harga[ID_Owner1:Jatah1, ID_Owner2:Jatah2]</code></small>
+        </div>
+        <div class="form-group full-width">
+          <label>Sub-tag / Penanda (Pemisah Koma)</label>
+          <input type="text" id="cmsTags" class="form-control" placeholder="Misal: Solok, Dekat Danau, Ramah Anak">
+        </div>
+      </div>
+      <button class="btn-admin" style="background: #10B981; margin-top: 15px; width: 100%;" onclick="simpanCMS()">Tambahkan ke Database</button>
+      <div id="cmsInfo" style="margin-top: 15px; font-size: 14px; font-weight: 600; text-align: center;"></div>
+    </div>
+
+
+    </div>
+
+    <div id="tabTransaksi" style="display:none;">
+      <!-- Persetujuan Pencairan Dana (Payout) -->
+      <div class="card-section" style="border-left: 5px solid #F59E0B;">
+        <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-hand-holding-dollar" style="color: #F59E0B;"></i> Persetujuan Pencairan Dana (Payout)</h3>
+        <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 15px;">Daftar pengajuan penarikan dana dari mitra yang menunggu persetujuan Anda.</p>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>ID Mitra</th>
+                <th>Nominal (Rp)</th>
+                <th>Info Rekening</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tablePayoutBody">
+              <tr><td colspan="5" style="text-align: center; color: var(--text-gray);">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Payout & Keuangan -->
+      <div class="card-section">
+        <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-money-bill-transfer" style="color: #3B82F6;"></i> Pembukuan Transaksi Keuangan</h3>
+        <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 15px;">Daftar seluruh riwayat transaksi OTA yang masuk ke sistem Kamawak, termasuk pembagian Split Payment ke masing-masing Mitra.</p>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Waktu</th>
+                <th>ID Transaksi</th>
+                <th>Nama Produk/Item</th>
+                <th>Penerima (Owner)</th>
+                <th>Total (Rp)</th>
+              </tr>
+            </thead>
+            <tbody id="tableTrxBody">
+              <tr><td colspan="5" style="text-align: center; color: var(--text-gray);">Memuat riwayat transaksi...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Transaction Log Purging Tool -->
+      <div class="card-section" style="border-left: 5px solid #EF4444;">
+        <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 5px; color: #EF4444;"><i class="fa-solid fa-dumpster-fire"></i> Transaction Log Purging Tool</h3>
+        <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 15px;">Hapus riwayat transaksi dan log mentah yang sudah kedaluwarsa untuk menghemat kapasitas Google Sheets tanpa merusak pembukuan resmi.</p>
+        <div style="display: flex; gap: 15px; align-items: flex-end;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Pilih Periode Pembersihan</label>
+            <select id="purgeSelect" class="form-control">
+              <option>Log > 30 Hari</option>
+              <option>Log > 6 Bulan</option>
+              <option>Log > 1 Tahun</option>
+            </select>
+          </div>
+          <button class="btn-admin" style="background: #EF4444;" onclick="prosesPurging()"><i class="fa-solid fa-trash-can"></i> Bersihkan Log</button>
+          <div id="purgeInfo" style="margin-left: 15px; font-weight:600; font-size:14px;"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="tabUsers" style="display:none;">
+      <div class="card-section">
+        <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-users-gear" style="color: #8B5CF6;"></i> Manajemen Hak Akses Pengguna (Role-Based Access)</h3>
+        
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 20px; background: #F5F3FF; padding: 15px; border-radius: 8px;">
+          <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+            <label>Ketik Email Pengguna</label>
+            <input type="email" id="inputEmailUser" class="form-control" placeholder="Contoh: user@gmail.com">
+          </div>
+          <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+            <label>Ubah Hak Akses (Role) Menjadi</label>
+            <select id="selectRole" class="form-control">
+              <option value="Wisatawan">Wisatawan (Default)</option>
+              <option value="Owner">Owner / Mitra</option>
+              <option value="Admin">Admin Platform</option>
+            </select>
+          </div>
+          <button class="btn-admin" style="background: #8B5CF6;" onclick="prosesUpdateRole()"><i class="fa-solid fa-user-shield"></i> Perbarui Hak Akses</button>
+        </div>
+        <div id="roleInfo" style="margin-bottom: 15px; font-weight:600; font-size:14px;"></div>
+
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Email</th>
+                <th>Hak Akses (Role)</th>
+              </tr>
+            </thead>
+            <tbody id="tableUsersBody">
+              <tr><td colspan="3" style="text-align: center; color: var(--text-gray);">Memuat daftar pengguna...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="tabAds" style="display:none;">
+      <div class="card-section">
+        <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-rectangle-ad" style="color: #F59E0B;"></i> Manajemen Spanduk Iklan (Ad Space)</h3>
+        <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 20px;">Unggah spanduk promo yang akan tampil di halaman utama. Anda bisa melacak berapa kali iklan dilihat (Impresi) dan diklik (CTR).</p>
+        
+        <div style="background: #FFFBEB; padding: 20px; border-radius: 8px; border-left: 5px solid #F59E0B; margin-bottom: 20px;">
+          <h4 style="margin-top:0; font-family: 'Poppins';">Tambah Spanduk Baru</h4>
+          <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 250px;">
+              <label>Judul / Nama Promo</label>
+              <input type="text" id="adName" class="form-control" placeholder="Contoh: Diskon 50% Tiket Masuk">
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 250px;">
+              <label>Link Tujuan / URL (Opsional)</label>
+              <input type="text" id="adTargetId" class="form-control" placeholder="https://... (Bebas dari web luar / bank)">
+            </div>
+            <div class="form-group" style="flex: 2; min-width: 300px;">
+              <label>File Spanduk (.JPG / .PNG) - Rasio 21:9</label>
+              <input type="file" id="adFoto" class="form-control" accept="image/*">
+            </div>
+          </div>
+          <button class="btn-admin" style="background: #F59E0B; width: 100%;" onclick="uploadAd()"><i class="fa-solid fa-cloud-arrow-up"></i> Unggah & Tayangkan Iklan</button>
+          <div id="adUploadInfo" style="margin-top: 10px; font-weight:600; text-align:center; font-size:14px;"></div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Preview</th>
+                <th>Nama Promo</th>
+                <th>Impresi (Dilihat)</th>
+                <th>Klik</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tableAdsBody">
+              <tr><td colspan="6" style="text-align: center; color: var(--text-gray);">Memuat daftar iklan...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="tabComposer" style="display:none;">
+      <div class="card-section" style="border-left: 5px solid #8B5CF6;">
+        <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-layer-group" style="color: #8B5CF6;"></i> Desain Halaman Beranda (UI)</h3>
+        <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 20px;">Atur tampilan Halaman Beranda. <b>Bagian 1</b> mengatur pintasan pencarian berbentuk gambar bundar, sedangkan <b>Bagian 2</b> mengatur baris daftar katalog destinasi (section).</p>
+        
+        <!-- BAGIAN 1 -->
+        <h4 style="font-family: 'Poppins'; color: #EC4899; margin-top: 10px; border-bottom: 2px solid #FDF2F8; padding-bottom: 10px; margin-bottom: 15px;"><i class="fa-solid fa-tags"></i> Bagian 1: Pintasan Pencarian Cepat (Jelajahi Koleksi)</h4>
+        
+        <div style="background: #FDF2F8; padding: 20px; border-radius: 8px; border-left: 5px solid #EC4899; margin-bottom: 20px;">
+          <h4 style="margin-top:0; font-family: 'Poppins';">Tambah Pintasan Baru</h4>
+          <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+              <label>Nama Kota (Judul & Filter Utama)</label>
+              <input type="text" id="tagName" class="form-control" placeholder="Contoh: Bukittinggi, Mentawai">
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+              <label>Sub-tag (Bisa Banyak, Pisahkan Koma)</label>
+              <input type="text" id="tagSub" class="form-control" placeholder="Contoh: Pantai, Sejarah, Kuliner">
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 250px;">
+              <label>Foto Sampul (.JPG / .PNG) - Rasio 1:1</label>
+              <input type="file" id="tagFoto" class="form-control" accept="image/*">
+            </div>
+          </div>
+          <button class="btn-admin" style="background: #EC4899; width: 100%;" onclick="uploadTag()"><i class="fa-solid fa-cloud-arrow-up"></i> Simpan & Tayangkan Pintasan</button>
+          <div id="tagUploadInfo" style="margin-top: 10px; font-weight:600; text-align:center; font-size:14px;"></div>
+        </div>
+
+        <div style="overflow-x: auto; margin-bottom: 40px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Foto Sampul</th>
+                <th>Nama Kota</th>
+                <th>Sub-tag</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tableTagsBody">
+              <tr><td colspan="5" style="text-align: center; color: var(--text-gray);">Memuat daftar pintasan...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h4 style="font-family: 'Poppins'; color: #8B5CF6; border-bottom: 2px solid #F5F3FF; padding-bottom: 10px; margin-bottom: 15px;"><i class="fa-solid fa-list-ul"></i> Bagian 2: Baris Konten (Katalog Destinasi)</h4>
+        
+        <div style="background: #F5F3FF; padding: 20px; border-radius: 8px; border-left: 5px solid #8B5CF6; margin-bottom: 20px;">
+          <h4 style="margin-top:0; font-family: 'Poppins';">Tambah Baris Section Baru</h4>
+          <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+              <label>Judul Section</label>
+              <input type="text" id="compJudul" class="form-control" placeholder="Contoh: Rekomendasi Vila Terbaik">
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 150px;">
+              <label>Tipe Filter</label>
+              <select id="compTipe" class="form-control" onchange="ubahOpsiComposer()">
+                <option value="Tag">Berdasarkan Sub-tag</option>
+                <option value="Lokasi">Berdasarkan Lokasi</option>
+                <option value="Kategori">Berdasarkan Kategori</option>
+                <option value="Otomatis">Otomatis</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+              <label>Nilai / Kata Kunci</label>
+              <input type="text" id="compNilai" class="form-control" placeholder="Contoh: Staycation (Sesuai tipe)">
+            </div>
+            <div class="form-group" style="flex: 0; min-width: 100px;">
+              <label>Urutan</label>
+              <input type="number" id="compUrutan" class="form-control" value="1" min="1">
+            </div>
+            <div class="form-group" style="flex: 0; min-width: 120px;">
+              <label>Status</label>
+              <select id="compStatus" class="form-control">
+                <option value="Aktif">Aktif</option>
+                <option value="Nonaktif">Nonaktif</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-admin" style="background: #8B5CF6; width: 100%;" onclick="tambahLayout()"><i class="fa-solid fa-plus"></i> Tambahkan Baris Section</button>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Urutan</th>
+                <th>Judul Section</th>
+                <th>Tipe</th>
+                <th>Nilai (Keyword)</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tableLayoutBody">
+              <tr><td colspan="6" style="text-align: center; color: var(--text-gray);">Memuat susunan layout...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <button class="btn-admin" style="background: #10B981; width: 100%; margin-top: 15px;" onclick="simpanSemuaLayout()"><i class="fa-solid fa-save"></i> Simpan Susunan Halaman</button>
+      </div>
+    </div>
+    
+    <div id="tabPengaturan" style="display:none;">
+      <div class="card-section" style="border-left: 5px solid #64748B;">
+        <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-gear" style="color: #64748B;"></i> Pengaturan Sistem & API</h3>
+        <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 20px;">Konfigurasi parameter utama platform Kamawak.</p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
+          <div class="form-group">
+            <label>Mode Maintenance (Perbaikan)</label>
+            <select id="setMaintenance" class="form-control">
+              <option value="false">Tidak (Live)</option>
+              <option value="true">Ya (Aktifkan Mode Maintenance)</option>
+            </select>
+            <small style="color:var(--text-gray); font-size:12px;">Jika 'Ya', pengunjung akan melihat halaman perbaikan.</small>
+          </div>
+          
+          <div class="form-group">
+            <label>Durasi Default Langganan (Hari)</label>
+            <input type="number" id="setDurasi" class="form-control" placeholder="Contoh: 30">
+          </div>
+          
+          <div class="form-group">
+            <label>Biaya Layanan Platform (Rp)</label>
+            <input type="number" id="setBiaya" class="form-control" placeholder="Contoh: 2500">
+          </div>
+          
+          <div class="form-group" style="grid-column: 1 / -1; background: #F8FAFC; padding: 15px; border-radius: 8px; border-left: 4px solid #3B82F6;">
+            <label style="color:#3B82F6; font-weight:600;"><i class="fa-solid fa-credit-card"></i> Konfigurasi Midtrans (Payment Gateway)</label>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
+              <div class="form-group" style="flex: 1; min-width: 200px;">
+                <label>Mode Midtrans</label>
+                <select id="setMidtransMode" class="form-control">
+                  <option value="false">Sandbox (Uji Coba)</option>
+                  <option value="true">Production (Live)</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex: 2; min-width: 250px;">
+                <label>Server Key Midtrans</label>
+                <input type="password" id="setMidtransKey" class="form-control" placeholder="SB-Mid-server-xxx">
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group" style="grid-column: 1 / -1; background: #F0FDF4; padding: 15px; border-radius: 8px; border-left: 4px solid #10B981;">
+            <label style="color:#10B981; font-weight:600;"><i class="fa-solid fa-cloud"></i> Konfigurasi Google Drive & Apps Script</label>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;">
+              <div class="form-group" style="flex: 1; min-width: 250px;">
+                <label>Folder ID Google Drive (Untuk Foto)</label>
+                <input type="text" id="setDriveId" class="form-control" placeholder="Contoh: 1A2b3C4d5E6f7G8h9I0j">
+              </div>
+              <div class="form-group" style="flex: 1; min-width: 250px;">
+                <label>Link Web App (Apps Script URL)</label>
+                <input type="text" id="setAppScriptUrl" class="form-control" placeholder="https://script.google.com/macros/s/...">
+              </div>
+            </div>
+          </div>
+          
+        </div>
+        
+        <button class="btn-admin" style="background: #64748B; width: 100%; margin-top: 15px;" onclick="simpanPengaturan()"><i class="fa-solid fa-save"></i> Simpan Pengaturan</button>
+        <div id="setInfo" style="margin-top: 10px; font-weight:600; text-align:center; font-size:14px;"></div>
+      </div>
+    </div>
+
+
+  <!-- TAB BUKU KAS & LAPORAN -->
+  <div id="tabKeuangan" class="tab-content" style="display:none;">
+    <div class="admin-header" style="margin-bottom: 20px;">
+      <h2 style="margin:0;"><i class="fa-solid fa-book-open"></i> Buku Kas & Laporan Laba Rugi</h2>
+      <p style="color:var(--text-gray); font-size:14px;">Standar Akuntansi Profesional: Catat pemasukan (langganan) dan pengeluaran operasional.</p>
+    </div>
+
+    <!-- Statistik Kas -->
+    <div class="stats-grid">
+      <div class="stat-card" style="border-left-color: #10B981;">
+        <div class="stat-title"><i class="fa-solid fa-arrow-turn-down"></i> Total Pemasukan</div>
+        <div class="stat-value" id="valKasMasuk" style="color:#10B981;"><i class="fa-solid fa-spinner fa-spin"></i></div>
+      </div>
+      <div class="stat-card" style="border-left-color: #EF4444;">
+        <div class="stat-title"><i class="fa-solid fa-arrow-turn-up"></i> Total Pengeluaran</div>
+        <div class="stat-value" id="valKasKeluar" style="color:#EF4444;"><i class="fa-solid fa-spinner fa-spin"></i></div>
+      </div>
+      <div class="stat-card" style="border-left-color: #3B82F6;">
+        <div class="stat-title"><i class="fa-solid fa-scale-balanced"></i> Saldo Bersih (Laba/Rugi)</div>
+        <div class="stat-value" id="valKasSaldo" style="color:#3B82F6;"><i class="fa-solid fa-spinner fa-spin"></i></div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+      <!-- Laporan Laba Rugi -->
+      <div class="card-section" style="flex:1; min-width:300px;">
+        <h3 style="font-family: 'Poppins'; font-size: 16px; margin-bottom: 15px;"><i class="fa-solid fa-file-invoice"></i> Laporan Laba Rugi (Profit & Loss)</h3>
+        <table style="width:100%; border:none; margin-bottom:10px;">
+           <tr><td colspan="2" style="font-weight:bold; color:var(--text-dark); background:#F9FAFB; padding:8px;">PENDAPATAN (REVENUE)</td></tr>
+           <tr><td style="padding:6px 10px;">Langganan Mitra</td><td id="lrLangganan" style="text-align:right; font-weight:600;">Rp 0</td></tr>
+           <tr><td style="padding:6px 10px;">Komisi OTA</td><td id="lrOTA" style="text-align:right; font-weight:600;">Rp 0</td></tr>
+           <tr><td style="padding:6px 10px; border-bottom:1px solid #ddd;">Lainnya</td><td id="lrLainP" style="text-align:right; font-weight:600; border-bottom:1px solid #ddd;">Rp 0</td></tr>
+           <tr><td style="padding:6px 10px; font-weight:bold;">Total Pendapatan</td><td id="lrTotalP" style="text-align:right; font-weight:bold; color:#10B981;">Rp 0</td></tr>
+           
+           <tr><td colspan="2" style="font-weight:bold; color:var(--text-dark); background:#F9FAFB; padding:8px; margin-top:10px;">BEBAN (EXPENSES)</td></tr>
+           <tr><td style="padding:6px 10px;">Operasional / Server</td><td id="lrOpr" style="text-align:right; font-weight:600;">Rp 0</td></tr>
+           <tr><td style="padding:6px 10px;">Pemasaran (Marketing)</td><td id="lrMar" style="text-align:right; font-weight:600;">Rp 0</td></tr>
+           <tr><td style="padding:6px 10px;">Gaji / Fee</td><td id="lrGaji" style="text-align:right; font-weight:600;">Rp 0</td></tr>
+           <tr><td style="padding:6px 10px; border-bottom:1px solid #ddd;">Lainnya</td><td id="lrLainB" style="text-align:right; font-weight:600; border-bottom:1px solid #ddd;">Rp 0</td></tr>
+           <tr><td style="padding:6px 10px; font-weight:bold;">Total Beban</td><td id="lrTotalB" style="text-align:right; font-weight:bold; color:#EF4444;">Rp 0</td></tr>
+           
+           <tr><td colspan="2" style="padding:10px 0;"></td></tr>
+           <tr style="background:#EFF6FF;"><td style="padding:10px; font-weight:bold; font-size:16px;">LABA BERSIH (NET PROFIT)</td><td id="lrNet" style="text-align:right; font-weight:bold; font-size:16px; color:#3B82F6;">Rp 0</td></tr>
+        </table>
+      </div>
+
+      <!-- Form Input Kas -->
+      <div class="card-section" style="flex:1; min-width:300px; border-top: 4px solid var(--primary);">
+        <h3 style="font-family: 'Poppins'; font-size: 16px; margin-bottom: 15px;"><i class="fa-solid fa-pen"></i> Catat Transaksi Kas Manual</h3>
+        <div class="form-group">
+          <label>Jenis Transaksi</label>
+          <select id="kasJenis" class="form-control" onchange="ubahOpsiKas()">
+             <option value="Pemasukan">Pemasukan (Uang Masuk)</option>
+             <option value="Pengeluaran">Pengeluaran (Uang Keluar)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Kategori</label>
+          <select id="kasKategori" class="form-control">
+             <option value="Langganan Mitra">Langganan Mitra</option>
+             <option value="Komisi OTA">Komisi OTA / Platform</option>
+             <option value="Pemasukan Lainnya">Pemasukan Lainnya</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Keterangan Lengkap</label>
+          <input type="text" id="kasKet" class="form-control" placeholder="Contoh: Langganan Villa A bulan Okt">
+        </div>
+        <div class="form-group">
+          <label>Nominal (Rp)</label>
+          <input type="number" id="kasNominal" class="form-control" placeholder="150000">
+        </div>
+        <button class="btn-admin" style="width:100%; background:#10B981;" onclick="simpanBukuKas()">Catat Transaksi</button>
+      </div>
+    </div>
+
+    <!-- Tabel Riwayat -->
+    <div class="card-section">
+      <h3 style="font-family: 'Poppins'; font-size: 16px; margin-bottom: 15px;"><i class="fa-solid fa-list-ul"></i> Riwayat Buku Kas</h3>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Jenis</th>
+              <th>Kategori</th>
+              <th>Keterangan</th>
+              <th>Nominal</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tableKasBody">
+            <tr><td colspan="6" style="text-align: center; color: var(--text-gray);">Memuat riwayat kas...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script is:inline>
+    const BASE_URL = "";
+
+    window.onload = function() {
+      // Sinkronisasi Sesi dari URL
+      let urlUser = new URLSearchParams(window.location.search).get("u") || localStorage.getItem("kamawak_user") || "";
+      let urlRole = new URLSearchParams(window.location.search).get("r") || localStorage.getItem("kamawak_role") || "";
+      if(urlUser && urlRole && urlUser !== "") {
+         localStorage.setItem("kamawak_user", urlUser);
+         localStorage.setItem("kamawak_role", urlRole);
+         
+      }
+
+      let role = localStorage.getItem("kamawak_role");
+      if (!role || role.toLowerCase() !== "admin") {
+        window.location.href = "/login";
+        return;
+      }
+      
+      
+      document.getElementById("adminName").innerText = "Halo, " + localStorage.getItem("kamawak_user");
+      
+      muatStatistikGlobal();
+      muatDaftarMitra();
+    };
+
+    
+    function ubahOpsiKas() {
+       let jenis = document.getElementById('kasJenis').value;
+       let kat = document.getElementById('kasKategori');
+       if(jenis === 'Pemasukan') {
+          kat.innerHTML = '<option value="Langganan Mitra">Langganan Mitra</option><option value="Komisi OTA">Komisi OTA / Platform</option><option value="Pemasukan Lainnya">Pemasukan Lainnya</option>';
+       } else {
+          kat.innerHTML = '<option value="Biaya Operasional">Biaya Operasional (Server/Domain)</option><option value="Biaya Pemasaran">Biaya Pemasaran (Iklan)</option><option value="Gaji & Fee">Gaji & Fee Karyawan</option><option value="Pengeluaran Lainnya">Pengeluaran Lainnya</option>';
+       }
+    }
+
+    function muatBukuKas() {
+      document.getElementById('tableKasBody').innerHTML = '<tr><td colspan="6" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat buku kas...</td></tr>';
+      google.script.run
+        .withFailureHandler(function(e){ document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Server Error: '+e+'</td></tr>'; }).withSuccessHandler(function(resString) {
+           try {
+             let res = JSON.parse(resString);
+             if(!res.success) { 
+               document.getElementById('tableKasBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">'+res.error+'</td></tr>'; 
+               return; 
+             }
+             
+             // Update Cards
+             document.getElementById('valKasMasuk').innerText = formatUang(res.totalPemasukan);
+             document.getElementById('valKasKeluar').innerText = formatUang(res.totalPengeluaran);
+             document.getElementById('valKasSaldo').innerText = formatUang(res.saldo);
+             
+             // Update Laporan Laba Rugi
+             document.getElementById('lrLangganan').innerText = formatUang(res.rekap.pendapatan.langganan);
+             document.getElementById('lrOTA').innerText = formatUang(res.rekap.pendapatan.ota);
+             document.getElementById('lrLainP').innerText = formatUang(res.rekap.pendapatan.lainnya);
+             document.getElementById('lrTotalP').innerText = formatUang(res.totalPemasukan);
+             
+             document.getElementById('lrOpr').innerText = formatUang(res.rekap.beban.operasional);
+             document.getElementById('lrMar').innerText = formatUang(res.rekap.beban.marketing);
+             document.getElementById('lrGaji').innerText = formatUang(res.rekap.beban.gaji);
+             document.getElementById('lrLainB').innerText = formatUang(res.rekap.beban.lainnya);
+             document.getElementById('lrTotalB').innerText = formatUang(res.totalPengeluaran);
+             
+             document.getElementById('lrNet').innerText = formatUang(res.saldo);
+
+             // Update Table
+             let htmlStr = "";
+             if(res.data.length === 0) {
+                 htmlStr = '<tr><td colspan="6" style="text-align:center;">Belum ada catatan kas.</td></tr>';
+             } else {
+                 res.data.forEach(item => {
+                    let color = item.jenis === "Pemasukan" ? "#10B981" : "#EF4444";
+                    let sign = item.jenis === "Pemasukan" ? "+" : "-";
+                    htmlStr += '<tr>' +
+                      '<td style="font-size:13px; color:var(--text-gray);">' + item.tgl + '</td>' +
+                      '<td><span style="background:' + color + '20; color:' + color + '; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:600;">' + item.jenis + '</span></td>' +
+                      '<td style="font-size:13px;">' + item.kategori + '</td>' +
+                      '<td style="font-size:13px; font-weight:500; color:var(--text-dark);">' + item.keterangan + '</td>' +
+                      '<td style="font-weight:bold; color:' + color + ';">' + sign + ' ' + formatUang(item.nominal) + '</td>' +
+                      '<td><button onclick="hapusKas(\'' + item.id + '\')" style="background:none; border:none; color:#EF4444; cursor:pointer;"><i class="fa-solid fa-trash"></i></button></td>' +
+                    '</tr>';
+                 });
+             }
+             document.getElementById('tableKasBody').innerHTML = htmlStr;
+           } catch(e) {
+             document.getElementById('tableKasBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Error parsing data.</td></tr>';
+           }
+        })
+        .getBukuKasAdmin();
+    }
+
+    function simpanBukuKas() {
+       let payload = {
+          jenis: document.getElementById('kasJenis').value,
+          kategori: document.getElementById('kasKategori').value,
+          keterangan: document.getElementById('kasKet').value,
+          nominal: document.getElementById('kasNominal').value
+       };
+       if(!payload.keterangan || !payload.nominal) { Swal.fire('Error', 'Lengkapi form!', 'error'); return; }
+       
+       document.getElementById('tableKasBody').innerHTML = '<tr><td colspan="6" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...</td></tr>';
+       google.script.run
+         .withSuccessHandler(function(resString){
+             let res = JSON.parse(resString);
+             if(res.success) {
+                 Swal.fire('Tersimpan', 'Kas berhasil dicatat!', 'success');
+                 document.getElementById('kasKet').value = ""; document.getElementById('kasNominal').value = "";
+                 muatBukuKas();
+             } else {
+                 Swal.fire('Gagal', res.error, 'error');
+             }
+         })
+         .tambahBukuKasAdmin(payload);
+    }
+
+    function hapusKas(idKas) {
+       Swal.fire({
+          title: 'Hapus Transaksi?', text: "Data tidak bisa dikembalikan!", icon: 'warning',
+          showCancelButton: true, confirmButtonColor: '#EF4444', confirmButtonText: 'Ya, hapus!'
+       }).then((result) => {
+          if(result.isConfirmed) {
+              document.getElementById('tableKasBody').innerHTML = '<tr><td colspan="6" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Menghapus...</td></tr>';
+              google.script.run
+                .withSuccessHandler(function(resStr){ muatBukuKas(); })
+                .hapusBukuKasAdmin(idKas);
+          }
+       });
+    }
+
+    function switchTab(tabId) {
+      ['Dashboard', 'CMS', 'Transaksi', 'Keuangan', 'Users', 'Ads', 'Tags', 'Pengaturan', 'Composer'].forEach(t => {
+        let el = document.getElementById('tab' + t); if(el) el.style.display = 'none';
+        let btn = document.getElementById('btnTab' + t); if(btn) { btn.style.background = '#F3F4F6'; btn.style.color = 'var(--text-dark)'; }
+      });
+      
+      document.getElementById(tabId).style.display = 'block';
+      document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).style.background = 'var(--primary)';
+      document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).style.color = 'white';
+      if(tabId === 'tabTransaksi') { muatTransaksi(); muatPayoutRequests(); }
+      if(tabId === 'tabKeuangan') muatBukuKas();
+      if(tabId === 'tabUsers') muatDaftarPengguna();
+      if(tabId === 'tabAds') muatDaftarIklan();
+      if(tabId === 'tabTags') muatDaftarTag();
+      if(tabId === 'tabComposer') { muatLayout(); muatDaftarTag(); }
+      if(tabId === 'tabPengaturan') muatPengaturan();
+    }
+
+    function logout() {
+      localStorage.removeItem("kamawak_role");
+      localStorage.removeItem("kamawak_user");
+      window.location.href = "/login";
+    }
+
+    function formatUang(angka) {
+      let num = Number(String(angka).replace(/[^0-9]/g, ''));
+      return "Rp " + num.toLocaleString('id-ID');
+    }
+
+    function muatStatistikGlobal() {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success) {
+            document.getElementById('valMitra').innerText = res.data.totalMitraAktif + " Mitra";
+            document.getElementById('valLeads').innerText = res.data.totalLeadsGlobal + " Klik";
+            document.getElementById('valPendapatan').innerText = formatUang(res.data.totalPendapatanGlobal);
+          }
+        })
+        .getRekapitulasiAdminGlobal();
+    }
+
+    
+    function filterMitra(kriteria) {
+      // Update Button Styles
+      ['Semua', 'Pending', 'Kadaluarsa'].forEach(k => {
+        let btn = document.getElementById('btnFilter' + k);
+        if (btn) {
+           btn.style.background = (k === kriteria) ? 'var(--primary)' : '#F3F4F6';
+           btn.style.color = (k === kriteria) ? 'white' : 'var(--text-dark)';
+        }
+      });
+      
+      let tbody = document.getElementById('tableMitraBody');
+      tbody.innerHTML = "";
+      
+      let filteredData = window.allMitraData || [];
+      if (kriteria === 'Pending') {
+         filteredData = filteredData.filter(item => String(item.status).toLowerCase().includes('pending'));
+      } else if (kriteria === 'Kadaluarsa') {
+         filteredData = filteredData.filter(item => String(item.status).toLowerCase().includes('kadaluarsa') || String(item.status).toLowerCase().includes('nonaktif'));
+      }
+      
+      if (filteredData.length > 0) {
+         filteredData.forEach(function(item) {
+            let badgeClass = String(item.status).toLowerCase().includes('aktif') ? 'badge-aktif' : 'badge-nonaktif';
+            if(String(item.status).toLowerCase().includes('pending')) badgeClass = 'badge-warning'; // Asumsi badge-warning tidak ada di css tapi fallback ke default atau kita kasih inline
+            let badgeStyle = String(item.status).toLowerCase().includes('pending') ? 'background:#FEF3C7; color:#D97706; padding:4px 8px; border-radius:4px; font-weight:600; font-size:12px;' : '';
+            
+            let spanHtml = badgeStyle ? '<span style="' + badgeStyle + '">' + item.status + '</span>' : '<span class="' + badgeClass + '">' + item.status + '</span>';
+            
+            let waNumber = item.wa ? String(item.wa).replace(/\D/g,'') : '';
+            if (waNumber.startsWith('0')) waNumber = '62' + waNumber.substring(1);
+            let waBtnHtml = '';
+            if (waNumber) {
+                let pesan = 'Halo Owner *' + item.nama + '*\\n\\nKami dari Admin ingin mengirimkan laporan Leads (klik) ke bisnis Anda selama ini:\\n✅ *Total Klik: ' + (item.leads || 0) + '*\\n(WA: ' + (item.leads_wa || 0) + ', IG: ' + (item.leads_ig || 0) + ', TikTok: ' + (item.leads_tiktok || 0) + ', FB: ' + (item.leads_fb || 0) + ')\\n\\nMengingat status langganan Anda saat ini: *' + item.status + '*, apakah Anda ingin melanjutkan langganan untuk menjaga visibilitas bisnis Anda?';
+                let waUrl = 'https://wa.me/' + waNumber + '?text=' + encodeURIComponent(pesan);
+                waBtnHtml = '<div style="margin-top:8px;"><a href="' + waUrl + '" target="_blank" onclick="event.stopPropagation();" style="display:inline-block; background:#25D366; color:white; padding:4px 8px; border-radius:4px; font-size:11px; text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> Chat WA</a></div>';
+            }
+            
+            spanHtml += waBtnHtml;
+            
+            let tr = document.createElement('tr');
+            tr.innerHTML = 
+              '<td style="font-weight: 600; color: var(--text-dark);">' + item.id + '</td>' +
+              '<td>' + item.nama + '</td>' +
+              '<td>' + item.kategori + '</td>' +
+              '<td>' +
+                '<div style="font-size:12px; line-height:1.5;">' +
+                  '<span style="display:inline-block; width:45px;"><i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> WA</span>: <b>' + (item.leads_wa || 0) + '</b><br>' +
+                  '<span style="display:inline-block; width:45px;"><i class="fa-brands fa-instagram" style="color:#E1306C;"></i> IG</span>: <b>' + (item.leads_ig || 0) + '</b><br>' +
+                  '<span style="display:inline-block; width:45px;"><i class="fa-brands fa-tiktok" style="color:#000;"></i> TT</span>: <b>' + (item.leads_tiktok || 0) + '</b><br>' +
+                  '<span style="display:inline-block; width:45px;"><i class="fa-brands fa-facebook" style="color:#1877F2;"></i> FB</span>: <b>' + (item.leads_fb || 0) + '</b>' +
+                '</div>' +
+                '<div style="margin-top:4px; font-weight:bold; font-size:13px; color:#FF5E1F;">' +
+                  '<i class="fa-solid fa-fire"></i> Total: ' + (item.leads || 0) +
+                '</div>' +
+              '</td>' +
+              '<td>' + spanHtml + '</td>';
+            tr.style.cursor = "pointer";
+            tr.onclick = function() {
+              document.getElementById('cmsID').value = item.id || '';
+              document.getElementById('cmsNama').value = item.nama || '';
+              
+              // Set Kategori if exists in dropdown
+              let selKat = document.getElementById('cmsKategori');
+              let katVal = item.kategori || 'Penginapan';
+              let opts = Array.from(selKat.options).map(o => o.value);
+              if(!opts.includes(katVal)) {
+                  let opt = document.createElement('option');
+                  opt.value = katVal; opt.text = katVal;
+                  selKat.appendChild(opt);
+              }
+              selKat.value = katVal;
+              
+              document.getElementById('cmsDestinasi').value = item.lokasi || '';
+              document.getElementById('cmsHarga').value = item.harga || '';
+              document.getElementById('cmsDeskripsi').value = item.deskripsi || '';
+              document.getElementById('cmsFasilitas').value = item.fasilitas || '';
+              document.getElementById('cmsWA').value = item.wa || '';
+              document.getElementById('cmsDurasi').value = item.durasi || '';
+              
+              let statusEl = document.getElementById('cmsStatusLangganan');
+              if (statusEl) {
+                 statusEl.value = item.status === 'Pending' ? 'Pending' : (item.status === 'Aktif' ? 'Aktif' : 'Nonaktif');
+              }
+              
+              switchTab('tabCMS');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+            tbody.appendChild(tr);
+         });
+      } else {
+         tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Tidak ada data mitra untuk kategori ini.</td></tr>';
+      }
+    }
+
+    
+    function muatPengaturan() {
+      document.getElementById('setInfo').innerText = "Memuat pengaturan...";
+      document.getElementById('setInfo').style.color = "var(--text-gray)";
+      google.script.run
+        .withSuccessHandler(function(config) {
+            document.getElementById('setInfo').innerText = "";
+            document.getElementById('setMaintenance').value = config.MAINTENANCE_MODE ? "true" : "false";
+            document.getElementById('setDurasi').value = config.DURASI_LANGGANAN_HARI || 30;
+            document.getElementById('setBiaya').value = config.BIAYA_LAYANAN || 0;
+            document.getElementById('setMidtransMode').value = config.MIDTRANS_IS_PRODUCTION ? "true" : "false";
+            document.getElementById('setMidtransKey').value = config.MIDTRANS_SERVER_KEY || "";
+            document.getElementById('setDriveId').value = config.DRIVE_FOLDER_ID || "";
+            document.getElementById('setAppScriptUrl').value = config.APPSCRIPT_WEB_URL || "";
+        })
+        .withFailureHandler(function(e) {
+            document.getElementById('setInfo').innerText = "Gagal memuat: " + e;
+            document.getElementById('setInfo').style.color = "red";
+        })
+        .getPengaturan();
+    }
+
+    function simpanPengaturan() {
+      let data = [
+        {key: "MAINTENANCE_MODE", value: document.getElementById('setMaintenance').value},
+        {key: "DURASI_LANGGANAN_HARI", value: document.getElementById('setDurasi').value},
+        {key: "BIAYA_LAYANAN", value: document.getElementById('setBiaya').value},
+        {key: "MIDTRANS_IS_PRODUCTION", value: document.getElementById('setMidtransMode').value},
+        {key: "MIDTRANS_SERVER_KEY", value: document.getElementById('setMidtransKey').value},
+        {key: "DRIVE_FOLDER_ID", value: document.getElementById('setDriveId').value},
+        {key: "APPSCRIPT_WEB_URL", value: document.getElementById('setAppScriptUrl').value}
+      ];
+      document.getElementById('setInfo').innerText = "Menyimpan...";
+      document.getElementById('setInfo').style.color = "var(--text-gray)";
+      google.script.run
+        .withSuccessHandler(function(res) {
+            Swal.fire("Berhasil", res.message, "success");
+            document.getElementById('setInfo').innerText = "";
+        })
+        .withFailureHandler(function(e) {
+            Swal.fire("Error", String(e), "error");
+            document.getElementById('setInfo').innerText = "";
+        })
+        .simpanPengaturanForm(data);
+    }
+
+    function muatDaftarMitra() {
+      google.script.run
+        .withFailureHandler(function(e){ document.getElementById("tableMitraBody").innerHTML="<tr><td colspan='4' style='text-align:center; color:red;'>Kesalahan Server: "+e+"</td></tr>"; })
+        .withSuccessHandler(function(responseString) {
+          try {
+            let res = JSON.parse(responseString);
+            window.allMitraData = res.data;
+            let tbody = document.getElementById('tableMitraBody');
+            tbody.innerHTML = "";
+
+            filterMitra('Semua');
+          } catch(e) {
+            document.getElementById('tableMitraBody').innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Gagal memuat struktur tabel.</td></tr>';
+          }
+        })
+        .getAllMitraAdmin();
+    }
+
+    function prosesUpdateStatus() {
+      let idMitra = document.getElementById('inputIDMitra').value.trim();
+      let status = document.getElementById('selectStatus').value;
+      let info = document.getElementById('statusInfo');
+      
+      if (!idMitra) { Swal.fire('Perhatian', 'Silakan masukkan/pilih ID Mitra dari tabel terlebih dahulu.', 'warning'); return; }
+
+      info.style.color = "var(--text-gray)"; info.innerText = "Menyimpan perubahan ke database...";
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success) {
+            info.style.color = "#10B981"; info.innerText = res.message; 
+            muatStatistikGlobal(); 
+            muatDaftarMitra();     
+          } else {
+            info.style.color = "#EF4444"; info.innerText = "Gagal: " + res.error;
+          }
+        })
+        .updateStatusLanggananAdmin(idMitra, status);
+    }
+
+    function simpanCMS() {
+      let files = document.getElementById('cmsFotoUpload').files;
+      if (files.length === 0) {
+        lanjutSimpanCMS([]); return;
+      }
+      
+      document.getElementById('cmsInfo').innerText = "Membaca " + files.length + " foto...";
+      document.getElementById('cmsInfo').style.color = "var(--text-gray)";
+      
+      let fileDataArray = [];
+      let filesRead = 0;
+      
+      for(let i=0; i<files.length; i++){
+        let file = files[i];
+        let reader = new FileReader();
+        reader.onload = function(e) {
+           let dataUrl = e.target.result;
+           let base64Data = dataUrl.split(',')[1];
+           fileDataArray.push({
+              name: file.name,
+              mimeType: file.type,
+              data: base64Data
+           });
+           filesRead++;
+           if(filesRead === files.length) {
+              document.getElementById('cmsInfo').innerText = "Mengunggah foto ke Google Drive & Menyimpan data...";
+              lanjutSimpanCMS(fileDataArray);
+           }
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function lanjutSimpanCMS(filesData) {
+      let data = {
+        id: document.getElementById('cmsID').value,
+        idOwner: document.getElementById('cmsIDOwner').value,
+        nama: document.getElementById('cmsNama').value,
+        kategori: document.getElementById('cmsKategori').value,
+        statusLangganan: document.getElementById('cmsStatusLangganan') ? document.getElementById('cmsStatusLangganan').value : "Aktif",
+        destinasi: document.getElementById('cmsDestinasi').value,
+        harga: document.getElementById('cmsHarga').value,
+        files: filesData,
+        hargaCoret: document.getElementById('cmsHargaCoret').value,
+        durasi: document.getElementById('cmsDurasi').value,
+        maps: document.getElementById('cmsMaps').value,
+        wa: document.getElementById('cmsWA').value,
+        ig: document.getElementById('cmsIG').value,
+        tiktok: document.getElementById('cmsTikTok').value,
+        fb: document.getElementById('cmsFB').value,
+        deskripsi: document.getElementById('cmsDeskripsi').value,
+        fasilitas: document.getElementById('cmsFasilitas').value,
+        varian: document.getElementById('cmsVarian').value,
+        tags: document.getElementById('cmsTags').value
+      };
+      if(!data.id || !data.nama || !data.harga) {
+          document.getElementById('cmsInfo').innerText = "ID, Nama, dan Harga wajib diisi!";
+          document.getElementById('cmsInfo').style.color = "red"; return;
+      }
+      google.script.run
+        .withFailureHandler(function(err){ document.getElementById('cmsInfo').innerText = "Gagal: " + err; document.getElementById('cmsInfo').style.color = "red"; })
+        .withSuccessHandler(function(res) {
+          if(res.success) {
+             document.getElementById('cmsInfo').innerText = res.message;
+             document.getElementById('cmsInfo').style.color = "#10B981";
+             ['cmsID','cmsIDOwner','cmsNama','cmsHarga','cmsFotoUpload','cmsHargaCoret','cmsDurasi','cmsMaps','cmsWA','cmsIG','cmsTikTok','cmsFB','cmsDeskripsi','cmsFasilitas','cmsVarian','cmsTags','cmsStatusLangganan'].forEach(id => {
+                let el = document.getElementById(id);
+                if(el) {
+                    if (id === 'cmsStatusLangganan') el.value = 'Aktif';
+                    else el.value = "";
+                }
+             });
+             muatDaftarMitra(); muatStatistikGlobal();
+          } else {
+             document.getElementById('cmsInfo').innerText = "Gagal: " + res.error;
+             document.getElementById('cmsInfo').style.color = "red";
+          }
+        })
+        .simpanCMSBackend(data);
+    }
+
+    function muatTransaksi() {
+      document.getElementById('tableTrxBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-gray);"><i class="fa-solid fa-spinner fa-spin"></i> Menarik buku besar...</td></tr>';
+      google.script.run
+        .withFailureHandler(function(e){ document.getElementById('tableTrxBody').innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Gagal memuat: '+e+'</td></tr>'; })
+        .withFailureHandler(function(e){ document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Server Error: '+e+'</td></tr>'; }).withSuccessHandler(function(resString) {
+           try {
+             let res = JSON.parse(resString);
+             let tbody = document.getElementById('tableTrxBody');
+             if(!res.success) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">' + res.error + '</td></tr>';
+                return;
+             }
+             if(res.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada riwayat transaksi.</td></tr>';
+                return;
+             }
+             
+             let htmlStr = "";
+             res.data.forEach(item => {
+                htmlStr += '<tr>' +
+                  '<td style="font-size:12px; color:var(--text-gray);">' + item.waktu + '</td>' +
+                  '<td style="font-weight:600; color:var(--primary);">' + item.trx + '</td>' +
+                  '<td>' + item.produk + '</td>' +
+                  '<td style="font-weight:600;">' + item.owner + '</td>' +
+                  '<td style="font-weight:600; color:#10B981;">' + formatUang(item.total) + '</td>' +
+                '</tr>';
+             });
+             tbody.innerHTML = htmlStr;
+           } catch(e) {
+             document.getElementById('tableTrxBody').innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Parsing error.</td></tr>';
+           }
+        })
+        .getPembukuanTransaksi();
+    }
+
+    function prosesPurging() {
+       let sel = document.getElementById('purgeSelect').value;
+       let info = document.getElementById('purgeInfo');
+       info.innerText = "Memproses..."; info.style.color = "var(--text-gray)";
+       google.script.run
+         .withSuccessHandler(function(res){
+             if(res.success) { info.innerText = res.message; info.style.color = "#10B981"; muatTransaksi(); }
+             else { info.innerText = "Gagal: " + res.error; info.style.color = "red"; }
+         })
+         .bersihkanLogTransaksi(sel);
+    }
+
+    function muatPayoutRequests() {
+      document.getElementById('tablePayoutBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-gray);"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data payout...</td></tr>';
+      google.script.run
+        .withFailureHandler(function(e){ document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Server Error: '+e+'</td></tr>'; }).withSuccessHandler(function(resString) {
+           try {
+             let res = JSON.parse(resString);
+             let tbody = document.getElementById('tablePayoutBody');
+             if(!res.success) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">' + res.error + '</td></tr>';
+                return;
+             }
+             if(res.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada pengajuan pencairan dana.</td></tr>';
+                return;
+             }
+             
+             let htmlStr = "";
+             res.data.forEach(item => {
+                htmlStr += '<tr>' +
+                  '<td style="font-size:12px; color:var(--text-gray);">' + item.tanggal + '</td>' +
+                  '<td style="font-weight:600;">' + item.idOwner + '</td>' +
+                  '<td style="font-weight:600; color:#10B981;">' + formatUang(item.nominal) + '</td>' +
+                  '<td>' + item.rekening + '</td>' +
+                  '<td>' +
+                    '<button onclick="prosesApprovePayout(' + item.baris + ')" style="background:#10B981; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:600; font-size:12px;"><i class="fa-solid fa-check"></i> Setujui</button>' +
+                  '</td>' +
+                '</tr>';
+             });
+             tbody.innerHTML = htmlStr;
+           } catch(e) {
+             document.getElementById('tablePayoutBody').innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Parsing error.</td></tr>';
+           }
+        })
+        .getPayoutRequests();
+    }
+
+    function prosesApprovePayout(baris) {
+       Swal.fire({
+         title: 'Setujui Payout?',
+         text: "Apakah Anda yakin telah mentransfer dana ini dan ingin menyetujui pengajuan?",
+         icon: 'question',
+         showCancelButton: true,
+         confirmButtonColor: '#10B981',
+         cancelButtonColor: '#d33',
+         confirmButtonText: 'Ya, Setujui',
+         cancelButtonText: 'Batal'
+       }).then((result) => {
+         if (result.isConfirmed) {
+           document.getElementById('tablePayoutBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-gray);"><i class="fa-solid fa-spinner fa-spin"></i> Memproses persetujuan...</td></tr>';
+           google.script.run
+             .withFailureHandler(function(err) {
+                 Swal.fire('Error', 'Gagal memanggil server: ' + err, 'error');
+                 muatPayoutRequests();
+             })
+             .withSuccessHandler(function(resString){
+                 try {
+                   let res = JSON.parse(resString);
+                   if(res.success) {
+                       Swal.fire('Berhasil', 'Payout berhasil disetujui!', 'success');
+                       muatPayoutRequests();
+                   } else {
+                       Swal.fire('Gagal', res.error, 'error');
+                       muatPayoutRequests();
+                   }
+                 } catch(e) {
+                   Swal.fire('Error', 'Gagal memproses respon server.', 'error');
+                   muatPayoutRequests();
+                 }
+             })
+             .approvePayout(baris);
+         }
+       });
+    }
+  
+    function muatDaftarPengguna() {
+      document.getElementById('tableUsersBody').innerHTML = '<tr><td colspan="3" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data...</td></tr>';
+      google.script.run
+        .withFailureHandler(function(e){ document.getElementById('tableUsersBody').innerHTML = '<tr><td colspan="3" style="text-align:center; color:red;">Gagal: '+e+'</td></tr>'; })
+        .withFailureHandler(function(e){ document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Server Error: '+e+'</td></tr>'; }).withSuccessHandler(function(resString) {
+           try {
+             let res = JSON.parse(resString);
+             let tbody = document.getElementById('tableUsersBody');
+             if(!res.success) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">'+res.error+'</td></tr>'; return; }
+             
+             let htmlStr = "";
+             res.data.forEach(item => {
+                let color = (item.role.toLowerCase() === 'admin') ? '#EF4444' : (item.role.toLowerCase() === 'owner') ? '#3B82F6' : 'var(--text-gray)';
+                htmlStr += '<tr style="cursor:pointer;" onclick="document.getElementById(\'inputEmailUser\').value=\'' + item.email + '\'">' +
+                  '<td>' + item.nama + '</td>' +
+                  '<td style="font-weight:600;">' + item.email + '</td>' +
+                  '<td style="font-weight:600; color:' + color + ';">' + item.role + '</td>' +
+                '</tr>';
+             });
+             tbody.innerHTML = htmlStr;
+           } catch(e) {}
+        })
+        .getAllUsersAdmin();
+    }
+
+    function prosesUpdateRole() {
+      let email = document.getElementById('inputEmailUser').value;
+      let role = document.getElementById('selectRole').value;
+      let info = document.getElementById('roleInfo');
+      
+      if(!email) { Swal.fire('Perhatian', 'Masukkan atau klik email dari tabel terlebih dahulu!', 'warning'); return; }
+      
+      info.style.color = "var(--text-gray)"; info.innerText = "Memperbarui hak akses...";
+      google.script.run
+        .withFailureHandler(function(e){ info.style.color = "red"; info.innerText = "Gagal: " + e; })
+        .withSuccessHandler(function(res){
+           if(res.success) {
+              info.style.color = "#10B981"; info.innerText = res.message;
+              muatDaftarPengguna();
+           } else {
+              info.style.color = "red"; info.innerText = "Gagal: " + res.error;
+           }
+        })
+        .updateUserRoleAdmin(email, role);
+    }
+
+    function muatDaftarIklan() {
+      document.getElementById('tableAdsBody').innerHTML = '<tr><td colspan="6" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data iklan...</td></tr>';
+      google.script.run
+        .withFailureHandler(function(e){ document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Server Error: '+e+'</td></tr>'; }).withSuccessHandler(function(resString) {
+           try {
+             let res = JSON.parse(resString);
+             let tbody = document.getElementById('tableAdsBody');
+             if(!res.success) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Gagal: '+res.error+'</td></tr>'; return; }
+             
+             if(res.data.length === 0) {
+                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada iklan.</td></tr>'; return;
+             }
+             
+             let htmlStr = "";
+             res.data.forEach(item => {
+                let badgeStatus = String(item.status).toLowerCase() === 'aktif' ? '<span style="background:#10B981; color:white; padding:4px 8px; border-radius:4px; font-size:12px;">Aktif</span>' : '<span style="background:#EF4444; color:white; padding:4px 8px; border-radius:4px; font-size:12px;">Non-Aktif</span>';
+                
+                htmlStr += '<tr>' +
+                  '<td><img src="' + item.foto + '" style="width:100px; height:40px; object-fit:cover; border-radius:4px;"></td>' +
+                  '<td>' + item.nama + '<br><small style="color:var(--text-gray)">Target: ' + (item.target_id || '-') + '</small></td>' +
+                  '<td style="font-weight:600; font-size:16px;">' + (item.impresi || 0) + '</td>' +
+                  '<td style="font-weight:600; font-size:16px; color:#3B82F6;">' + (item.klik || 0) + '</td>' +
+                  '<td>' + badgeStatus + '</td>' +
+                  '<td>' +
+                     '<button onclick="toggleStatusIklan(' + item.baris + ', \'' + item.status + '\')" style="background:#F3F4F6; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">' +
+                        (String(item.status).toLowerCase() === 'aktif' ? 'Matikan' : 'Aktifkan') +
+                     '</button>' +
+                  '</td>' +
+                '</tr>';
+             });
+             tbody.innerHTML = htmlStr;
+           } catch(e) {}
+        })
+        .getAllAdsAdmin();
+    }
+    
+    function uploadAd() {
+      let nama = document.getElementById('adName').value.trim();
+      let target = document.getElementById('adTargetId').value.trim();
+      let fileInput = document.getElementById('adFoto');
+      let info = document.getElementById('adUploadInfo');
+      
+      if(!nama || fileInput.files.length === 0) {
+         info.style.color = "red"; info.innerText = "Mohon isi Nama Promo dan pilih File Spanduk!"; return;
+      }
+      
+      let file = fileInput.files[0];
+      if (file.size > 2 * 1024 * 1024) { info.style.color = "red"; info.innerText = "Maksimal ukuran file 2MB!"; return; }
+      
+      info.style.color = "var(--text-gray)"; info.innerText = "Mengonversi dan mengunggah ke server... Mohon tunggu.";
+      
+      let reader = new FileReader();
+      reader.onload = function(e) {
+         let dataObj = {
+            nama: nama,
+            target_id: target,
+            fotoBase64: e.target.result.split(",")[1],
+            fotoType: file.type,
+            fotoName: file.name
+         };
+         
+         google.script.run
+           .withFailureHandler(function(err){ info.style.color = "red"; info.innerText = "Gagal: " + err; })
+           .withSuccessHandler(function(res){
+               if(res.success) {
+                   info.style.color = "#10B981"; info.innerText = "Iklan berhasil ditambahkan!";
+                   document.getElementById('adName').value = ""; document.getElementById('adTargetId').value = ""; document.getElementById('adFoto').value = "";
+                   muatDaftarIklan();
+               } else {
+                   info.style.color = "red"; info.innerText = "Gagal: " + res.error;
+               }
+           })
+           .tambahIklanBaru(dataObj);
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    function toggleStatusIklan(baris, statusLama) {
+       let newStatus = statusLama.toLowerCase() === 'aktif' ? 'Non-Aktif' : 'Aktif';
+       document.getElementById('tableAdsBody').innerHTML = '<tr><td colspan="6" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Memperbarui status...</td></tr>';
+       google.script.run
+         .withSuccessHandler(function(res){ muatDaftarIklan(); })
+         .updateStatusIklan(baris, newStatus);
+    }
+
+    function muatDaftarTag() {
+      document.getElementById('tableTagsBody').innerHTML = '<tr><td colspan="5" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data tag...</td></tr>';
+      google.script.run
+        .withFailureHandler(function(e){ document.getElementById('tableTagsBody').innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Server Error: '+e+'</td></tr>'; }).withSuccessHandler(function(resString) {
+           try {
+             let res = JSON.parse(resString);
+             let tbody = document.getElementById('tableTagsBody');
+             if(!res.success) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Gagal: '+res.error+'</td></tr>'; return; }
+             
+             if(res.data.length === 0) {
+                 tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada Tag yang dibuat.</td></tr>'; return;
+             }
+             
+             let htmlStr = "";
+             res.data.forEach(item => {
+                let badgeStatus = String(item.status).toLowerCase() === 'aktif' ? '<span style="background:#10B981; color:white; padding:4px 8px; border-radius:4px; font-size:12px;">Aktif</span>' : '<span style="background:#EF4444; color:white; padding:4px 8px; border-radius:4px; font-size:12px;">Sembunyi</span>';
+                
+                htmlStr += '<tr>' +
+                  '<td><img src="' + item.foto + '" style="width:60px; height:60px; object-fit:cover; border-radius:8px;"></td>' +
+                  '<td style="font-weight:600; font-size:16px;">' + item.nama + '</td>' +
+                  '<td style="color:var(--text-gray); font-size:14px;">' + (item.subtag || "-") + '</td>' +
+                  '<td>' + badgeStatus + '</td>' +
+                  '<td>' +
+                     '<button onclick="toggleStatusTag(' + item.baris + ', \'' + item.status + '\')" style="background:#F3F4F6; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">' +
+                        (String(item.status).toLowerCase() === 'aktif' ? 'Sembunyikan' : 'Aktifkan') +
+                     '</button>' +
+                  '</td>' +
+                '</tr>';
+             });
+             tbody.innerHTML = htmlStr;
+           } catch(e) {}
+        })
+        .getAllTagsAdmin();
+    }
+    
+    function uploadTag() {
+      let nama = document.getElementById('tagName').value.trim();
+      let subtag = document.getElementById('tagSub') ? document.getElementById('tagSub').value.trim() : "";
+      let fileInput = document.getElementById('tagFoto');
+      let info = document.getElementById('tagUploadInfo');
+      
+      if(!nama || fileInput.files.length === 0) {
+         info.style.color = "red"; info.innerText = "Mohon isi Nama Tag dan pilih Foto Sampul!"; return;
+      }
+      
+      let file = fileInput.files[0];
+      if (file.size > 2 * 1024 * 1024) { info.style.color = "red"; info.innerText = "Maksimal ukuran file 2MB!"; return; }
+      
+      info.style.color = "var(--text-gray)"; info.innerText = "Mengunggah tag ke database... Mohon tunggu.";
+      
+      let reader = new FileReader();
+      reader.onload = function(e) {
+         let dataObj = {
+            nama: nama,
+            subtag: subtag,
+            fotoBase64: e.target.result.split(",")[1],
+            fotoType: file.type,
+            fotoName: file.name
+         };
+         
+         google.script.run
+           .withFailureHandler(function(err){ info.style.color = "red"; info.innerText = "Gagal: " + err; })
+           .withSuccessHandler(function(res){
+               if(res.success) {
+                   info.style.color = "#10B981"; info.innerText = "Tag berhasil ditambahkan!";
+                   document.getElementById('tagName').value = ""; document.getElementById('tagFoto').value = "";
+                   muatDaftarTag();
+               } else {
+                   info.style.color = "red"; info.innerText = "Gagal: " + res.error;
+               }
+           })
+           .tambahTagBaru(dataObj);
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    function toggleStatusTag(baris, statusLama) {
+       let newStatus = statusLama.toLowerCase() === 'aktif' ? 'Non-Aktif' : 'Aktif';
+       document.getElementById('tableTagsBody').innerHTML = '<tr><td colspan="4" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Memperbarui status...</td></tr>';
+       google.script.run
+         .withSuccessHandler(function(res){ muatDaftarTag(); })
+         .updateStatusTag(baris, newStatus);
+    }
+
+    var currentLayouts = [];
+
+    function muatLayout() {
+      document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat susunan layout...</td></tr>';
+      google.script.run.withFailureHandler(function(e){ document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Server Error: '+e+'</td></tr>'; }).withSuccessHandler(function(resString) {
+        try {
+           let res = JSON.parse(resString);
+           if (res.success) {
+              currentLayouts = res.data;
+              renderTableLayout();
+           } else {
+              document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">'+res.error+'</td></tr>';
+           }
+        } catch(e) {
+           document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Error memuat data.</td></tr>';
+        }
+      }).getLayoutData();
+    }
+
+    function renderTableLayout() {
+      let tbody = document.getElementById('tableLayoutBody');
+      tbody.innerHTML = "";
+      if (currentLayouts.length === 0) {
+         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada section. Silakan tambah baru.</td></tr>';
+         return;
+      }
+      
+      // Sort by urutan
+      currentLayouts.sort((a,b) => a.urutan - b.urutan);
+      
+      currentLayouts.forEach((item, index) => {
+         let tr = document.createElement('tr');
+         tr.innerHTML = 
+           '<td>' + item.urutan + '</td>' +
+           '<td style="font-weight:600;">' + item.judul + '</td>' +
+           '<td><span style="background:#F3F4F6; padding:4px 8px; border-radius:4px; font-size:12px;">' + item.tipe + '</span></td>' +
+           '<td>' + item.nilai + '</td>' +
+           '<td>' + (item.status === 'Aktif' ? '<span class="badge-aktif">Aktif</span>' : '<span class="badge-nonaktif">Nonaktif</span>') + '</td>' +
+           '<td>' +
+              '<button onclick="hapusLayout(' + index + ')" style="background:none; border:none; color:#EF4444; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>' +
+           '</td>';
+         tbody.appendChild(tr);
+      });
+    }
+
+    function ubahOpsiComposer() {
+      let tipe = document.getElementById('compTipe').value;
+      let inputNilai = document.getElementById('compNilai');
+      if (tipe === 'Otomatis') {
+         inputNilai.value = 'Populer';
+         inputNilai.readOnly = true;
+      } else {
+         inputNilai.value = '';
+         inputNilai.readOnly = false;
+         inputNilai.placeholder = "Contoh: " + (tipe === 'Tag' ? 'Promo' : (tipe === 'Kategori' ? 'Penginapan' : 'Bukittinggi'));
+      }
+    }
+
+    function tambahLayout() {
+      let judul = document.getElementById('compJudul').value;
+      let tipe = document.getElementById('compTipe').value;
+      let nilai = document.getElementById('compNilai').value;
+      let urutan = document.getElementById('compUrutan').value;
+      let status = document.getElementById('compStatus').value;
+      
+      if(!judul || !nilai) {
+         Swal.fire('Oops', 'Judul dan Nilai wajib diisi!', 'warning');
+         return;
+      }
+      
+      let newId = "LAY-" + Date.now();
+      currentLayouts.push({
+         id: newId,
+         judul: judul,
+         tipe: tipe,
+         nilai: nilai,
+         urutan: Number(urutan),
+         status: status
+      });
+      
+      document.getElementById('compJudul').value = "";
+      document.getElementById('compNilai').value = tipe === 'Otomatis' ? 'Populer' : "";
+      document.getElementById('compUrutan').value = Number(urutan) + 1;
+      
+      renderTableLayout();
+    }
+
+    function hapusLayout(index) {
+       currentLayouts.splice(index, 1);
+       renderTableLayout();
+    }
+
+    function simpanSemuaLayout() {
+       document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Menyimpan ke server...</td></tr>';
+       google.script.run.withFailureHandler(function(e){ document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Server Error: '+e+'</td></tr>'; }).withSuccessHandler(function(resString) {
+          let res = JSON.parse(resString);
+          if (res.success) {
+             Swal.fire('Berhasil', 'Susunan halaman berhasil disimpan!', 'success');
+             muatLayout();
+          } else {
+             Swal.fire('Gagal', res.error, 'error');
+             muatLayout();
+          }
+       }).simpanLayoutData(currentLayouts);
+    }
+
+</script>
+
+
+
+</div>
+
+</body>
+</html>

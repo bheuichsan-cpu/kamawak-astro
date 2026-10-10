@@ -1,0 +1,298 @@
+---
+import GASPolyfill from '../components/GASPolyfill.astro';
+---
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Autentikasi - Kamawak</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style is:inline>
+    :root { --primary: #FF5E1F; --bg-color: #F5F7FA; --text-dark: #1C2430; --text-gray: #6B7280; --white: #FFFFFF; --shadow: 0 10px 30px rgba(0,0,0,0.1); --radius: 16px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: url('https://images.unsplash.com/photo-1574958269340-fa927503f3cb?w=1200') center/cover; color: var(--text-dark); display: flex; align-items: center; justify-content: center; min-height: 100vh; position: relative; padding: 20px; }
+    .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(28, 36, 48, 0.7), rgba(255, 94, 31, 0.6)); z-index: 1; }
+    
+    .auth-card { background: var(--white); padding: 40px; border-radius: var(--radius); box-shadow: var(--shadow); width: 100%; max-width: 450px; text-align: center; position: relative; z-index: 2; border-top: 6px solid var(--primary); max-height: 90vh; overflow-y: auto; }
+    .auth-card::-webkit-scrollbar { width: 6px; }
+    .auth-card::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 10px; }
+
+    .logo { font-family: 'Poppins', sans-serif; font-size: 32px; font-weight: 700; color: var(--primary); margin-bottom: 8px; display: block; text-decoration: none; }
+    .auth-card p { color: var(--text-gray); margin-bottom: 25px; font-size: 14px; line-height: 1.5; }
+    
+    .form-group { text-align: left; margin-bottom: 15px; position: relative; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-dark); }
+    .input-wrapper { position: relative; display: flex; align-items: center; }
+    .input-wrapper i.icon-left { position: absolute; left: 15px; color: var(--text-gray); font-size: 15px; }
+    
+    .form-control { width: 100%; padding: 12px 15px 12px 42px; border: 1px solid #E5E7EB; border-radius: 10px; font-size: 14px; outline: none; transition: 0.3s; background: #F9FAFB; color: var(--text-dark); }
+    .form-control:focus { border-color: var(--primary); background: var(--white); box-shadow: 0 0 0 4px rgba(255, 94, 31, 0.1); }
+    
+    .otp-input { text-align: center; font-size: 24px; letter-spacing: 10px; font-weight: 700; padding: 15px; }
+    
+    .eye-btn { position: absolute; right: 15px; color: var(--text-gray); cursor: pointer; padding: 5px; font-size: 16px; transition: 0.2s; }
+    .eye-btn:hover { color: var(--primary); }
+
+    .btn-submit { background: var(--primary); color: var(--white); border: none; padding: 14px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 15px; width: 100%; transition: 0.3s; margin-top: 10px; box-shadow: 0 4px 15px rgba(255, 94, 31, 0.3); }
+    .btn-submit:hover { background: #E04D14; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 94, 31, 0.4); }
+    
+    .loading-text { color: var(--primary); font-weight: 600; display: none; margin-top: 20px; font-size: 14px; }
+    .msg-box { padding: 12px; border-radius: 8px; font-weight: 600; display: none; margin-top: 20px; font-size: 13px; }
+    .msg-error { background: #FEE2E2; color: #DC2626; border: 1px solid #FCA5A5; }
+    .msg-success { background: #D1FAE5; color: #059669; border: 1px solid #6EE7B7; }
+    
+    .footer-link { margin-top: 25px; font-size: 13px; color: var(--text-gray); }
+    .footer-link a { color: var(--primary); text-decoration: none; font-weight: 600; cursor: pointer; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    
+    /* ANIMASI TAMBAHAN */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .auth-card { animation: fadeIn 0.4s ease-out; }
+  </style>
+  <GASPolyfill />
+</head>
+<body>
+  <div class="overlay"></div>
+  
+  <!-- KARTU 1: LOGIN -->
+  <div class="auth-card" id="cardLogin">
+    <a href="" class="logo">Kamawak.</a>
+    <p>Selamat Datang Kembali!<br>Masuk dengan aman ke portal Anda.</p>
+
+    <div class="form-group">
+      <label>Username / Email / No. WhatsApp</label>
+      <div class="input-wrapper">
+        <i class="fa-solid fa-user icon-left"></i>
+        <input type="text" id="logIdentitas" class="form-control" placeholder="Masukkan identitas">
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label>Kata Sandi</label>
+      <div class="input-wrapper">
+        <i class="fa-solid fa-lock icon-left"></i>
+        <input type="password" id="logPassword" class="form-control" placeholder="Masukkan kata sandi">
+        <i class="fa-solid fa-eye-slash eye-btn" id="eyeLogin" onclick="togglePass('logPassword', 'eyeLogin')"></i>
+      </div>
+    </div>
+
+    <button class="btn-submit" id="btnMasuk" onclick="prosesLogin()">Masuk ke Dasbor</button>
+    
+    <div id="loadingLogin" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi kredensial...</div>
+    <div id="msgLogin" class="msg-box msg-error"><i class="fa-solid fa-circle-exclamation"></i> <span id="txtLogin"></span></div>
+    
+    <div class="footer-link">
+      Belum memiliki akun? <a onclick="tukarMode('register')">Daftar Sekarang</a>
+    </div>
+  </div>
+
+  <!-- KARTU 2: REGISTER -->
+  <div class="auth-card" id="cardRegister" style="display:none;">
+    <a href="" class="logo">Kamawak.</a>
+    <p>Bergabung Bersama Kami<br>Buat akun baru dalam hitungan detik.</p>
+
+    <div class="form-group">
+      <label>Nama Lengkap</label>
+      <div class="input-wrapper"><i class="fa-solid fa-id-card icon-left"></i><input type="text" id="regNama" class="form-control" placeholder="Nama sesuai KTP"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Username</label><div class="input-wrapper"><i class="fa-solid fa-at icon-left"></i><input type="text" id="regUser" class="form-control" placeholder="namasaya"></div></div>
+      <div class="form-group"><label>No. WhatsApp</label><div class="input-wrapper"><i class="fa-brands fa-whatsapp icon-left"></i><input type="tel" id="regWA" class="form-control" placeholder="0812..."></div></div>
+    </div>
+    <div class="form-group">
+      <label>Alamat Email (Wajib Aktif)</label>
+      <div class="input-wrapper"><i class="fa-solid fa-envelope icon-left"></i><input type="email" id="regEmail" class="form-control" placeholder="email@anda.com"></div>
+    </div>
+    
+    <!-- FITUR BARU: Sandi dan Konfirmasi Sandi -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>Kata Sandi Baru</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-lock icon-left"></i>
+          <input type="password" id="regPassword" class="form-control" placeholder="Buat sandi">
+          <i class="fa-solid fa-eye-slash eye-btn" id="eyeReg" onclick="togglePass('regPassword', 'eyeReg')"></i>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Ulangi Sandi</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-check-double icon-left"></i>
+          <input type="password" id="regConfirm" class="form-control" placeholder="Konfirmasi">
+          <i class="fa-solid fa-eye-slash eye-btn" id="eyeRegConfirm" onclick="togglePass('regConfirm', 'eyeRegConfirm')"></i>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-submit" id="btnDaftar" onclick="prosesRegister()">Daftar & Kirim OTP</button>
+    
+    <div id="loadingReg" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> Mengirim OTP ke Email Anda...</div>
+    <div id="msgReg" class="msg-box"><i class="fa-solid fa-circle-info"></i> <span id="txtReg"></span></div>
+    
+    <div class="footer-link">Sudah memiliki akun? <a onclick="tukarMode('login')">Masuk di sini</a></div>
+  </div>
+
+  <!-- KARTU 3: VERIFIKASI OTP -->
+  <div class="auth-card" id="cardOTP" style="display:none;">
+    <i class="fa-solid fa-envelope-open-text" style="font-size: 50px; color: var(--primary); margin-bottom: 15px;"></i>
+    <h2 style="font-family: 'Poppins'; font-size: 22px; margin-bottom: 5px;">Cek Email Anda</h2>
+    <p>Kami telah mengirimkan 6 digit kode OTP ke email <br><b id="displayEmail"></b></p>
+
+    <div class="form-group">
+      <input type="text" id="inputOTP" class="form-control otp-input" placeholder="000000" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+    </div>
+
+    <button class="btn-submit" id="btnVerifikasi" onclick="prosesOTP()">Verifikasi Akun</button>
+    
+    <div id="loadingOTP" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> Memvalidasi kode...</div>
+    <div id="msgOTP" class="msg-box"><i class="fa-solid fa-circle-info"></i> <span id="txtOTP"></span></div>
+    
+    <div class="footer-link">Salah memasukkan email? <a onclick="tukarMode('register')">Kembali</a></div>
+  </div>
+
+  <script is:inline>
+    const BASE_URL = "";
+    let emailTerdaftar = ""; 
+
+    function tukarMode(mode) {
+      // Sembunyikan semua kartu
+      document.getElementById('cardLogin').style.display = 'none';
+      document.getElementById('cardRegister').style.display = 'none';
+      document.getElementById('cardOTP').style.display = 'none';
+      
+      // Tampilkan kartu yang dipilih (otomatis memicu animasi fadeIn CSS)
+      if(mode === 'register') {
+        document.getElementById('cardRegister').style.display = 'block';
+      } else if(mode === 'otp') {
+        document.getElementById('cardOTP').style.display = 'block';
+      } else {
+        document.getElementById('cardLogin').style.display = 'block';
+      }
+    }
+
+    function togglePass(inputId, iconId) {
+      let p = document.getElementById(inputId); let i = document.getElementById(iconId);
+      if (p.type === "password") { p.type = "text"; i.classList.remove('fa-eye-slash'); i.classList.add('fa-eye'); i.style.color = "var(--primary)"; }
+      else { p.type = "password"; i.classList.remove('fa-eye'); i.classList.add('fa-eye-slash'); i.style.color = "var(--text-gray)"; }
+    }
+
+    // --- 1. PROSES LOGIN (DENGAN PEMISAHAN ROLE YANG BENAR) ---
+    document.getElementById("logPassword").addEventListener("keypress", function(e) { if(e.key === "Enter") { e.preventDefault(); prosesLogin(); } });
+    
+    function prosesLogin() {
+      let identitas = document.getElementById('logIdentitas').value.trim();
+      let pass = document.getElementById('logPassword').value.trim();
+      let loader = document.getElementById('loadingLogin'); 
+      let msgBox = document.getElementById('msgLogin'); 
+      let txtBox = document.getElementById('txtLogin'); 
+      let btn = document.getElementById('btnMasuk');
+      
+      if (!identitas || !pass) { txtBox.innerText = "Identitas dan Sandi wajib diisi."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; return; }
+      btn.style.display = "none"; loader.style.display = "block"; msgBox.style.display = "none";
+
+      google.script.run.withFailureHandler(function(err) {
+          loader.style.display = "none"; btn.style.display = "block";
+          txtBox.innerText = "Error koneksi: " + err.message; msgBox.style.display = "block";
+      }).withSuccessHandler(function(resString) {
+          try {
+            let res = JSON.parse(resString);
+            if (res.success) {
+              localStorage.setItem("kamawak_user", res.nama); 
+              localStorage.setItem("kamawak_role", res.role);
+              
+              let roleStr = res.role.toLowerCase();
+              let halamanTujuan = "";
+              
+              // LOGIKA BARU: Cek Hak Akses (Role) Pengguna
+              if (roleStr.includes("admin")) {
+                halamanTujuan = "/admin"; // Ke Dasbor Admin
+              } else if (roleStr.includes("owner") || roleStr.includes("mitra")) {
+                halamanTujuan = "/owner"; // Ke Dasbor Mitra/Usaha
+              } else {
+                halamanTujuan = "/"; // Wisatawan kembali ke Landing Page
+              }
+              
+              let urlAkhir = BASE_URL + halamanTujuan + "?u=" + encodeURIComponent(res.nama) + "&r=" + encodeURIComponent(res.role);
+              
+              // Redirect ke dasbor yang sesuai
+              window.top.location.href = urlAkhir;
+              
+            } else { 
+              loader.style.display = "none"; btn.style.display = "block"; 
+              txtBox.innerText = res.error; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; 
+            }
+          } catch(e) {
+             loader.style.display = "none"; btn.style.display = "block"; 
+             txtBox.innerText = "Kesalahan server."; msgBox.style.display = "block";
+          }
+        }).verifikasiLogin(identitas, pass);
+    }
+    // --- 2. PROSES REGISTER ---
+    function prosesRegister() {
+      let data = {
+        nama: document.getElementById('regNama').value.trim(), username: document.getElementById('regUser').value.trim(),
+        wa: document.getElementById('regWA').value.trim(), email: document.getElementById('regEmail').value.trim(),
+        password: document.getElementById('regPassword').value.trim()
+      };
+      
+      let passConfirm = document.getElementById('regConfirm').value.trim(); // Ambil input konfirmasi sandi
+      
+      let loader = document.getElementById('loadingReg'); let msgBox = document.getElementById('msgReg'); let txtBox = document.getElementById('txtReg'); let btn = document.getElementById('btnDaftar');
+      
+      // Validasi kosong
+      if(!data.nama || !data.username || !data.wa || !data.email || !data.password || !passConfirm) {
+        txtBox.innerText = "Seluruh kolom wajib diisi!"; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; return;
+      }
+      
+      // Validasi Kecocokan Kata Sandi
+      if(data.password !== passConfirm) {
+        txtBox.innerText = "Kata sandi dan konfirmasi sandi tidak cocok!"; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; return;
+      }
+
+      btn.style.display = "none"; loader.style.display = "block"; msgBox.style.display = "none";
+
+      google.script.run.withFailureHandler(function(err) {
+        loader.style.display = "none"; btn.style.display = "block";
+        txtBox.innerText = "Error koneksi: " + err.message; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+      }).withSuccessHandler(function(resString) {
+        try {
+          let res = JSON.parse(resString); loader.style.display = "none"; btn.style.display = "block";
+          if (res.success) {
+            emailTerdaftar = data.email; 
+            document.getElementById('displayEmail').innerText = emailTerdaftar;
+            tukarMode('otp');
+          } else {
+            txtBox.innerText = res.error; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+          }
+        } catch(e) {}
+      }).prosesRegistrasi(data);
+    }
+
+    // --- 3. PROSES VERIFIKASI OTP ---
+    function prosesOTP() {
+      let otpInput = document.getElementById('inputOTP').value.trim();
+      let loader = document.getElementById('loadingOTP'); let msgBox = document.getElementById('msgOTP'); let txtBox = document.getElementById('txtOTP'); let btn = document.getElementById('btnVerifikasi');
+      
+      if(otpInput.length < 6) { txtBox.innerText = "Masukkan 6 digit kode OTP."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; return; }
+      btn.style.display = "none"; loader.style.display = "block"; msgBox.style.display = "none";
+
+      google.script.run.withFailureHandler(function(err) {
+        loader.style.display = "none"; btn.style.display = "block";
+        txtBox.innerText = "Error koneksi: " + err.message; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+      }).withSuccessHandler(function(resString) {
+        try {
+          let res = JSON.parse(resString); loader.style.display = "none"; btn.style.display = "block";
+          if (res.success) {
+            txtBox.innerText = res.message; msgBox.className = "msg-box msg-success"; msgBox.style.display = "block";
+            setTimeout(() => { document.getElementById('logIdentitas').value = emailTerdaftar; document.getElementById('inputOTP').value = ""; msgBox.style.display = "none"; tukarMode('login'); }, 2000);
+          } else {
+            txtBox.innerText = res.error; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+          }
+        } catch(e) {}
+      }).verifikasiOTP(emailTerdaftar, otpInput);
+    }
+  </script>
+</body>
+</html>

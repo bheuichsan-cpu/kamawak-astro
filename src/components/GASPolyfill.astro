@@ -1,0 +1,35 @@
+<script is:inline>
+  const API_URL = "https://script.google.com/macros/s/AKfycbx-Pq4wVKrDIpI0mND2sCE7OnjplvdUkvPM9dhXQ558uLLN1duBy92EsUETgSCd_9hn/exec";
+  
+  function createRunner() {
+    let successCb = null;
+    let failureCb = null;
+    const runner = new Proxy({}, {
+      get: function(target, prop) {
+        if (prop === 'withSuccessHandler') return function(cb) { successCb = cb; return runner; };
+        if (prop === 'withFailureHandler') return function(cb) { failureCb = cb; return runner; };
+        return async function(...args) {
+           try {
+             // We encode args to send them to doGet
+             const argsStr = encodeURIComponent(JSON.stringify(args));
+             const url = `${API_URL}?api=true&action=${prop}&args=${argsStr}`;
+             const res = await fetch(url);
+             const text = await res.text();
+             if(successCb) successCb(text);
+           } catch(e) {
+             if(failureCb) failureCb(e);
+           }
+        }
+      }
+    });
+    return runner;
+  }
+  
+  window.google = {
+    script: {
+      get run() {
+        return createRunner();
+      }
+    }
+  };
+</script>

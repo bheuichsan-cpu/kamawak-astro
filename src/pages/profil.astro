@@ -1,0 +1,164 @@
+---
+import GASPolyfill from '../components/GASPolyfill.astro';
+---
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profil & Pesanan - Kamawak</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style is:inline>
+    :root { --primary: #FF5E1F; --bg-color: #F5F7FA; --text-dark: #1C2430; --text-gray: #6B7280; --white: #FFFFFF; --shadow: 0 4px 20px rgba(0,0,0,0.08); --radius: 12px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-dark); }
+    
+    .navbar { background: var(--white); padding: 18px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+    .logo { font-family: 'Poppins', sans-serif; font-size: 24px; font-weight: 700; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    
+    .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+    .card { background: var(--white); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px; }
+    
+    .profile-header { display: flex; align-items: center; gap: 20px; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
+    .avatar { width: 80px; height: 80px; background: #FFF0EB; color: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 32px; font-weight: bold; }
+    .profile-info h1 { font-size: 24px; font-family: 'Poppins', sans-serif; margin-bottom: 5px; }
+    .profile-info p { color: var(--text-gray); font-size: 14px; }
+    
+    .section-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    
+    .order-item { border: 1px solid #eee; border-radius: 8px; padding: 16px; margin-bottom: 16px; transition: 0.2s; }
+    .order-item:hover { border-color: var(--primary); }
+    .order-header { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; color: var(--text-gray); }
+    .order-status { padding: 4px 10px; border-radius: 50px; font-size: 12px; font-weight: 600; }
+    .status-lunas { background: #E8F5E9; color: #2E7D32; }
+    .status-menunggu { background: #FFF8E1; color: #F57F17; }
+    .status-batal { background: #FFEBEE; color: #C62828; }
+    
+    .order-body { display: flex; justify-content: space-between; align-items: center; }
+    .order-title { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
+    .order-detail { font-size: 14px; color: var(--text-gray); }
+    .order-price { font-weight: 700; font-size: 18px; color: var(--primary); }
+    
+    .btn-back { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 16px; border-radius: 50px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 14px; font-weight: 500; transition: 0.2s; }
+    .btn-back:hover { background: var(--primary); color: var(--white); }
+    
+    .empty-state { text-align: center; padding: 40px 0; color: var(--text-gray); }
+    .empty-state i { font-size: 48px; color: #ddd; margin-bottom: 16px; }
+    
+    .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 30px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+  <GASPolyfill />
+</head>
+<body>
+  <nav class="navbar">
+    <a href="#" onclick="kembaliKeHome()" class="logo"><i class="fa-solid fa-umbrella-beach"></i> Kamawak</a>
+    <a href="#" onclick="kembaliKeHome()" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+  </nav>
+
+  <div class="container" id="mainBody" style="display:none;">
+    <div class="card profile-header">
+      <div class="avatar" id="uiAvatar">U</div>
+      <div class="profile-info">
+        <h1 id="uiNama">Memuat...</h1>
+        <p><i class="fa-solid fa-user"></i> <span id="uiRole">Wisatawan</span></p>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="section-title"><i class="fa-solid fa-ticket"></i> Histori Pesanan Anda</div>
+      <div id="orderList">
+        <div class="loader"></div>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline>
+    const BASE_URL = "";
+
+    function formatUang(angka) { return "Rp " + Number(angka || 0).toLocaleString('id-ID'); }
+
+    window.onload = function() {
+      // Sinkronisasi Sesi
+      let urlUser = new URLSearchParams(window.location.search).get("u") || localStorage.getItem("kamawak_user") || "";
+      let urlRole = new URLSearchParams(window.location.search).get("r") || localStorage.getItem("kamawak_role") || "";
+      if(urlUser && urlRole && urlUser !== "") {
+         localStorage.setItem("kamawak_user", urlUser);
+         localStorage.setItem("kamawak_role", urlRole);
+         
+      }
+
+      let activeUser = localStorage.getItem("kamawak_user");
+      let activeRole = localStorage.getItem("kamawak_role");
+
+      if (!activeUser) {
+        window.open("/login", "_top");
+        return;
+      }
+
+      document.getElementById("mainBody").style.display = "block";
+      document.getElementById("uiNama").innerText = activeUser;
+      document.getElementById("uiAvatar").innerText = activeUser.charAt(0).toUpperCase();
+      document.getElementById("uiRole").innerText = activeRole.charAt(0).toUpperCase() + activeRole.slice(1);
+
+      loadHistoriPesanan(activeUser);
+    };
+
+    function loadHistoriPesanan(user) {
+      google.script.run
+        .withSuccessHandler(function(resStr) {
+          try {
+            let res = JSON.parse(resStr);
+            let html = "";
+            if(res.success && res.data.length > 0) {
+              res.data.forEach(item => {
+                let badgeClass = "status-menunggu";
+                let statusText = item.status.toLowerCase();
+                if(statusText.includes("sukses") || statusText.includes("lunas")) badgeClass = "status-lunas";
+                if(statusText.includes("batal") || statusText.includes("gagal")) badgeClass = "status-batal";
+                
+                html += `
+                  <div class="order-item">
+                    <div class="order-header">
+                      <span><i class="fa-regular fa-clock"></i> ${item.tanggalPesan}</span>
+                      <span class="order-status ${badgeClass}">${item.status}</span>
+                    </div>
+                    <div class="order-body">
+                      <div>
+                        <div class="order-title">${item.namaProduk}</div>
+                        <div class="order-detail">
+                          <i class="fa-solid fa-calendar-day"></i> Tgl Wisata: ${item.tanggalWisata} <br>
+                          <i class="fa-solid fa-users"></i> ${item.pax} Pax | Paket: ${item.paket}
+                        </div>
+                      </div>
+                      <div class="order-price">${formatUang(item.totalBayar)}</div>
+                    </div>
+                  </div>
+                `;
+              });
+            } else {
+              html = `
+                <div class="empty-state">
+                  <i class="fa-solid fa-receipt"></i>
+                  <p>Belum ada histori pesanan.<br>Yuk mulai petualangan Anda bersama Kamawak!</p>
+                </div>
+              `;
+            }
+            document.getElementById("orderList").innerHTML = html;
+          } catch(e) {
+            document.getElementById("orderList").innerHTML = `<div class="empty-state">Gagal memuat data.</div>`;
+          }
+        })
+        .withFailureHandler(function(err) {
+           document.getElementById("orderList").innerHTML = `<div class="empty-state">Gagal memuat data: ${err}</div>`;
+        })
+        .getHistoriPesanan(user);
+    }
+
+    function kembaliKeHome() {
+      window.open(BASE_URL + "/", "_top");
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,595 @@
+---
+import GASPolyfill from '../components/GASPolyfill.astro';
+---
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kamawak - Pesona Wisata Sumatera Barat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style is:inline>
+    :root { --primary: #FF5E1F; --bg-color: #F5F7FA; --text-dark: #1C2430; --text-gray: #6B7280; --white: #FFFFFF; --shadow: 0 4px 20px rgba(0,0,0,0.08); --radius: 12px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-dark); display: flex; flex-direction: column; min-height: 100vh; position: relative; }
+    
+    .navbar { background: var(--white); padding: 18px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+    .logo { font-family: 'Poppins', sans-serif; font-size: 26px; font-weight: 700; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .btn-login-nav { background: #FFF0EB; color: var(--primary); padding: 10px 20px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; }
+    .btn-login-nav:hover { background: var(--primary); color: var(--white); }
+
+    /* Hero Slider & Banner */
+    .hero-slider { position: relative; height: 480px; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; background: #1C2430; }
+    .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.5s ease-in-out; z-index: 1; }
+    .slide.active { opacity: 1; }
+    .slide.clickable { cursor: pointer; } 
+    .slide.clickable:hover { transform: scale(1.02); transition: transform 5s linear; }
+    .hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(28,36,48,0.5), rgba(28,36,48,0.9)); z-index: 2; pointer-events: none; }
+    .hero-content { position: relative; z-index: 3; color: var(--white); padding: 0 5%; width: 100%; max-width: 800px; }
+    .hero-content h1 { font-family: 'Poppins', sans-serif; font-size: 42px; margin-bottom: 15px; line-height: 1.2; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+    .hero-content p { font-size: 16px; margin-bottom: 30px; color: #E5E7EB; }
+    
+    .search-box { background: var(--white); width: 100%; padding: 10px; border-radius: 50px; display: flex; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .search-box i { color: var(--text-gray); font-size: 20px; padding: 15px; }
+    .search-input { flex: 1; border: none; padding: 12px 10px; font-size: 16px; outline: none; background: transparent; color: var(--text-dark); }
+    .search-btn { background: var(--primary); color: var(--white); border: none; padding: 12px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; font-size: 16px; transition: 0.2s; }
+    
+    .section-title { font-family: 'Poppins', sans-serif; font-size: 22px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    
+    .city-scroll { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 15px; margin-bottom: 15px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+    .city-scroll::-webkit-scrollbar { display: none; }
+    .city-card { min-width: 160px; height: 120px; border-radius: 16px; position: relative; overflow: hidden; cursor: pointer; scroll-snap-align: start; box-shadow: var(--shadow); transition: 0.3s; }
+    .city-card:hover { transform: translateY(-5px); }
+    .city-card img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+    .city-card:hover img { transform: scale(1.1); }
+    .city-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%); display: flex; align-items: flex-end; padding: 15px; }
+    .city-name { color: white; font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 600; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+
+    .popular-scroll { display: flex; overflow-x: auto; gap: 20px; padding-bottom: 20px; margin-bottom: 10px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+    .popular-scroll::-webkit-scrollbar { height: 8px; }
+    .popular-scroll::-webkit-scrollbar-track { background: #F3F4F6; border-radius: 10px; }
+    .popular-scroll::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 10px; }
+    .popular-card { min-width: 320px; max-width: 320px; scroll-snap-align: start; flex-shrink: 0; }
+
+    .controls-wrapper { max-width: 1200px; margin: 40px auto 20px; padding: 0 5%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; border-top: 1px solid #E5E7EB; padding-top: 40px; }
+    .category-tabs { display: flex; gap: 12px; flex-wrap: wrap; }
+    .tab-btn { background: var(--white); border: 1px solid #E5E7EB; padding: 10px 20px; border-radius: 30px; font-weight: 600; cursor: pointer; color: var(--text-dark); display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+    .tab-btn.active, .tab-btn:hover { background: var(--text-dark); color: var(--white); border-color: var(--text-dark); }
+    .filter-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    .sort-select { padding: 10px 15px; border-radius: 30px; border: 1px solid #E5E7EB; outline: none; font-family: 'Inter'; font-size: 13px; font-weight: 600; cursor: pointer; background: var(--white); color: var(--text-dark); }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 5%; flex: 1; width: 100%; margin-top: 40px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; margin-bottom: 50px; }
+    .card { background: var(--white); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: 0.3s; display: flex; flex-direction: column; border: 1px solid #F3F4F6; height: 100%; }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.12); }
+    
+    .card-clickable { cursor: pointer; text-decoration: none; color: inherit; flex: 1; display: flex; flex-direction: column; }
+    .card-img-wrapper { position: relative; }
+    .card-img { width: 100%; height: 200px; object-fit: cover; }
+    .card-badge { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.95); padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; color: var(--text-dark); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .card-badge-fire { position: absolute; top: 15px; right: 15px; background: #EF4444; color: white; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4); display: flex; align-items: center; gap: 5px; }
+    .card-content { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+    .card-location { font-size: 13px; color: var(--text-gray); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
+    .card-title { font-family: 'Poppins', sans-serif; font-size: 18px; margin-bottom: 12px; color: var(--text-dark); line-height: 1.4; flex: 1; }
+    .card-price-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px; }
+    .card-price-label { font-size: 11px; color: var(--text-gray); display: block; margin-bottom: 2px; }
+    .card-price { font-size: 18px; font-weight: 700; color: var(--primary); }
+    .card-rating { font-size: 13px; color: var(--text-dark); font-weight: 600; display: flex; align-items: center; gap: 5px; background: #FFFBEB; padding: 4px 8px; border-radius: 6px; }
+
+    .card-action { padding: 0 20px 20px 20px; border-top: 1px solid #F3F4F6; margin-top: auto; padding-top: 15px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .btn-booking { background: var(--text-dark); color: var(--white); border: none; padding: 10px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; width: 100%; transition: 0.2s; }
+    .btn-booking:hover { background: var(--primary); }
+    .btn-wa { background: #10B981; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; flex: 1; display: flex; justify-content: center; align-items: center; gap: 6px; transition: 0.2s; }
+    .btn-wa:hover { background: #059669; }
+    .social-icons { display: flex; gap: 8px; }
+    .btn-social { width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 14px; border: none; transition: 0.2s; }
+    .btn-social:hover { opacity: 0.8; }
+    .bg-ig { background: #E1306C; } .bg-tt { background: #000000; } .bg-fb { background: #1877F2; }
+
+    .skeleton-card { background: var(--white); border-radius: var(--radius); height: 380px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid #F3F4F6; }
+    .skeleton-img { width: 100%; height: 200px; background: #E5E7EB; animation: pulse 1.5s infinite; }
+    .skeleton-text { height: 16px; background: #E5E7EB; margin: 20px; border-radius: 4px; animation: pulse 1.5s infinite; }
+    .skeleton-text.short { width: 50%; margin-top: 10px; }
+    @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+    .trust-section { background: var(--white); padding: 50px 5%; margin-top: 20px; border-top: 1px solid #E5E7EB; }
+    .trust-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; }
+    .trust-item { text-align: center; padding: 20px; }
+    .trust-icon { width: 70px; height: 70px; background: #FFF0EB; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 20px; }
+    .trust-item h4 { font-family: 'Poppins', sans-serif; font-size: 18px; margin-bottom: 10px; color: var(--text-dark); }
+    .trust-item p { font-size: 14px; color: var(--text-gray); line-height: 1.6; }
+
+    .review-section { background: #FFF7F5; padding: 60px 5%; border-top: 1px solid #FFE4DB; }
+    .review-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+    .review-card { background: var(--white); padding: 30px; border-radius: var(--radius); box-shadow: 0 4px 15px rgba(255, 94, 31, 0.08); border: 1px solid #FFE4DB; position: relative; }
+    .quote-icon { position: absolute; top: 20px; right: 25px; font-size: 40px; color: #FFF0EB; }
+    .reviewer-info { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+    .reviewer-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+    .reviewer-name { font-weight: 700; color: var(--text-dark); font-family: 'Poppins'; }
+    .reviewer-stars { color: #F59E0B; font-size: 12px; margin-top: 3px; }
+    .review-text { font-size: 14px; color: var(--text-gray); line-height: 1.6; font-style: italic; }
+
+    .partner-cta { background: linear-gradient(135deg, #1C2430 0%, #2A3648 100%); padding: 60px 5%; text-align: center; color: white; }
+    .partner-content { max-width: 700px; margin: 0 auto; }
+    .partner-content h2 { font-family: 'Poppins'; font-size: 32px; margin-bottom: 15px; color: white; }
+    .partner-content p { font-size: 16px; color: #9CA3AF; margin-bottom: 25px; line-height: 1.6; }
+    .btn-partner { background: var(--primary); color: white; padding: 14px 35px; border-radius: 50px; font-size: 16px; font-weight: 600; text-decoration: none; display: inline-block; transition: 0.3s; border: none; cursor: pointer; }
+    .btn-partner:hover { background: #E04D14; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(255,94,31,0.3); }
+
+    .floating-cs { position: fixed; bottom: 25px; right: 25px; background: #10B981; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4); z-index: 999; cursor: pointer; text-decoration: none; transition: 0.3s; animation: bounce 2s infinite; }
+    .floating-cs:hover { background: #059669; transform: scale(1.1); }
+    @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-10px); } 60% { transform: translateY(-5px); } }
+
+    .footer { background: #111827; color: #9CA3AF; padding: 60px 5% 30px; margin-top: auto; }
+    .footer-content { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; border-bottom: 1px solid #374151; padding-bottom: 40px; margin-bottom: 20px; }
+    .footer-logo { font-family: 'Poppins'; font-size: 24px; color: var(--white); font-weight: 700; margin-bottom: 15px; display: block; text-decoration: none; }
+    .footer-bottom { text-align: center; font-size: 13px; }
+    .ad-carousel { width: 100%; overflow: hidden; border-radius: 12px; position: relative; }
+    .ad-carousel-track { display: flex; transition: transform 0.5s ease; gap: 15px; }
+    .ad-card { flex: 0 0 calc(33.333% - 10px); min-width: calc(33.333% - 10px); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); cursor: pointer; }
+    .ad-card img { width: 100%; height: 120px; object-fit: cover; display: block; }
+    @media (max-width: 768px) { .ad-card { flex: 0 0 calc(50% - 7.5px); min-width: calc(50% - 7.5px); } }
+</style>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <GASPolyfill />
+</head>
+<body>
+
+  <a href="https://wa.me/6281234567890?text=Halo%20Admin%20Kamawak,%20saya%20butuh%20bantuan." target="_blank" class="floating-cs" title="Hubungi CS Kamawak"><i class="fa-brands fa-whatsapp"></i></a>
+
+  <!-- NAVBAR DINAMIS (ID ditambahkan) -->
+  <nav class="navbar" style="z-index: 100;">
+    <a href="" class="logo"><i class="fa-solid fa-mountain-sun" style="color: var(--primary);"></i> Kamawak.</a>
+    <div id="navMenu">
+      <a href="/login" class="btn-login-nav"><i class="fa-solid fa-user"></i> Masuk / Daftar</a>
+    </div>
+  </nav>
+
+  <!-- KATEGORI MENU (Di Atas) -->
+  <div style="background: var(--white); padding: 12px 5%; border-bottom: 1px solid #E5E7EB; display: flex; gap: 12px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; position: sticky; top: 69px; z-index: 99; box-shadow: 0 4px 10px rgba(0,0,0,0.03);" class="category-tabs-top">
+    <button class="tab-btn active" onclick="filterKategori(this, 'Semua')">Semua</button>
+    <button class="tab-btn" onclick="filterKategori(this, 'Tur')"><i class="fa-solid fa-ticket"></i> Tur & Tiket</button>
+    <button class="tab-btn" onclick="filterKategori(this, 'Atraksi')"><i class="fa-solid fa-map-location-dot"></i> Atraksi</button>
+    <button class="tab-btn" onclick="filterKategori(this, 'Penginapan')"><i class="fa-solid fa-hotel"></i> Penginapan</button>
+    <button class="tab-btn" onclick="filterKategori(this, 'Kuliner')"><i class="fa-solid fa-utensils"></i> Kuliner</button>
+    <button class="tab-btn" onclick="filterKategori(this, 'Rental')"><i class="fa-solid fa-car"></i> Rental</button>
+  </div>
+
+  <div class="hero-slider" id="heroSlider">
+    <img src="https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=1200&auto=format&fit=crop" class="slide active" alt="Hero 1">
+    <img src="https://images.unsplash.com/photo-1555899434-94d1368aa7af?q=80&w=1200&auto=format&fit=crop" class="slide" alt="Hero 2">
+    <img src="https://images.unsplash.com/photo-1542640244-7e672d6cb469?q=80&w=1200&auto=format&fit=crop" class="slide" alt="Hero 3">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1>Jelajahi Keajaiban<br>Ranah Minang</h1>
+      <p>Temukan ratusan destinasi wisata, penginapan eksklusif, dan rental kendaraan terbaik di Sumatera Barat dalam satu genggaman.</p>
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" class="search-input" placeholder="Mau liburan kemana hari ini?" onkeypress="handleEnter(event)">
+        <button class="search-btn" onclick="panggilDataServer()">Cari</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ad Carousel Section -->
+  <div class="container" style="margin-top: 20px; display: none;" id="adCarouselContainer">
+    <div class="ad-carousel">
+      <div class="ad-carousel-track" id="adCarouselTrack">
+        <!-- Iklan dinamis -->
+      </div>
+    </div>
+  </div>
+
+  <div class="container" style="margin-top: 30px; margin-bottom: 10px;">
+    <h2 class="section-title">Jelajahi Kota <i class="fa-solid fa-tags" style="color: var(--primary);"></i></h2>
+    <div class="city-scroll" id="tagScrollContainer">
+      <!-- Tag akan dimuat secara dinamis dari database -->
+      <div style="text-align:center; width:100%; color:var(--text-gray);"><i class="fa-solid fa-spinner fa-spin"></i> Memuat koleksi...</div>
+    </div>
+  </div>
+
+  <div id="dynamicSectionsContainer"></div>
+  <div class="container" id="sectionPopuler" style="display: none;">
+    <h2 class="section-title">Rekomendasi Utama <i class="fa-solid fa-fire-flame-curved" style="color: #EF4444;"></i></h2>
+    <div class="popular-scroll" id="popularGrid"></div>
+  </div>
+
+  <div class="controls-wrapper" id="areaKatalog" style="justify-content: space-between; padding-top: 20px; margin-top: 20px;">
+    <h2 class="section-title" style="margin-bottom: 0; font-size: 20px;">Eksplorasi Katalog</h2>
+    <div class="filter-group">
+      <select id="priceSelect" class="sort-select" onchange="terapkanFilterDanUrutan()">
+        <option value="semua">Semua Harga (Budget)</option>
+        <option value="under500">Di bawah Rp 500.000</option>
+        <option value="500to1m">Rp 500.000 - Rp 1.000.000</option>
+        <option value="above1m">Di atas Rp 1.000.000</option>
+      </select>
+      <select id="sortSelect" class="sort-select" onchange="terapkanFilterDanUrutan()">
+        <option value="relevan">Urutkan: Paling Relevan</option>
+        <option value="termurah">Urutkan: Harga Termurah</option>
+        <option value="termahal">Urutkan: Harga Termahal</option>
+        <option value="rating">Urutkan: Rating Tertinggi</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="container" style="margin-top: 20px; margin-bottom: 50px;">
+    <div class="grid" id="productGrid"></div>
+  </div>
+
+  <div class="review-section">
+    <h2 class="section-title" style="justify-content: center; margin-bottom: 40px;">Apa Kata Mereka? <i class="fa-regular fa-face-smile" style="color: var(--primary);"></i></h2>
+    <div class="review-grid">
+      <div class="review-card"><i class="fa-solid fa-quote-right quote-icon"></i><div class="reviewer-info"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" class="reviewer-img" alt="Budi"><div><div class="reviewer-name">Budi Santoso</div><div class="reviewer-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div></div></div><p class="review-text">"Sangat membantu! Saya menemukan vila di Alahan Panjang yang tidak ada di OTA lain. Bisa chat langsung dengan pemiliknya membuat transaksi lebih lega."</p></div>
+      <div class="review-card"><i class="fa-solid fa-quote-right quote-icon"></i><div class="reviewer-info"><img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100" class="reviewer-img" alt="Sari"><div><div class="reviewer-name">Sari Amelia</div><div class="reviewer-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i></div></div></div><p class="review-text">"Pemesanan tur Mandeh sangat praktis. Tiketnya langsung masuk ke WhatsApp dan admin Kamawak sangat responsif memandu itinerary kami."</p></div>
+      <div class="review-card"><i class="fa-solid fa-quote-right quote-icon"></i><div class="reviewer-info"><img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100" class="reviewer-img" alt="Dimas"><div><div class="reviewer-name">Dimas Pratama</div><div class="reviewer-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div></div></div><p class="review-text">"Sistem filternya juara. Cari rental mobil di Bukittinggi jadi gampang banget dan harganya jujur tanpa mark-up berlebihan. Top banget Kamawak!"</p></div>
+    </div>
+  </div>
+
+  <div class="trust-section">
+    <div class="trust-grid">
+      <div class="trust-item"><div class="trust-icon"><i class="fa-solid fa-handshake"></i></div><h4>Harga Jujur & Terbuka</h4><p>Tidak ada biaya tersembunyi. Dapatkan harga langsung terbaik dari pengelola usaha tanpa tambahan komisi siluman.</p></div>
+      <div class="trust-item"><div class="trust-icon"><i class="fa-solid fa-comments"></i></div><h4>Langsung ke Owner</h4><p>Fitur "Tanya Owner" mengizinkan Anda berkonsultasi mengenai ketersediaan kamar langsung ke nomor WhatsApp pemilik.</p></div>
+      <div class="trust-item"><div class="trust-icon"><i class="fa-solid fa-shield-halved"></i></div><h4>Transaksi Aman</h4><p>Seluruh mitra tur dan atraksi kami telah diverifikasi. Proses pemesanan tiket Anda dilindungi oleh sistem keamanan berlapis.</p></div>
+    </div>
+  </div>
+
+  <div class="partner-cta">
+    <div class="partner-content">
+      <h2>Punya Usaha Penginapan atau Tur?</h2>
+      <p>Bergabunglah dengan puluhan mitra lainnya. Tingkatkan pesanan dan raih lebih banyak wisatawan dengan mendaftarkan usaha Anda di Kamawak sekarang juga.</p>
+      <a href="https://wa.me/6281234567890?text=Halo%20Admin,%20saya%20ingin%20mendaftarkan%20usaha%20saya%20di%20Kamawak." target="_blank" class="btn-partner"><i class="fa-solid fa-store"></i> Daftar Menjadi Mitra</a>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div><a href="#" class="footer-logo">Kamawak.</a><p>Platform direktori dan reservasi wisata #1 di Sumatera Barat.</p></div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 Kamawak Project - Pesona Wisata Sumatera Barat.</div>
+  </footer>
+
+
+
+  <script is:inline>
+    const BASE_URL = "";
+    let dataMaster = []; let layoutMaster = []; 
+    let kategoriAktif = 'Semua';
+
+    window.onload = function() {
+      cekStatusLogin(); // <--- Fungsi Pintar Navigasi Dipanggil Disini
+      tampilkanSkeleton();
+      muatIklanBanner();
+      muatKoleksiTag();
+      panggilDataServer();
+    };
+
+    // ==========================================
+    // FUNGSI BARU: CEK SESI LOGIN DI HALAMAN UTAMA
+    // ==========================================
+    function cekStatusLogin() {
+      // 1. Sinkronisasi Sesi dari URL (Solusi isolasi GAS iframe)
+      let urlUser = new URLSearchParams(window.location.search).get("u") || localStorage.getItem("kamawak_user") || "";
+      let urlRole = new URLSearchParams(window.location.search).get("r") || localStorage.getItem("kamawak_role") || "";
+      if(urlUser && urlRole && urlUser !== "") {
+         localStorage.setItem("kamawak_user", urlUser);
+         localStorage.setItem("kamawak_role", urlRole);
+         // Opsional: Bersihkan URL bar (mungkin tidak ngefek di dalam iframe, tapi aman dipanggil)
+         
+      }
+
+      let user = localStorage.getItem("kamawak_user");
+      let role = localStorage.getItem("kamawak_role");
+      let nav = document.getElementById("navMenu");
+      
+      // Jika pengguna terdeteksi sedang login
+      if(user && role) {
+        let isWisatawan = role.toLowerCase().includes("wisatawan");
+        let namaPendek = user.split(" ")[0]; // Ambil nama panggilan saja
+        
+        let htmlSapaanAtauDasbor = "";
+        
+                if(!isWisatawan) {
+          // Jika ia Mitra/Admin, beri tombol masuk Dasbor
+          let target = role.toLowerCase().includes("admin") ? "admin" : "owner";
+          let urlDasbor = BASE_URL + "/" + target + "?u=" + encodeURIComponent(user);
+          let btnIcon = role.toLowerCase().includes("admin") ? '<i class="fa-solid fa-gauge-high"></i> Dasbor Admin' : '<i class="fa-solid fa-plane"></i> Dasbor Mitra';
+          htmlSapaanAtauDasbor = `\x3Cbutton onclick="window.open('${urlDasbor}', '_top')" class="btn-login-nav" style="background: var(--text-dark); color: white; border:none; cursor:pointer; margin-right: 8px;">${btnIcon}\x3C/button>`;
+        } else {
+          // Jika ia Wisatawan, beri tombol ke Profil
+          let urlProfil = BASE_URL + "/profil?u=" + encodeURIComponent(user) + "&r=" + encodeURIComponent(role);
+          htmlSapaanAtauDasbor = `\x3Cbutton onclick="window.open('${urlProfil}', '_top')" class="btn-login-nav" style="background: var(--primary); color: white; border:none; cursor:pointer; margin-right: 8px;">\x3Ci class="fa-solid fa-user-circle">\x3C/i> Profil & Pesanan\x3C/button>`;
+        }
+        
+        // Ganti isi Navbar menjadi Sapaan/Dasbor + Tombol Keluar Merah
+        nav.innerHTML = htmlSapaanAtauDasbor + `\x3Cbutton onclick="logoutDariDepan()" class="btn-login-nav" style="background: #FEE2E2; color: #DC2626; border: none; cursor: pointer; box-shadow: none;">\x3Ci class="fa-solid fa-right-from-bracket">\x3C/i> Keluar\x3C/button>`;
+      }
+    }
+
+    // Fungsi tombol Keluar dari Halaman Utama
+    function logoutDariDepan() {
+      localStorage.clear();
+      window.open(BASE_URL, '_top'); // Memuat ulang dan menghapus sesi
+    }
+    // ==========================================
+    
+    function tampilkanSkeleton() {
+      let grid = document.getElementById('productGrid');
+      let skeletonHtml = Array(8).fill(`<div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>`).join('');
+      grid.innerHTML = skeletonHtml;
+    }
+
+    function muatIklanBanner() {
+      jalankanSliderHero(); // Jalankan hero banner statis
+
+      google.script.run
+        .withSuccessHandler(function(resString) {
+          try {
+            let res = JSON.parse(resString);
+            if(res.success && res.data.length > 0) {
+              let track = document.getElementById('adCarouselTrack');
+              let container = document.getElementById('adCarouselContainer');
+              
+              // Filter out default promo if real data exists, max 6 ads
+              let realAds = res.data.filter(ad => ad.nama !== 'Promo Default').slice(0, 6);
+              let adsToShow = realAds.length > 0 ? realAds : res.data;
+              
+              let sliderHtml = "";
+              adsToShow.forEach((ad) => {
+                let link = ad.id_iklan || "";
+                google.script.run.catatMetrikIklan(ad.baris, 'impresi');
+                sliderHtml += `<div class="ad-card" onclick="klikIklanServer(${ad.baris}, '${link}')"><img src="${ad.foto}" alt="${ad.nama}"></div>`;
+              });
+              
+              if(sliderHtml !== "") {
+                  container.style.display = "block";
+                  track.innerHTML = sliderHtml;
+                  jalankanCarouselIklan(adsToShow.length);
+              }
+            }
+          } catch(e) {}
+        }).getAdsData();
+    }
+    
+    function klikIklanServer(baris, linkTujuan) {
+      google.script.run.catatMetrikIklan(baris, 'klik');
+      if (linkTujuan && (linkTujuan.startsWith('http') || linkTujuan.startsWith('www'))) {
+          if(!linkTujuan.startsWith('http')) linkTujuan = 'https://' + linkTujuan;
+          window.open(linkTujuan, '_blank');
+      } else if (linkTujuan) {
+          // Fallback if they entered a store name
+          document.getElementById('searchInput').value = linkTujuan; 
+          panggilDataServer();
+          window.scrollTo({ top: document.getElementById('areaKatalog').offsetTop - 20, behavior: 'smooth' });
+      }
+    }
+
+    function jalankanSliderHero() {
+      let currentSlide = 0; const slides = document.querySelectorAll('#heroSlider .slide');
+      if(slides.length > 1) { setInterval(() => { slides[currentSlide].classList.remove('active'); currentSlide = (currentSlide + 1) % slides.length; slides[currentSlide].classList.add('active'); }, 4000); }
+    }
+
+    function jalankanCarouselIklan(totalAds) {
+      if (totalAds <= 3) return; // Tidak perlu geser jika iklan <= 3 (di desktop)
+      let track = document.getElementById('adCarouselTrack');
+      let currentShift = 0;
+      let totalShifts = totalAds; 
+      
+      setInterval(() => {
+         currentShift++;
+         let itemWidth = track.children[0].offsetWidth + 15; // Lebar card + gap
+         // Reset jika sudah melewati batas yang wajar untuk ditampilkan
+         if (currentShift > totalAds - (window.innerWidth < 768 ? 2 : 3)) {
+            currentShift = 0;
+            track.style.transition = 'none';
+            track.style.transform = `translateX(0px)`;
+            setTimeout(() => { track.style.transition = 'transform 0.5s ease'; }, 50);
+         } else {
+            track.style.transform = `translateX(-${currentShift * itemWidth}px)`;
+         }
+      }, 3500);
+    }
+
+    function klikKotaPintas(namaKota) { document.getElementById('searchInput').value = namaKota; panggilDataServer(); window.scrollTo({ top: document.getElementById('areaKatalog').offsetTop - 20, behavior: 'smooth' }); }
+    function handleEnter(e) { if (e.key === 'Enter') panggilDataServer(); }
+    function formatUang(angka) { return "Rp " + Number(String(angka).replace(/[^0-9]/g, '') || 0).toLocaleString('id-ID'); }
+
+    function panggilDataServer() {
+      tampilkanSkeleton();
+      let keyword = document.getElementById('searchInput').value;
+
+      google.script.run.withFailureHandler(function(e) {
+          console.error("Server Error:", e);
+          document.getElementById('productGrid').innerHTML = '<p style="color:red;text-align:center;">Gagal memuat data dari server: ' + e + '</p>';
+      }).withSuccessHandler(function(resString) {
+        try { 
+          let res = JSON.parse(resString); 
+          if (res.success) { 
+            dataMaster = res.data; 
+            dataMaster = res.data; 
+            if (res.layout) layoutMaster = res.layout;
+            
+            if (layoutMaster.length > 0) {
+               document.getElementById('sectionPopuler').style.display = "none";
+            } else {
+               document.getElementById('sectionPopuler').style.display = "block";
+               renderSeksiPopuler();
+            }
+            
+            terapkanFilterDanUrutan();
+            terapkanFilterDanUrutan(); 
+          } else {
+            console.error("API Error:", res.error);
+            document.getElementById('productGrid').innerHTML = '<p style="color:red;text-align:center;">Kesalahan API: ' + res.error + '</p>';
+          }
+        } catch(e) {
+            console.error("JSON Parse Error:", e, resString);
+            document.getElementById('productGrid').innerHTML = '<p style="color:red;text-align:center;">Error parsing data.</p>';
+        }
+
+      }).cariDataWisata('Semua', keyword); 
+    }
+
+    function renderSeksiPopuler() {
+      let container = document.getElementById('popularGrid'); let section = document.getElementById('sectionPopuler');
+      let dataPopuler = [...dataMaster].sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0)).slice(0, 5);
+      if(dataPopuler.length > 0) { section.style.display = "block"; container.innerHTML = generateCardsHTML(dataPopuler, true); } else { section.style.display = "none"; }
+    }
+
+    function renderDynamicSections(layoutConfig) {
+      let container = document.getElementById('dynamicSectionsContainer');
+      if (!container) return;
+      container.innerHTML = "";
+      
+      let keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+      let tipeHarga = document.getElementById('priceSelect').value;
+
+      layoutConfig.forEach((section, index) => {
+        if (section.status !== 'Aktif') return;
+        
+        // 1. Filter awal berdasarkan rule dari admin (Tipe & Nilai)
+        let filteredData = [];
+        let tipe = section.tipe;
+        let nilai = section.nilai;
+        if (tipe === 'Kategori') {
+           filteredData = dataMaster.filter(item => String(item.kategori || '').toLowerCase() === String(nilai || '').toLowerCase());
+        } else if (tipe === 'Lokasi') {
+           filteredData = dataMaster.filter(item => String(item.lokasi || '').toLowerCase().includes(String(nilai || '').toLowerCase()));
+        } else if (tipe === 'Tag') {
+           filteredData = dataMaster.filter(item => String(item.penanda || item.tags || '').toLowerCase().includes(String(nilai || '').toLowerCase()));
+        } else if (tipe === 'Otomatis' && String(nilai || '').toLowerCase() === 'populer') {
+           filteredData = [...dataMaster];
+        } else if (tipe === 'Iklan') {
+           return;
+        }
+
+        // 2. Filter lanjutan menyesuaikan dengan Pintasan/Keyword yang sedang dipilih pengguna
+        filteredData = filteredData.filter(item => {
+           let hrg = Number(item.harga || item.hargaJual || 0);
+           let mHarga = (tipeHarga === 'under500') ? (hrg > 0 && hrg < 500000) : (tipeHarga === '500to1m') ? (hrg >= 500000 && hrg <= 1000000) : (tipeHarga === 'above1m') ? (hrg > 1000000) : true;
+           
+           let strKat = item.kategori ? String(item.kategori).toLowerCase() : "";
+           let mKat = true;
+           if(kategoriAktif !== 'Semua') {
+              if(kategoriAktif === 'Atraksi') { mKat = strKat.includes('atraksi') || strKat.includes('tiket'); }
+              else { mKat = strKat.includes(kategoriAktif.toLowerCase()); }
+           }
+           
+           let teksUtama = (item.nama + " " + (item.destinasi || item.lokasi || "") + " " + (item.penanda || "")).toLowerCase();
+           let mKeyword = (keyword === "") ? true : teksUtama.includes(keyword);
+
+           return mKat && mHarga && mKeyword;
+        });
+        
+        // 3. Urutkan berdasarkan rating
+        filteredData.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
+        
+        if (filteredData.length > 0) {
+           let sectionId = "dyn-section-" + index;
+           let html = `
+             \x3Cdiv class="container" style="margin-top: 20px;">
+               \x3Ch2 class="section-title">${section.judul || "Koleksi Khusus"}\x3C/h2>
+               \x3Cdiv class="popular-scroll" id="${sectionId}">
+                 ${generateCardsHTML(filteredData.slice(0, 8), true)}
+               \x3C/div>
+             \x3C/div>
+           `;
+           container.innerHTML += html;
+        }
+      });
+    }
+    function filterKategori(element, kategori) { document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active')); element.classList.add('active'); kategoriAktif = kategori; terapkanFilterDanUrutan(); window.scrollTo({ top: document.getElementById('areaKatalog').offsetTop - 130, behavior: 'smooth' }); }
+    function trackAndGo(event, namaUsaha, jenisTombol, linkTarget) { event.preventDefault(); event.stopPropagation(); if(linkTarget && linkTarget !== "") { window.open(linkTarget, '_blank'); } else { Swal.fire('Oops', 'Tautan belum tersedia.', 'info'); return; } google.script.run.simpanLead(namaUsaha, jenisTombol); }
+    function goToPDP(id) { 
+      // Menggunakan _top agar lolos dari keamanan Iframe Google
+      window.open(BASE_URL + "/pdp?id=" + id, '_top'); 
+    }
+
+    function terapkanFilterDanUrutan() {
+      let grid = document.getElementById('productGrid'); 
+      let tipeSort = document.getElementById('sortSelect').value; 
+      let tipeHarga = document.getElementById('priceSelect').value;
+      let keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+
+      let dataFiltered = dataMaster.filter(item => {
+        let hrg = Number(item.harga || item.hargaJual || 0); // Pastikan mengambil harga yang benar
+        let mHarga = (tipeHarga === 'under500') ? (hrg > 0 && hrg < 500000) : (tipeHarga === '500to1m') ? (hrg >= 500000 && hrg <= 1000000) : (tipeHarga === 'above1m') ? (hrg > 1000000) : true;
+        let strKat = item.kategori ? String(item.kategori).toLowerCase() : "";
+        let mKat = true;
+        if(kategoriAktif !== 'Semua') {
+           if(kategoriAktif === 'Atraksi') { mKat = strKat.includes('atraksi') || strKat.includes('tiket'); }
+           else { mKat = strKat.includes(kategoriAktif.toLowerCase()); }
+        }
+        
+        let teksUtama = (item.nama + " " + (item.destinasi || item.lokasi || "") + " " + (item.penanda || "")).toLowerCase();
+        let mKeyword = (keyword === "") ? true : teksUtama.includes(keyword);
+
+        return mKat && mHarga && mKeyword;
+      });
+
+      if (tipeSort === 'termurah') dataFiltered.sort((a, b) => Number(a.harga || a.hargaJual || 0) - Number(b.harga || b.hargaJual || 0)); 
+      else if (tipeSort === 'termahal') dataFiltered.sort((a, b) => Number(b.harga || b.hargaJual || 0) - Number(a.harga || a.hargaJual || 0)); 
+      else if (tipeSort === 'rating') dataFiltered.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
+      
+      grid.innerHTML = ""; 
+      if (dataFiltered.length === 0) { 
+          grid.innerHTML = `\x3Cdiv style="text-align:center; padding: 60px; grid-column: 1/-1; color: var(--text-gray);">\x3Ch3>Oops! Destinasi tidak ditemukan.\x3C/h3>\x3Cp>Coba gunakan kata kunci atau filter lain.\x3C/p>\x3C/div>`; 
+      } else {
+          grid.innerHTML = generateCardsHTML(dataFiltered, false);
+      }
+      
+      if (layoutMaster && layoutMaster.length > 0) {
+          renderDynamicSections(layoutMaster);
+      }
+    }
+
+    function generateCardsHTML(arrayData, isPopularList) {
+      let html = "";
+      arrayData.forEach((item, index) => {
+        let hargaAkurat = item.hargaJual || item.harga || 0;
+        let hargaFormated = formatUang(hargaAkurat); 
+        let lokasiAkurat = item.destinasi || item.lokasi || "-";
+        
+        let ratingBersih = String(item.rating).length > 5 ? "5.0" : item.rating; 
+        let wrapperClass = isPopularList ? "popular-card" : ""; 
+        let fireBadge = (isPopularList && index < 3) ? `<span class="card-badge-fire"><i class="fa-solid fa-fire"></i> Hot</span>` : "";
+        let isMitra = (String(item.kategori).toLowerCase().includes("penginapan") || String(item.kategori).toLowerCase().includes("rental")); 
+        
+        let actionButtons = "";
+        if (isMitra) { 
+            let btnMedsos = "";
+            if(item.linkIG) btnMedsos += `<button class="btn-social bg-ig" onclick="trackAndGo(event, '${item.nama}', 'Instagram', '${item.linkIG}')" title="Instagram"><i class="fa-brands fa-instagram"></i></button>`;
+            if(item.linkTikTok) btnMedsos += `\x3Cbutton class="btn-social bg-tiktok" style="background:#000; color:#fff;" onclick="trackAndGo(event, '${item.nama}', 'TikTok', '${item.linkTikTok}')" title="TikTok">\x3Ci class="fa-brands fa-tiktok">\x3C/i>\x3C/button>`;
+            if(item.linkFB) btnMedsos += `\x3Cbutton class="btn-social bg-fb" style="background:#1877F2; color:#fff;" onclick="trackAndGo(event, '${item.nama}', 'Facebook', '${item.linkFB}')" title="Facebook">\x3Ci class="fa-brands fa-facebook-f">\x3C/i>\x3C/button>`;
+            
+            actionButtons = `\x3Cbutton class="btn-wa" onclick="trackAndGo(event, '${item.nama}', 'WhatsApp', '${item.linkWA}')">\x3Ci class="fa-brands fa-whatsapp">\x3C/i> Tanya Owner\x3C/button>\x3Cdiv class="social-icons" style="display:flex; gap:8px;">${btnMedsos}\x3C/div>`; 
+        } else { 
+            actionButtons = `<button class="btn-booking" onclick="goToPDP('${item.id}')">Lihat Detail & Pesan</button>`; 
+        }
+        
+        html += `\x3Cdiv class="card ${wrapperClass}">\x3Cdiv class="card-clickable" onclick="goToPDP('${item.id}')">\x3Cdiv class="card-img-wrapper">\x3Cspan class="card-badge">${item.kategori}\x3C/span>${fireBadge}\x3Cimg src="${item.foto}" class="card-img" alt="${item.nama}" loading="lazy">\x3C/div>\x3Cdiv class="card-content">\x3Cdiv class="card-location">\x3Ci class="fa-solid fa-location-dot">\x3C/i> ${lokasiAkurat}\x3C/div>\x3Ch3 class="card-title">${item.nama}\x3C/h3>\x3Cdiv class="card-price-row">\x3Cdiv>\x3Cspan class="card-price-label">Mulai dari\x3C/span>\x3Cdiv class="card-price">${hargaFormated}\x3C/div>\x3C/div>\x3Cdiv class="card-rating">\x3Ci class="fa-solid fa-star" style="color: #F59E0B;">\x3C/i> ${ratingBersih}\x3C/div>\x3C/div>\x3C/div>\x3C/div>\x3Cdiv class="card-action">${actionButtons}\x3C/div>\x3C/div>`;
+      });
+      return html;
+    }
+
+
+    function muatKoleksiTag() {
+      google.script.run
+        .withSuccessHandler(function(resString) {
+          try {
+            let res = JSON.parse(resString);
+            if(res.success && res.data.length > 0) {
+              let tagHtml = "";
+              res.data.forEach(tag => {
+                let subHtml = tag.subtag ? `\x3Cspan style="display:block; font-size:11px; font-weight:400; margin-top:2px; opacity:0.9;">${tag.subtag}\x3C/span>` : "";
+                tagHtml += `\x3Cdiv class="city-card" onclick="klikKotaPintas('${tag.nama}')">\x3Cimg src="${tag.foto}" alt="${tag.nama}">\x3Cdiv class="city-overlay">\x3Cspan class="city-name" style="line-height:1.2;">${tag.nama}${subHtml}\x3C/span>\x3C/div>\x3C/div>`;
+              });
+              document.getElementById('tagScrollContainer').innerHTML = tagHtml;
+            }
+          } catch(e) {}
+        }).getTagsFrontend();
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,499 @@
+---
+import GASPolyfill from '../components/GASPolyfill.astro';
+---
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Produk - Kamawak</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style is:inline>
+    :root { --primary: #FF5E1F; --bg-color: #F5F7FA; --text-dark: #1C2430; --text-gray: #6B7280; --white: #FFFFFF; --shadow: 0 4px 20px rgba(0,0,0,0.08); --radius: 16px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-dark); }
+    
+    .navbar { background: var(--white); padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+    .logo { font-family: 'Poppins', sans-serif; font-size: 24px; font-weight: 700; color: var(--primary); text-decoration: none; }
+    .btn-back { background: #F3F4F6; color: var(--text-dark); padding: 10px 15px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; border: none; cursor: pointer; }
+    .btn-back:hover { background: #E5E7EB; }
+
+    .pdp-container { max-width: 1200px; margin: 30px auto; padding: 0 5%; display: grid; grid-template-columns: 1fr 380px; gap: 30px; align-items: start; }
+    
+    @media (max-width: 900px) { .pdp-container { grid-template-columns: 1fr; } }
+
+    /* BAGIAN KIRI: Info & Galeri */
+    .product-main { background: var(--white); border-radius: var(--radius); padding: 25px; box-shadow: var(--shadow); }
+    .product-img-wrapper { overflow: hidden; border-radius: 12px; margin-bottom: 20px; }
+    .product-img { width: 100%; height: 400px; object-fit: cover; transition: transform 0.5s ease; }
+    .product-img:hover { transform: scale(1.05); cursor: zoom-in; }
+    .badge-kategori { background: #FFF0EB; color: var(--primary); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; display: inline-block; margin-bottom: 15px; }
+    .product-title { font-family: 'Poppins', sans-serif; font-size: 28px; margin-bottom: 10px; color: var(--text-dark); line-height: 1.3; }
+    
+    .meta-info { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; color: var(--text-gray); font-size: 14px; padding-bottom: 20px; border-bottom: 1px solid #E5E7EB; }
+    .meta-item { display: flex; align-items: center; gap: 6px; }
+    .rating-badge { background: #FFFBEB; color: #F59E0B; padding: 4px 8px; border-radius: 6px; font-weight: 600; }
+    
+    .section-desc h3 { font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px; margin-top: 25px; }
+    .desc-text { color: var(--text-gray); line-height: 1.7; font-size: 15px; margin-bottom: 20px; }
+    .highlight-list { list-style: none; }
+    .highlight-list li { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; font-size: 15px; color: var(--text-dark); }
+    .highlight-list i { color: #10B981; margin-top: 4px; }
+
+    /* BAGIAN KANAN: Kartu Pemesanan (Booking Card) */
+    .booking-card { background: var(--white); border-radius: var(--radius); padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); position: sticky; top: 90px; border-top: 6px solid var(--primary); }
+    .price-header { margin-bottom: 20px; }
+    .price-coret { text-decoration: line-through; color: #9CA3AF; font-size: 15px; }
+    .price-main { font-family: 'Poppins'; font-size: 28px; font-weight: 700; color: var(--primary); }
+    .price-label { font-size: 13px; color: var(--text-gray); }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--text-dark); }
+    
+    /* Input Tanggal */
+    .input-date { width: 100%; padding: 12px 15px; border: 1px solid #E5E7EB; border-radius: 10px; font-family: 'Inter'; font-size: 14px; outline: none; background: #F9FAFB; color: var(--text-dark); cursor: pointer; }
+    .input-date:focus { border-color: var(--primary); background: var(--white); }
+
+    /* Package Selector */
+    .package-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .package-box { border: 2px solid #E5E7EB; border-radius: 10px; padding: 15px 10px; text-align: center; cursor: pointer; transition: 0.2s; background: var(--white); }
+    .package-box.active { border-color: var(--primary); background: #FFF0EB; }
+    .pkg-title { font-weight: 700; font-size: 14px; margin-bottom: 5px; color: var(--text-dark); }
+    .pkg-price { font-size: 12px; color: var(--primary); font-weight: 600; }
+    .package-box.active .pkg-title { color: var(--primary); }
+
+    /* Counter Pax */
+    .pax-counter { display: flex; align-items: center; justify-content: space-between; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 10px; padding: 5px; }
+    .btn-qty { background: var(--white); border: 1px solid #E5E7EB; width: 40px; height: 40px; border-radius: 8px; font-size: 18px; font-weight: 600; color: var(--text-dark); cursor: pointer; transition: 0.2s; }
+    .btn-qty:hover { background: #E5E7EB; }
+    .pax-value { font-weight: 700; font-size: 18px; width: 40px; text-align: center; }
+
+    /* Total & Checkout */
+    .total-box { margin-top: 25px; padding-top: 20px; border-top: 1px dashed #E5E7EB; display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; }
+    .total-label { font-weight: 600; font-size: 15px; color: var(--text-dark); }
+    .total-amount { font-family: 'Poppins'; font-size: 24px; font-weight: 700; color: var(--text-dark); }
+    
+    .btn-checkout { background: var(--primary); color: var(--white); border: none; padding: 16px; border-radius: 10px; font-weight: 700; font-size: 16px; width: 100%; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(255, 94, 31, 0.3); }
+    .btn-checkout:hover { background: #E04D14; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 94, 31, 0.4); }
+
+    /* Loader */
+    #loader { text-align: center; padding: 100px 20px; width: 100%; grid-column: 1 / -1; font-weight: 600; color: var(--primary); font-size: 18px; }
+    .hidden { display: none !important; }
+  </style>
+
+  <!-- MIDTRANS SNAP (SANDBOX) -->
+  <script is:inline src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-TULIS_CLIENT_KEY_ANDA_DISINI"></script>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <GASPolyfill />
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="" class="logo">Kamawak.</a>
+    <button class="btn-back" onclick="kembaliKeHome()"><i class="fa-solid fa-arrow-left"></i> Kembali</button>
+  </nav>
+
+  <div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Detail Produk...</div>
+
+  <div class="pdp-container hidden" id="pdpContent">
+    
+    <!-- KIRI: INFORMASI PRODUK -->
+    <div class="product-main">
+      <div class="product-img-wrapper"><img src="" id="uiFoto" class="product-img" alt="Gambar Produk"></div>
+      <div id="uiGallery" style="display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto;"></div>
+      <span class="badge-kategori" id="uiKategori">Kategori</span>
+      <h1 class="product-title" id="uiNama">Nama Produk</h1>
+      
+      <div class="meta-info">
+        <div class="meta-item"><i class="fa-solid fa-location-dot"></i> <span id="uiDestinasi">Lokasi</span></div>
+        <div class="meta-item"><i class="fa-regular fa-clock"></i> <span id="uiDurasi">Durasi</span></div>
+        <div class="meta-item rating-badge"><i class="fa-solid fa-star"></i> <span id="uiRating">0.0</span> (<span id="uiUlasan">0</span> Ulasan)</div>
+      </div>
+
+      <div class="section-desc">
+        <h3>Deskripsi Singkat</h3>
+        <p class="desc-text" id="uiDeskripsi">Tidak ada deskripsi tersedia.</p>
+        
+        <h3>Fasilitas & Layanan (Highlight)</h3>
+        <ul class="highlight-list" id="uiFasilitas">
+          <!-- Diisi otomatis oleh JS -->
+        </ul>
+      </div>
+    </div>
+
+    <!-- KANAN: MESIN PEMESANAN (BOOKING CARD) -->
+    <div class="booking-card">
+      <div class="price-header">
+        <div class="price-coret" id="uiHargaCoret">Rp 0</div>
+        <div class="price-main" id="uiHargaJual">Rp 0</div>
+        <div class="price-label">Per orang / Pax</div>
+      </div>
+
+      <!-- 1. Pilih Tanggal -->
+      <div class="form-group">
+        <label>Pilih Tanggal Keberangkatan <span style="color:red;">*</span></label>
+        <input type="date" id="inputTanggal" class="input-date" required>
+      </div>
+
+      <!-- 2. Pilih Paket -->
+      <div class="form-group">
+        <label>Pilih Tipe Paket</label>
+        <div class="package-grid">
+          <div class="package-box active" id="pkgReguler" onclick="pilihPaket('reguler')">
+            <div class="pkg-title">Paket Reguler</div>
+            <div class="pkg-price">Harga Standar</div>
+          </div>
+          <div class="package-box" id="pkgVIP" onclick="pilihPaket('vip')">
+            <div class="pkg-title">Paket VIP / Premium</div>
+            <div class="pkg-price">+ Rp 250.000 / pax</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Jumlah Pax -->
+      <div class="form-group">
+        <label>Jumlah Peserta (Pax)</label>
+        <div class="pax-counter">
+          <button class="btn-qty" onclick="ubahPax(-1)">-</button>
+          <div class="pax-value" id="valPax">1</div>
+          <button class="btn-qty" onclick="ubahPax(1)">+</button>
+        </div>
+      </div>
+
+      <!-- Total Harga Dinamis -->
+      <div class="total-box">
+        <div class="total-label">Total Pembayaran</div>
+        <div class="total-amount" id="uiTotalBayar">Rp 0</div>
+      </div>
+
+      <button class="btn-checkout" onclick="prosesCheckout()">Lanjutkan Pemesanan</button>
+    </div>
+
+  </div>
+
+  <script is:inline>
+    const BASE_URL = "";
+    
+    // TANGKAP ID LANGSUNG DARI SERVER (Anti macet)
+    let idProduk = "<?= idProduk ?>"; 
+    
+    // Variabel state kalkulator
+    let dataProduk = {};
+    let hargaDasar = 0;
+    let tambahanVIP = 250000;
+    let paketAktif = 'reguler'; 
+    let jumlahPax = 1;
+
+    window.onload = function() {
+      // Sinkronisasi Sesi dari URL
+      let urlUser = new URLSearchParams(window.location.search).get("u") || localStorage.getItem("kamawak_user") || "";
+      let urlRole = new URLSearchParams(window.location.search).get("r") || localStorage.getItem("kamawak_role") || "";
+      if(urlUser && urlRole && urlUser !== "") {
+         localStorage.setItem("kamawak_user", urlUser);
+         localStorage.setItem("kamawak_role", urlRole);
+         
+      }
+
+      if(!idProduk || idProduk === "") {
+        Swal.fire('Error', 'Produk tidak valid atau URL tidak lengkap.', 'error').then(() => {
+          kembaliKeHome();
+        });
+        return;
+      }
+
+      // Atur batas minimum tanggal (Hanya bisa pesan mulai hari ini)
+      let today = new Date().toISOString().split('T')[0];
+      document.getElementById("inputTanggal").setAttribute('min', today);
+
+      // Tarik data dari server
+      google.script.run
+        .withSuccessHandler(function(resString) {
+          try {
+            let res = JSON.parse(resString);
+            if(res.success) {
+              dataProduk = res.data;
+              renderHalaman(dataProduk);
+            } else {
+              Swal.fire('Error', res.error, 'error').then(() => {
+                kembaliKeHome();
+              });
+            }
+          } catch(e) { 
+            Swal.fire('Error', 'Gagal memproses data produk.', 'error').then(() => {
+              kembaliKeHome();
+            });
+          }
+        })
+        .getDetailProduk(idProduk);
+    };
+
+    function formatUang(angka) {
+      return "Rp " + Number(angka || 0).toLocaleString('id-ID');
+    }
+
+    function renderHalaman(data) {
+      // Sembunyikan loader, tampilkan konten
+      document.getElementById('loader').classList.add('hidden');
+      document.getElementById('pdpContent').classList.remove('hidden');
+
+      // Tanamkan data ke UI Kiri
+      // Proses Galeri Foto (Jika dipisahkan koma)
+      if(data.foto) {
+         let fotos = data.foto.split(',').map(f => f.trim()).filter(f => f);
+         document.getElementById('uiFoto').src = fotos[0] || 'https://via.placeholder.com/500';
+         if(fotos.length > 1) {
+            let galHtml = "";
+            fotos.forEach(imgUrl => {
+                galHtml += `\x3Cimg src="${imgUrl}" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent;" onclick="document.getElementById('uiFoto').src=this.src;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">`;
+            });
+            document.getElementById('uiGallery').innerHTML = galHtml;
+         }
+      }
+      
+      document.getElementById('uiDeskripsi').innerText = data.deskripsi || "Tidak ada deskripsi tersedia.";
+      
+      // Proses Fasilitas
+      if(data.fasilitas) {
+         let fasHtml = "";
+         data.fasilitas.split(',').forEach(fas => {
+             if(fas.trim() !== "") fasHtml += `<li><i class="fa-solid fa-circle-check"></i> ${fas.trim()}</li>`;
+         });
+         document.getElementById('uiFasilitas').innerHTML = fasHtml;
+      } else {
+         document.getElementById('uiFasilitas').innerHTML = '<li><i class="fa-solid fa-circle-info"></i> Info fasilitas belum tersedia</li>';
+      }
+
+      // Proses Varian Paket Dinamis
+      if(data.tipe !== "mitra") {
+          let gridPaket = document.querySelector('.package-grid');
+          if(data.varian && data.varian.trim() !== "") {
+              let varHtml = "";
+              let vars = data.varian.split(',');
+              vars.forEach((v, idx) => {
+                  let parts = v.split(':');
+                  let namaPaket = parts[0] ? parts[0].trim() : "Paket";
+                  let tambahHarga = parts[1] ? Number(parts[1].trim()) : 0;
+                  let tHargaStr = (tambahHarga === 0) ? "Harga Dasar" : "+ " + formatUang(tambahHarga);
+                  let clActive = (idx === 0) ? "active" : "";
+                  varHtml += `<div class="package-box ${clActive}" data-raw="${v}" onclick="pilihPaketDinamis(this, ${tambahHarga})">
+                                <div class="pkg-title">${namaPaket}</div>
+                                <div class="pkg-price">${tHargaStr}</div>
+                              </div>`;
+              });
+              gridPaket.innerHTML = varHtml;
+          }
+      }
+
+      document.getElementById('uiKategori').innerText = data.kategori;
+      document.getElementById('uiNama').innerText = data.nama;
+      document.getElementById('uiDestinasi').innerText = data.destinasi;
+      document.getElementById('uiDurasi').innerText = data.durasi;
+      document.getElementById('uiRating').innerText = data.rating;
+      document.getElementById('uiUlasan').innerText = data.ulasan;
+
+      // Setup Harga Dasar
+      hargaDasar = Number(data.hargaJual);
+      let hCoret = Number(data.hargaCoret);
+
+      document.getElementById('uiHargaJual').innerText = formatUang(hargaDasar);
+      if(hCoret > hargaDasar) {
+        document.getElementById('uiHargaCoret').innerText = formatUang(hCoret);
+      } else {
+        document.getElementById('uiHargaCoret').style.display = "none";
+      }
+
+      // --- LOGIKA ADAPTIF (BUNGLON) UNTUK PENGINAPAN/RENTAL ---
+      if(data.tipe === "mitra") {
+        // Sembunyikan pilihan Paket VIP
+        let paketGrid = document.querySelector('.package-grid');
+        if(paketGrid) {
+            paketGrid.style.display = 'none';
+            paketGrid.previousElementSibling.style.display = 'none'; // Sembunyikan labelnya
+        }
+        
+        // Ubah warna dan fungsi Tombol Checkout menjadi Tombol WhatsApp
+        let btn = document.querySelector('.btn-checkout');
+        btn.innerHTML = '<i class="fa-brands fa-whatsapp"></i> Chat Owner / Tanya Kamar';
+        btn.style.background = '#10B981'; // Warna Hijau Khas WhatsApp
+        
+        btn.onclick = function() {
+           let pax = document.getElementById('valPax').innerText;
+           let tgl = document.getElementById('inputTanggal').value;
+           
+           // Format nomor WA agar aman
+           let nomorWA = String(data.linkWA).trim();
+           if(nomorWA.startsWith('0')) { nomorWA = '62' + nomorWA.substring(1); }
+           else if(!nomorWA.startsWith('62')) { nomorWA = '62' + nomorWA; }
+           
+           let pesan = `Halo, saya melihat *${data.nama}* di Kamawak.%0A%0ARencana Booking:%0ATanggal: ${tgl || 'Belum ditentukan'}%0AJumlah Pengunjung: ${pax} Orang%0A%0AApakah masih ada kamar/unit yang tersedia?`;
+           window.open("https://wa.me/" + nomorWA + "?text=" + pesan, '_blank');
+        };
+
+        // Tambahkan tombol medsos pendamping di bawah tombol WA
+        let btnMedsosHTML = "";
+        if(data.linkIG) btnMedsosHTML += `\x3Cbutton style="background:#E1306C; color:white; border:none; border-radius:10px; padding:10px; cursor:pointer; flex:1;" onclick="window.open('${data.linkIG}', '_blank')" title="Instagram">\x3Ci class="fa-brands fa-instagram">\x3C/i>\x3C/button>`;
+        if(data.linkTikTok) btnMedsosHTML += `\x3Cbutton style="background:#000000; color:white; border:none; border-radius:10px; padding:10px; cursor:pointer; flex:1;" onclick="window.open('${data.linkTikTok}', '_blank')" title="TikTok">\x3Ci class="fa-brands fa-tiktok">\x3C/i>\x3C/button>`;
+        if(data.linkFB) btnMedsosHTML += `\x3Cbutton style="background:#1877F2; color:white; border:none; border-radius:10px; padding:10px; cursor:pointer; flex:1;" onclick="window.open('${data.linkFB}', '_blank')" title="Facebook">\x3Ci class="fa-brands fa-facebook-f">\x3C/i>\x3C/button>`;
+        
+        if (btnMedsosHTML !== "") {
+            let sosmedContainer = document.createElement("div");
+            sosmedContainer.style.display = "flex";
+            sosmedContainer.style.gap = "10px";
+            sosmedContainer.style.marginTop = "15px";
+            sosmedContainer.innerHTML = btnMedsosHTML;
+            btn.parentNode.insertBefore(sosmedContainer, btn.nextSibling);
+        }
+      }
+
+      // Hitung awal
+      hitungTotal();
+    }
+
+    // --- LOGIKA KALKULATOR CERDAS ---
+    
+    function pilihPaket(jenis) {
+      paketAktif = jenis;
+      document.getElementById('pkgReguler').classList.remove('active');
+      document.getElementById('pkgVIP').classList.remove('active');
+      
+      if(jenis === 'reguler') document.getElementById('pkgReguler').classList.add('active');
+      else document.getElementById('pkgVIP').classList.add('active');
+      
+      hitungTotal();
+    }
+
+    function ubahPax(nilai) {
+      let paxBaru = jumlahPax + nilai;
+      if(paxBaru >= 1 && paxBaru <= 50) { // Batas max 50 pax
+        jumlahPax = paxBaru;
+        document.getElementById('valPax').innerText = jumlahPax;
+        hitungTotal();
+      }
+    }
+
+    function hitungTotal() {
+      let hargaPerOrang = hargaDasar;
+      if(paketAktif === 'vip') {
+        hargaPerOrang += tambahanVIP; // Tambah 250rb jika VIP
+      }
+      
+      let grandTotal = hargaPerOrang * jumlahPax;
+      
+      // Animasi pergantian angka
+      let elTotal = document.getElementById('uiTotalBayar');
+      elTotal.style.opacity = 0.5;
+      setTimeout(() => {
+        elTotal.innerText = formatUang(grandTotal);
+        elTotal.style.opacity = 1;
+      }, 150);
+    }
+
+    // --- CHECKOUT ---
+    
+    function prosesCheckout() {
+      // 1. Validasi Status Login
+      let activeUser = localStorage.getItem("kamawak_user");
+      if(!activeUser) {
+        Swal.fire('Login Diperlukan', 'Anda harus masuk terlebih dahulu untuk membuat pesanan.', 'info').then(() => {
+          window.open("/login", "_top");
+        });
+        return;
+      }
+
+      // 2. Validasi Form
+      let tanggal = document.getElementById('inputTanggal').value;
+      if(!tanggal) {
+        Swal.fire('Perhatian', 'Mohon pilih tanggal keberangkatan wisata Anda.', 'warning').then(() => {
+          document.getElementById('inputTanggal').focus();
+        });
+        return;
+      }
+
+      let btn = document.querySelector('.btn-checkout');
+      let teksAsli = btn.innerText;
+      btn.innerText = "Memproses Pesanan...";
+      btn.disabled = true;
+
+      let payload = {
+        idProduk: dataProduk.id,
+        namaProduk: dataProduk.nama,
+        tanggal: tanggal,
+        pax: jumlahPax,
+        paket: paketAktif,
+        rawVarian: paketRawData || "",
+        totalBayar: (hargaDasar + hargaTambahanPaket) * jumlahPax,
+        user: activeUser
+      };
+      
+      // 3. Minta Token Midtrans ke Backend
+      google.script.run
+        .withFailureHandler(function(err){
+           Swal.fire('Error', "Gagal menghubungi server pembayaran: " + err, 'error');
+           btn.innerText = teksAsli; btn.disabled = false;
+        })
+        .withSuccessHandler(function(res){
+           if(res.success && res.token) {
+              // 4. Buka Midtrans Snap Popup
+              if(res.token === "MOCK_TOKEN_BELUM_ADA_API_KEY") {
+                 Swal.fire({
+                   title: '⚡ SIMULASI MIDTRANS ⚡',
+                   text: 'Sistem Payment Gateway mendeteksi API Key Midtrans Anda belum dimasukkan. Ini adalah simulasi. Apakah Anda ingin mensimulasikan Pembayaran Berhasil?',
+                   icon: 'warning',
+                   showCancelButton: true,
+                   confirmButtonColor: '#10B981',
+                   cancelButtonColor: '#EF4444',
+                   confirmButtonText: 'Ya, Berhasil',
+                   cancelButtonText: 'Batal'
+                 }).then((result) => {
+                   if (result.isConfirmed) {
+                       btn.innerText = "Mencatat Transaksi...";
+                       google.script.run.withSuccessHandler(function(trxRes){
+                           Swal.fire('Sukses', 'Pembayaran Simulasi Berhasil! Saldo diteruskan ke mitra.', 'success').then(() => {
+                               window.open(BASE_URL + "/", "_top");
+                           });
+                       }).prosesTransaksi(payload);
+                   } else {
+                       Swal.fire('Batal', 'Pembayaran dibatalkan.', 'info');
+                       btn.innerText = teksAsli; btn.disabled = false;
+                   }
+                 });
+                 return;
+              }
+              
+              window.snap.pay(res.token, {
+                onSuccess: function(result) {
+                  btn.innerText = "Mencatat Transaksi...";
+                  google.script.run.withSuccessHandler(function(trxRes){
+                     Swal.fire('Sukses', 'Pembayaran Berhasil! Pesanan Anda telah dikonfirmasi dan saldo diteruskan ke mitra.', 'success').then(() => {
+                        window.open(BASE_URL + "/", "_top");
+                     });
+                  }).prosesTransaksi(payload);
+                },
+                onPending: function(result) {
+                  Swal.fire('Menunggu', 'Menunggu pembayaran Anda. Silakan selesaikan instruksi pembayaran.', 'info');
+                  btn.innerText = teksAsli; btn.disabled = false;
+                },
+                onError: function(result) {
+                  Swal.fire('Error', 'Pembayaran gagal atau kedaluwarsa.', 'error');
+                  btn.innerText = teksAsli; btn.disabled = false;
+                },
+                onClose: function () {
+                  Swal.fire('Batal', 'Anda menutup jendela pembayaran sebelum menyelesaikan transaksi.', 'warning');
+                  btn.innerText = teksAsli; btn.disabled = false;
+                }
+              });
+           } else {
+              Swal.fire('Error', res.error || "Terjadi kesalahan sistem pembayaran.", 'error');
+              btn.innerText = teksAsli; btn.disabled = false;
+           }
+        })
+        .buatTokenMidtrans(payload);
+    }
+
+    function kembaliKeHome() {
+      window.open(BASE_URL, '_top');
+    }
+  </script>
+</body>
+</html>
