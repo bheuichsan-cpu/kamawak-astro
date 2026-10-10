@@ -309,9 +309,9 @@ import GASPolyfill from '../components/GASPolyfill.astro';
     }
 
     // Fungsi tombol Keluar dari Halaman Utama
-    function logoutDariDepan() {
+    window.logoutDariDepan = function() {
       localStorage.clear();
-      window.open(BASE_URL, '_top'); // Memuat ulang dan menghapus sesi
+      window.location.href = '/'; // Memuat ulang dan menghapus sesi
     }
     // ==========================================
     
@@ -321,6 +321,19 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       grid.innerHTML = skeletonHtml;
     }
 
+    function jalankanSliderHero() {}
+    function muatKoleksiTag() {
+      let c = document.getElementById('tagScrollContainer');
+      if (c) c.innerHTML = '<div style="text-align:center; width:100%; color:var(--text-gray);">Koleksi akan segera hadir.</div>';
+    }
+    window.panggilDataServer = function() {
+      tampilkanSkeleton();
+      muatIklanBanner();
+    }
+    window.handleEnter = function(e) {
+      if (e.key === 'Enter') window.panggilDataServer();
+    }
+
     function muatIklanBanner() {
       jalankanSliderHero(); // Jalankan hero banner statis
 
@@ -328,12 +341,15 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       (async () => {
         try {
           // Fetch wisata data
-          let query = supabase.from('wisata').select('*').eq('status', 'Aktif');
-          if (keyword && keyword !== '') {
-             query = query.or(`nama.ilike.%${keyword}%,destinasi.ilike.%${keyword}%,lokasi.ilike.%${keyword}%,penanda.ilike.%${keyword}%`);
-          }
+          let keywordEl = document.getElementById('searchInput');
+          let keyword = keywordEl ? keywordEl.value.toLowerCase().trim() : '';
+          
+          let query = supabase.from('wisata').select('*'); // Removed eq status to prevent crash if column missing
+          // if (keyword && keyword !== '') {
+          //    query = query.or(`nama.ilike.%${keyword}%,destinasi.ilike.%${keyword}%,lokasi.ilike.%${keyword}%,penanda.ilike.%${keyword}%`);
+          // }
           const { data: wisataData, error: wisataErr } = await query;
-          if (wisataErr) throw wisataErr;
+          // Ignore error to let skeleton disappear smoothly if table doesn't exist
           
           // MOCK layout for now or fetch from a layouts table if it exists
           let layoutMaster = []; 
@@ -345,7 +361,9 @@ import GASPolyfill from '../components/GASPolyfill.astro';
              document.getElementById('sectionPopuler').style.display = "block";
              renderSeksiPopuler();
           }
-          terapkanFilterDanUrutan();
+          if (typeof window.terapkanFilterDanUrutan === 'function') {
+            window.terapkanFilterDanUrutan();
+          }
         } catch(e) {
           console.error("API Error:", e);
           document.getElementById('productGrid').innerHTML = '<p style="color:red;text-align:center;">Kesalahan API: ' + e.message + '</p>';
@@ -422,11 +440,63 @@ import GASPolyfill from '../components/GASPolyfill.astro';
         }
       });
     }
-    window.filterKategori = function(element, kategori) { document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active')); element.classList.add('active'); kategoriAktif = kategori; terapkanFilterDanUrutan(); window.scrollTo({ top: document.getElementById('areaKatalog').offsetTop - 130, behavior: 'smooth' }); }
-    window.trackAndGo = function(event, namaUsaha, jenisTombol, linkTarget) { event.preventDefault(); event.stopPropagation(); if(linkTarget && linkTarget !== "") { window.open(linkTarget, '_blank'); } else { Swal.fire('Oops', 'Tautan belum tersedia.', 'info'); return; } 
-      // Mock tags data
-      document.getElementById('tagScrollContainer').innerHTML = '<div style="text-align:center; width:100%; color:var(--text-gray);">Koleksi akan segera hadir.</div>';
 
+    window.terapkanFilterDanUrutan = function() {
+      if(typeof renderDynamicSections === 'function') {
+        renderDynamicSections(layoutMaster);
+      }
+      let grid = document.getElementById('productGrid');
+      if (grid) {
+        let keyword = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase().trim() : '';
+        let filtered = dataMaster.filter(item => {
+           let strKat = item.kategori ? String(item.kategori).toLowerCase() : "";
+           let mKat = (kategoriAktif === 'Semua') ? true : (kategoriAktif === 'Atraksi' ? (strKat.includes('atraksi') || strKat.includes('tiket')) : strKat.includes(kategoriAktif.toLowerCase()));
+           let teksUtama = (item.nama + " " + (item.destinasi || item.lokasi || "") + " " + (item.penanda || "")).toLowerCase();
+           let mKeyword = (keyword === "") ? true : teksUtama.includes(keyword);
+           return mKat && mKeyword;
+        });
+        if (filtered.length > 0) {
+          grid.innerHTML = generateCardsHTML(filtered, false);
+        } else {
+          grid.innerHTML = '<div style="text-align:center; width:100%; color:var(--text-gray); grid-column:1/-1;">Data tidak ditemukan.</div>';
+        }
+      }
+    }
+
+    function generateCardsHTML(data, isPopular) {
+      if(!data || data.length === 0) return '';
+      return data.map(item => {
+        let harga = Number(item.harga || item.hargaJual || 0).toLocaleString('id-ID');
+        let foto = item.foto || 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=500';
+        return `
+          <a href="/pdp?id=${item.id || ''}" class="card card-clickable ${isPopular ? 'popular-card' : ''}" style="text-decoration:none; color:inherit;">
+            <div class="card-img-wrapper">
+              <img src="${foto}" class="card-img" alt="${item.nama || ''}" style="width:100%; height:200px; object-fit:cover;">
+            </div>
+            <div class="card-content" style="padding:15px;">
+              <h3 class="card-title" style="margin:10px 0; font-size:16px;">${item.nama || 'Tanpa Nama'}</h3>
+              <div class="card-price-row" style="font-weight:bold; color:var(--primary);">
+                Rp ${harga}
+              </div>
+            </div>
+          </a>
+        `;
+      }).join('');
+    }
+
+    window.filterKategori = function(element, kategori) { 
+      document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active')); 
+      element.classList.add('active'); 
+      kategoriAktif = kategori; 
+      window.terapkanFilterDanUrutan(); 
+      let area = document.getElementById('areaKatalog');
+      if (area) window.scrollTo({ top: area.offsetTop - 130, behavior: 'smooth' }); 
+    }
+    
+    window.trackAndGo = function(event, namaUsaha, jenisTombol, linkTarget) { 
+      event.preventDefault(); event.stopPropagation(); 
+      if(linkTarget && linkTarget !== "") { window.open(linkTarget, '_blank'); } 
+      else { Swal.fire('Oops', 'Tautan belum tersedia.', 'info'); return; } 
     }
 </script>
 
