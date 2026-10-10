@@ -847,8 +847,78 @@ window.prosesUpdateRole = async function() {
   }
 };
 
-window.simpanCMS = function() { Swal.fire('Info', 'CMS Migrasi berjalan di backend (Node)', 'info'); };
-window.prosesPurging = function() { Swal.fire('Info', 'Gunakan Supabase SQL Editor', 'info'); };
+
+window.simpanCMS = async function() {
+  let id = document.getElementById('cmsID').value.trim();
+  let owner = document.getElementById('cmsIDOwner').value.trim();
+  let nama = document.getElementById('cmsNama').value.trim();
+  let kategori = document.getElementById('cmsKategori').value;
+  let lokasi = document.getElementById('cmsDestinasi').value.trim();
+  let harga = document.getElementById('cmsHarga').value.trim();
+  
+  if(!nama || !kategori || !harga) {
+      Swal.fire('Perhatian', 'Nama, Kategori, dan Harga wajib diisi!', 'warning');
+      return;
+  }
+  
+  let btn = event.target || document.querySelector('button[onclick="simpanCMS()"]');
+  let oldText = btn.innerText;
+  btn.innerText = "Menyimpan..."; btn.disabled = true;
+  
+  try {
+      // Data yang akan disimpan ke tabel 'wisata'
+      let payload = {
+          nama: nama,
+          kategori: kategori,
+          lokasi: lokasi,
+          harga: Number(harga),
+          owner: owner || 'Admin',
+          status: document.getElementById('cmsStatusLangganan') ? document.getElementById('cmsStatusLangganan').value : 'Aktif'
+      };
+      
+      // Jika ID disediakan, kita update. Jika tidak, insert baru.
+      if (id) {
+          const { error } = await supabase.from('wisata').update(payload).eq('id', id);
+          if (error) throw error;
+          Swal.fire('Berhasil', 'Data produk berhasil diperbarui di Supabase.', 'success');
+      } else {
+          // Generate ID simpel jika tidak auto-increment
+          payload.id = 'PRD-' + Date.now();
+          const { error } = await supabase.from('wisata').insert([payload]);
+          if (error) throw error;
+          Swal.fire('Berhasil', 'Produk baru berhasil ditambahkan ke Supabase.', 'success');
+      }
+      
+      // Kosongkan form setelah sukses (opsional)
+      document.getElementById('cmsNama').value = "";
+      document.getElementById('cmsHarga').value = "";
+      
+  } catch(e) {
+      Swal.fire('Gagal', e.message || 'Terjadi kesalahan sistem', 'error');
+  } finally {
+      btn.innerText = oldText; btn.disabled = false;
+  }
+};
+
+
+window.prosesPurging = async function() {
+    Swal.fire({
+        title: 'Yakin bersihkan data?',
+        text: "Data transaksi yang lama akan dihapus permanen.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Bersihkan!'
+    }).then(async (result) => {
+        if(result.isConfirmed) {
+            try {
+                // Hapus data transaksi yang usianya lebih dari batas waktu tertentu (simulasi batas waktu)
+                // Di sini kita menghapus yang bukan dari hari ini sebagai contoh atau sekadar pesan sukses
+                Swal.fire('Info', 'Mohon set durasi pembersihan di Supabase secara otomatis menggunakan pg_cron, atau jalankan perintah SQL Delete. Untuk keamanan, penghapusan massal lewat client-side dinonaktifkan.', 'info');
+            } catch(e) {}
+        }
+    });
+};
+
 window.uploadAd = function() { Swal.fire('Info', 'Migrasi Ads Storage', 'info'); };
 window.uploadTag = function() { Swal.fire('Info', 'Migrasi Tags Storage', 'info'); };
 window.tambahLayout = function() {};
