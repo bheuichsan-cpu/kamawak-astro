@@ -157,6 +157,11 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 
     // --- Fungsi Hash Sandi ---
     async function hashPassword(password) {
+      if (!window.crypto || !window.crypto.subtle) {
+          // Fallback untuk testing di jaringan lokal tanpa HTTPS
+          console.warn("Web Crypto API tidak tersedia. Menggunakan fallback Base64.");
+          return btoa(password);
+      }
       const msgBuffer = new TextEncoder().encode(password);
       const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
