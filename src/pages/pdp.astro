@@ -172,17 +172,26 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 
   </div>
 
-  <script is:inline>
+  <script>
+    import { supabase } from '../lib/supabase.js';
+    window.kembaliKeHome = kembaliKeHome;
+    window.ubahPax = ubahPax;
+    window.pilihPaket = pilihPaket;
+    window.pilihPaketDinamis = pilihPaketDinamis;
+    window.prosesCheckout = prosesCheckout;
+
     const BASE_URL = "";
     
     // TANGKAP ID LANGSUNG DARI SERVER (Anti macet)
-    let idProduk = "<?= idProduk ?>"; 
+    let idProduk = new URLSearchParams(window.location.search).get("id") || ""; 
     
     // Variabel state kalkulator
     let dataProduk = {};
     let hargaDasar = 0;
     let tambahanVIP = 250000;
-    let paketAktif = 'reguler'; 
+    let paketAktif = 'reguler';
+    let paketRawData = '';
+    let hargaTambahanPaket = 0; 
     let jumlahPax = 1;
 
     window.onload = function() {
@@ -207,25 +216,22 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       document.getElementById("inputTanggal").setAttribute('min', today);
 
       // Tarik data dari server
-      google.script.run
-        .withSuccessHandler(function(resString) {
-          try {
-            let res = JSON.parse(resString);
-            if(res.success) {
-              dataProduk = res.data;
-              renderHalaman(dataProduk);
-            } else {
-              Swal.fire('Error', res.error, 'error').then(() => {
-                kembaliKeHome();
-              });
-            }
-          } catch(e) { 
-            Swal.fire('Error', 'Gagal memproses data produk.', 'error').then(() => {
-              kembaliKeHome();
-            });
+      
+      (async () => {
+        try {
+          const { data, error } = await supabase.from('wisata').select('*').eq('id', idProduk).single();
+          if (error) throw error;
+          if (data) {
+            dataProduk = data;
+            renderHalaman(dataProduk);
+          } else {
+            Swal.fire('Error', 'Produk tidak ditemukan.', 'error').then(() => kembaliKeHome());
           }
-        })
-        .getDetailProduk(idProduk);
+        } catch (e) {
+          Swal.fire('Error', 'Gagal memproses data produk: ' + e.message, 'error').then(() => kembaliKeHome());
+        }
+      })();
+
     };
 
     function formatUang(angka) {
@@ -352,6 +358,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 
     // --- LOGIKA KALKULATOR CERDAS ---
     
+    
     function pilihPaket(jenis) {
       paketAktif = jenis;
       document.getElementById('pkgReguler').classList.remove('active');
@@ -360,6 +367,14 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       if(jenis === 'reguler') document.getElementById('pkgReguler').classList.add('active');
       else document.getElementById('pkgVIP').classList.add('active');
       
+      hitungTotal();
+    }
+    
+    function pilihPaketDinamis(el, tambahan) {
+      document.querySelectorAll('.package-box').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      paketRawData = el.getAttribute('data-raw') || '';
+      hargaTambahanPaket = tambahan;
       hitungTotal();
     }
 
@@ -372,11 +387,13 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       }
     }
 
+    
     function hitungTotal() {
       let hargaPerOrang = hargaDasar;
       if(paketAktif === 'vip') {
         hargaPerOrang += tambahanVIP; // Tambah 250rb jika VIP
       }
+      hargaPerOrang += hargaTambahanPaket;
       
       let grandTotal = hargaPerOrang * jumlahPax;
       
@@ -427,68 +444,53 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       };
       
       // 3. Minta Token Midtrans ke Backend
-      google.script.run
-        .withFailureHandler(function(err){
-           Swal.fire('Error', "Gagal menghubungi server pembayaran: " + err, 'error');
-           btn.innerText = teksAsli; btn.disabled = false;
-        })
-        .withSuccessHandler(function(res){
-           if(res.success && res.token) {
-              // 4. Buka Midtrans Snap Popup
-              if(res.token === "MOCK_TOKEN_BELUM_ADA_API_KEY") {
-                 Swal.fire({
-                   title: '⚡ SIMULASI MIDTRANS ⚡',
-                   text: 'Sistem Payment Gateway mendeteksi API Key Midtrans Anda belum dimasukkan. Ini adalah simulasi. Apakah Anda ingin mensimulasikan Pembayaran Berhasil?',
-                   icon: 'warning',
-                   showCancelButton: true,
-                   confirmButtonColor: '#10B981',
-                   cancelButtonColor: '#EF4444',
-                   confirmButtonText: 'Ya, Berhasil',
-                   cancelButtonText: 'Batal'
-                 }).then((result) => {
-                   if (result.isConfirmed) {
-                       btn.innerText = "Mencatat Transaksi...";
-                       google.script.run.withSuccessHandler(function(trxRes){
-                           Swal.fire('Sukses', 'Pembayaran Simulasi Berhasil! Saldo diteruskan ke mitra.', 'success').then(() => {
-                               window.open(BASE_URL + "/", "_top");
-                           });
-                       }).prosesTransaksi(payload);
-                   } else {
-                       Swal.fire('Batal', 'Pembayaran dibatalkan.', 'info');
-                       btn.innerText = teksAsli; btn.disabled = false;
-                   }
-                 });
-                 return;
-              }
+      
+      // Mocking Midtrans token simulation directly
+      Swal.fire({
+        title: '⚡ SIMULASI MIDTRANS ⚡',
+        text: 'Ini adalah simulasi. Apakah Anda ingin mensimulasikan Pembayaran Berhasil?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#10B981',
+        cancelButtonColor: '#EF4444',
+        confirmButtonText: 'Ya, Berhasil',
+        cancelButtonText: 'Batal'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+            btn.innerText = "Mencatat Transaksi...";
+            
+            try {
+              // Generate id transaksi acak
+              const trxId = 'TRX-' + Date.now();
+              const insertPayload = {
+                id: trxId,
+                idProduk: payload.idProduk,
+                namaProduk: payload.namaProduk,
+                tanggal: payload.tanggal,
+                pax: payload.pax,
+                paket: payload.paket,
+                rawVarian: payload.rawVarian,
+                totalBayar: payload.totalBayar,
+                user: payload.user,
+                status: 'Berhasil'
+              };
               
-              window.snap.pay(res.token, {
-                onSuccess: function(result) {
-                  btn.innerText = "Mencatat Transaksi...";
-                  google.script.run.withSuccessHandler(function(trxRes){
-                     Swal.fire('Sukses', 'Pembayaran Berhasil! Pesanan Anda telah dikonfirmasi dan saldo diteruskan ke mitra.', 'success').then(() => {
-                        window.open(BASE_URL + "/", "_top");
-                     });
-                  }).prosesTransaksi(payload);
-                },
-                onPending: function(result) {
-                  Swal.fire('Menunggu', 'Menunggu pembayaran Anda. Silakan selesaikan instruksi pembayaran.', 'info');
-                  btn.innerText = teksAsli; btn.disabled = false;
-                },
-                onError: function(result) {
-                  Swal.fire('Error', 'Pembayaran gagal atau kedaluwarsa.', 'error');
-                  btn.innerText = teksAsli; btn.disabled = false;
-                },
-                onClose: function () {
-                  Swal.fire('Batal', 'Anda menutup jendela pembayaran sebelum menyelesaikan transaksi.', 'warning');
-                  btn.innerText = teksAsli; btn.disabled = false;
-                }
+              const { error } = await supabase.from('transaksi').insert([insertPayload]);
+              if (error) throw error;
+              
+              Swal.fire('Sukses', 'Pembayaran Simulasi Berhasil! Saldo diteruskan ke mitra.', 'success').then(() => {
+                  window.open(BASE_URL + "/", "_top");
               });
-           } else {
-              Swal.fire('Error', res.error || "Terjadi kesalahan sistem pembayaran.", 'error');
+            } catch (e) {
+              Swal.fire('Error', 'Gagal mencatat transaksi: ' + e.message, 'error');
               btn.innerText = teksAsli; btn.disabled = false;
-           }
-        })
-        .buatTokenMidtrans(payload);
+            }
+        } else {
+            Swal.fire('Batal', 'Pembayaran dibatalkan.', 'info');
+            btn.innerText = teksAsli; btn.disabled = false;
+        }
+      });
+
     }
 
     function kembaliKeHome() {
