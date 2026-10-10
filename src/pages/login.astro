@@ -50,6 +50,15 @@ import GASPolyfill from '../components/GASPolyfill.astro';
     /* ANIMASI TAMBAHAN */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .auth-card { animation: fadeIn 0.4s ease-out; }
+
+    /* RESPONSIVE DESIGN (MOBILE) */
+    @media (max-width: 768px) {
+        .split-layout { grid-template-columns: 1fr; }
+        .brand-panel { display: none; }
+        .login-panel { padding: 30px 20px; align-items: flex-start; }
+        .login-box { max-width: 100%; padding: 0; }
+        .form-row { grid-template-columns: 1fr; gap: 10px; }
+    }
   </style>
   <GASPolyfill />
 </head>

@@ -46,3 +46,20 @@ INSERT INTO public.users (nama, password, role) VALUES
 ('admin1', 'admin123', 'Admin'),
 ('bayu', 'bayu123', 'Wisatawan');
 
+
+-- 5. Tabel Buku Kas (Laba/Rugi)
+CREATE TABLE public.buku_kas (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    jenis text NOT NULL,      -- 'Pemasukan' atau 'Pengeluaran'
+    kategori text NOT NULL,   -- 'Langganan Mitra', 'Komisi OTA', dll
+    keterangan text,
+    nominal numeric NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- JANGAN LUPA: MATIKAN RLS (Row Level Security) untuk semua tabel agar admin/client bisa membaca dan menulis data
+-- ALTER TABLE public.users DISABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.wisata DISABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.leads DISABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.transaksi DISABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.buku_kas DISABLE ROW LEVEL SECURITY;

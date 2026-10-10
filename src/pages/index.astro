@@ -12,8 +12,8 @@ import GASPolyfill from '../components/GASPolyfill.astro';
   <style is:inline>
     :root { --primary: #FF5E1F; --bg-color: #F5F7FA; --text-dark: #1C2430; --text-gray: #6B7280; --white: #FFFFFF; --shadow: 0 4px 20px rgba(0,0,0,0.08); --radius: 12px; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-dark); display: flex; flex-direction: column; min-height: 100vh; position: relative; }
-    
+    html, body { overflow-x: hidden; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-dark); display: flex; flex-direction: column; min-height: 100vh; position: relative; }    
     .navbar { background: var(--white); padding: 18px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
     .logo { font-family: 'Poppins', sans-serif; font-size: 26px; font-weight: 700; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 8px; }
     .btn-login-nav { background: #FFF0EB; color: var(--primary); padding: 10px 20px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; }
@@ -30,10 +30,10 @@ import GASPolyfill from '../components/GASPolyfill.astro';
     .hero-content h1 { font-family: 'Poppins', sans-serif; font-size: 42px; margin-bottom: 15px; line-height: 1.2; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
     .hero-content p { font-size: 16px; margin-bottom: 30px; color: #E5E7EB; }
     
-    .search-box { background: var(--white); width: 100%; padding: 10px; border-radius: 50px; display: flex; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-    .search-box i { color: var(--text-gray); font-size: 20px; padding: 15px; }
-    .search-input { flex: 1; border: none; padding: 12px 10px; font-size: 16px; outline: none; background: transparent; color: var(--text-dark); }
-    .search-btn { background: var(--primary); color: var(--white); border: none; padding: 12px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; font-size: 16px; transition: 0.2s; }
+    
+    
+    
+    
     
     .section-title { font-family: 'Poppins', sans-serif; font-size: 22px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
     
@@ -130,7 +130,63 @@ import GASPolyfill from '../components/GASPolyfill.astro';
     .ad-card { flex: 0 0 calc(33.333% - 10px); min-width: calc(33.333% - 10px); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); cursor: pointer; }
     .ad-card img { width: 100%; height: 120px; object-fit: cover; display: block; }
     @media (max-width: 768px) { .ad-card { flex: 0 0 calc(50% - 7.5px); min-width: calc(50% - 7.5px); } }
-</style>
+
+    
+    .search-box { position: relative; background: var(--white); width: 100%; max-width: 100%; height: 56px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-top: 15px; box-sizing: border-box; }
+    .search-box i { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--text-gray); font-size: 18px; }
+    .search-input { position: absolute; left: 50px; right: 120px; top: 0; bottom: 0; border: none; outline: none; background: transparent; font-size: 16px; color: var(--text-dark); width: calc(100% - 170px); }
+    .search-btn { position: absolute; right: 6px; top: 6px; bottom: 6px; padding: 0 25px; border-radius: 50px; background: var(--primary); color: var(--white); border: none; font-weight: 600; cursor: pointer; font-size: 16px; white-space: nowrap; }
+
+    /* RESPONSIVE DESIGN (MOBILE) */
+
+    @media (max-width: 768px) {
+        .navbar { padding: 10px 15px; flex-wrap: nowrap; gap: 10px; justify-content: space-between; }
+        .logo { font-size: 20px; }
+        #navMenu { display: flex; gap: 5px; flex-wrap: nowrap; }
+        .btn-login-nav span { display: none; }
+        .btn-login-nav { padding: 6px 10px; font-size: 12px; border-radius: 8px; }
+        .hero-slider { height: 240px; }
+        .hero-content { padding: 0 15px; }
+        .hero-content h1 { font-size: 22px; margin-bottom: 5px; }
+        .hero-content p { display: none; }
+        
+        .search-box { height: 44px; margin-top: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .search-box i { left: 12px; font-size: 14px; }
+        .search-input { left: 35px; right: 80px; width: calc(100% - 115px); font-size: 13px; }
+        .search-btn { right: 4px; top: 4px; bottom: 4px; padding: 0 12px; font-size: 12px; border-radius: 50px; }
+        .category-tabs-top { top: 52px !important; padding: 10px 15px; gap: 8px; }
+        .tab-btn { font-size: 12px; padding: 6px 12px; border-radius: 20px; }
+        .container { padding: 0 15px; margin-top: 20px; }
+        .section-title { font-size: 16px; margin-bottom: 12px; }
+        .city-card { min-width: 100px; height: 90px; border-radius: 10px; }
+        .city-name { font-size: 12px; padding: 8px; }
+        .popular-card { min-width: 220px; max-width: 220px; }
+        
+        /* 2-Column Grid like Traveloka/Klook */
+        .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 30px; }
+        .card-img { height: 120px; }
+        .card-content { padding: 10px; }
+        .card-title { font-size: 12px; margin-bottom: 6px; line-height: 1.3; }
+        .card-location { font-size: 10px; margin-bottom: 6px; }
+        .card-price-label { font-size: 10px; }
+        .card-price { font-size: 14px; }
+        .card-rating { font-size: 11px; padding: 2px 6px; }
+        .card-action { padding: 0 10px 10px 10px; padding-top: 8px; flex-direction: column; gap: 5px; }
+        .btn-booking { padding: 6px; font-size: 11px; }
+        
+        .review-grid { grid-template-columns: 1fr; gap: 15px; }
+        .trust-grid { grid-template-columns: 1fr; gap: 15px; }
+        .trust-icon { width: 50px; height: 50px; font-size: 20px; }
+        .trust-item h4 { font-size: 16px; }
+        .footer-content { grid-template-columns: 1fr; text-align: center; gap: 20px; padding-bottom: 20px; }
+        .controls-wrapper { flex-direction: column; align-items: stretch; margin-top: 10px; padding-top: 20px; }
+        .filter-group { flex-direction: column; width: 100%; gap: 8px; }
+        .sort-select { width: 100%; padding: 8px 12px; font-size: 12px; }
+        .partner-content h2 { font-size: 20px; }
+        .btn-partner { padding: 10px 20px; font-size: 14px; }
+    }
+
+  </style>
   <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <GASPolyfill />
 </head>
@@ -142,7 +198,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
   <nav class="navbar" style="z-index: 100;">
     <a href="" class="logo"><i class="fa-solid fa-mountain-sun" style="color: var(--primary);"></i> Kamawak.</a>
     <div id="navMenu">
-      <a href="/login" class="btn-login-nav"><i class="fa-solid fa-user"></i> Masuk / Daftar</a>
+      <a href="/login" class="btn-login-nav"><i class="fa-solid fa-user"></i> <span>Masuk / Daftar</span></a>
     </div>
   </nav>
 
@@ -295,16 +351,16 @@ import GASPolyfill from '../components/GASPolyfill.astro';
           // Jika ia Mitra/Admin, beri tombol masuk Dasbor
           let target = role.toLowerCase().includes("admin") ? "admin" : "owner";
           let urlDasbor = BASE_URL + "/" + target + "?u=" + encodeURIComponent(user);
-          let btnIcon = role.toLowerCase().includes("admin") ? '<i class="fa-solid fa-gauge-high"></i> Dasbor Admin' : '<i class="fa-solid fa-plane"></i> Dasbor Mitra';
+          let btnIcon = role.toLowerCase().includes("admin") ? '<i class="fa-solid fa-gauge-high"></i> <span>Dasbor Admin</span>' : '<i class="fa-solid fa-plane"></i> <span>Dasbor Mitra</span>';
           htmlSapaanAtauDasbor = `\x3Cbutton onclick="window.open('${urlDasbor}', '_top')" class="btn-login-nav" style="background: var(--text-dark); color: white; border:none; cursor:pointer; margin-right: 8px;">${btnIcon}\x3C/button>`;
         } else {
           // Jika ia Wisatawan, beri tombol ke Profil
           let urlProfil = BASE_URL + "/profil?u=" + encodeURIComponent(user) + "&r=" + encodeURIComponent(role);
-          htmlSapaanAtauDasbor = `\x3Cbutton onclick="window.open('${urlProfil}', '_top')" class="btn-login-nav" style="background: var(--primary); color: white; border:none; cursor:pointer; margin-right: 8px;">\x3Ci class="fa-solid fa-user-circle">\x3C/i> Profil & Pesanan\x3C/button>`;
+          htmlSapaanAtauDasbor = `\x3Cbutton onclick="window.open('${urlProfil}', '_top')" class="btn-login-nav" style="background: var(--primary); color: white; border:none; cursor:pointer; margin-right: 8px;">\x3Ci class="fa-solid fa-user-circle">\x3C/i> <span>Profil & Pesanan</span>\x3C/button>`;
         }
         
         // Ganti isi Navbar menjadi Sapaan/Dasbor + Tombol Keluar Merah
-        nav.innerHTML = htmlSapaanAtauDasbor + `\x3Cbutton onclick="logoutDariDepan()" class="btn-login-nav" style="background: #FEE2E2; color: #DC2626; border: none; cursor: pointer; box-shadow: none;">\x3Ci class="fa-solid fa-right-from-bracket">\x3C/i> Keluar\x3C/button>`;
+        nav.innerHTML = htmlSapaanAtauDasbor + `\x3Cbutton onclick="logoutDariDepan()" class="btn-login-nav" style="background: #FEE2E2; color: #DC2626; border: none; cursor: pointer; box-shadow: none;">\x3Ci class="fa-solid fa-right-from-bracket">\x3C/i> <span>Keluar</span>\x3C/button>`;
       }
     }
 
@@ -469,14 +525,14 @@ import GASPolyfill from '../components/GASPolyfill.astro';
         let harga = Number(item.harga || item.hargaJual || 0).toLocaleString('id-ID');
         let foto = item.foto || 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=500';
         return `
-          <a href="/pdp?id=${item.id || ''}" class="card card-clickable ${isPopular ? 'popular-card' : ''}" style="text-decoration:none; color:inherit;">
+          <a href="/pdp?id=${item.id || ''}" class="card card-clickable ${isPopular ? 'popular-card' : ''}">
             <div class="card-img-wrapper">
-              <img src="${foto}" class="card-img" alt="${item.nama || ''}" style="width:100%; height:200px; object-fit:cover;">
+              <img src="${foto}" class="card-img" alt="${item.nama || ''}">
             </div>
-            <div class="card-content" style="padding:15px;">
-              <h3 class="card-title" style="margin:10px 0; font-size:16px;">${item.nama || 'Tanpa Nama'}</h3>
-              <div class="card-price-row" style="font-weight:bold; color:var(--primary);">
-                Rp ${harga}
+            <div class="card-content">
+              <h3 class="card-title">${item.nama || 'Tanpa Nama'}</h3>
+              <div class="card-price-row">
+                <span class="card-price">Rp ${harga}</span>
               </div>
             </div>
           </a>

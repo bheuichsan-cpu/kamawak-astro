@@ -36,6 +36,19 @@ import GASPolyfill from '../components/GASPolyfill.astro';
     td { padding: 12px; border-bottom: 1px solid #E5E7EB; color: var(--text-gray); }
     .badge-aktif { background: #D1FAE5; color: #065F46; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
     .badge-nonaktif { background: #FEE2E2; color: #991B1B; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+  
+    /* RESPONSIVE DESIGN (MOBILE) */
+    @media (max-width: 768px) {
+        .navbar { padding: 12px 15px; flex-direction: column; gap: 10px; }
+        .stats-grid { grid-template-columns: 1fr; gap: 15px; }
+        .container { padding: 0 15px; margin: 15px auto; }
+        .admin-header h1 { font-size: 20px; }
+        .card-section { padding: 15px; }
+        table { display: block; overflow-x: auto; white-space: nowrap; }
+        .form-group { width: 100%; min-width: 100% !important; }
+        div[style*="flex-wrap: wrap"] { flex-direction: column; }
+    }
+
   </style>
   <script is:inline>
     window.onerror = function(msg, src, ln, col, err) {
@@ -705,24 +718,32 @@ window.onload = function() {
   muatDaftarMitra();
   muatTransaksi();
   muatDaftarPengguna();
+  muatKas();
 };
 
 async function muatStatistikGlobal() {
   try {
-    const { data: mitraData } = await supabase.from('users').select('*').eq('role', 'Owner');
-    const { data: leadsData } = await supabase.from('leads').select('*');
-    const { data: trxData } = await supabase.from('transaksi').select('*').eq('status', 'Berhasil');
+    const { data: mitraData, error: errMitra } = await supabase.from('users').select('*').eq('role', 'Owner');
+    const { data: leadsData, error: errLeads } = await supabase.from('leads').select('*');
+    const { data: trxData, error: errTrx } = await supabase.from('transaksi').select('*').eq('status', 'Berhasil');
+
+    if (errMitra) console.error("Error Mitra:", errMitra);
+    if (errLeads) console.error("Error Leads:", errLeads);
+    if (errTrx) console.error("Error Trx:", errTrx);
 
     document.getElementById('valMitra').innerText = mitraData ? mitraData.length : 0;
     document.getElementById('valLeads').innerText = leadsData ? leadsData.length : 0;
     
     let totalPendapatan = 0;
     if (trxData) {
-        trxData.forEach(trx => { totalPendapatan += Number(trx.totalBayar || 0); });
+        trxData.forEach(trx => { totalPendapatan += Number(trx.totalBayar || trx.nominal || 0); });
     }
     document.getElementById('valPendapatan').innerText = "Rp " + totalPendapatan.toLocaleString('id-ID');
   } catch (e) {
-    console.error(e);
+    console.error("Global stats error:", e);
+    document.getElementById('valMitra').innerHTML = '<span style="color:red; font-size:16px;">Error DB</span>';
+    document.getElementById('valLeads').innerHTML = '<span style="color:red; font-size:16px;">Error DB</span>';
+    document.getElementById('valPendapatan').innerHTML = '<span style="color:red; font-size:16px;">Error DB</span>';
   }
 }
 
@@ -925,8 +946,132 @@ window.uploadTag = function() { Swal.fire('Info', 'Migrasi Tags Storage', 'info'
 window.tambahLayout = function() {};
 window.simpanSemuaLayout = function() { Swal.fire('Info', 'Migrasi Layout DB', 'info'); };
 window.simpanPengaturan = function() { Swal.fire('Info', 'Pengaturan disimpan', 'success'); };
-window.simpanBukuKas = function() {};
-window.ubahOpsiKas = function() {};
+window.ubahOpsiKas = function() {
+    let jenis = document.getElementById('kasJenis').value;
+    let kat = document.getElementById('kasKategori');
+    if (jenis === 'Pemasukan') {
+        kat.innerHTML = `<option value="Langganan Mitra">Langganan Mitra</option>
+                         <option value="Komisi OTA">Komisi OTA / Platform</option>
+                         <option value="Pemasukan Lainnya">Pemasukan Lainnya</option>`;
+    } else {
+        kat.innerHTML = `<option value="Operasional">Operasional / Server</option>
+                         <option value="Pemasaran">Pemasaran (Marketing)</option>
+                         <option value="Gaji">Gaji / Fee</option>
+                         <option value="Pengeluaran Lainnya">Pengeluaran Lainnya</option>`;
+    }
+};
+
+window.simpanBukuKas = async function() {
+    let jenis = document.getElementById('kasJenis').value;
+    let kategori = document.getElementById('kasKategori').value;
+    let keterangan = document.getElementById('kasKet').value;
+    let nominal = document.getElementById('kasNominal').value;
+    if (!keterangan || !nominal) {
+        Swal.fire('Error', 'Lengkapi keterangan dan nominal', 'warning');
+        return;
+    }
+
+    let btn = window.event ? window.event.target : document.querySelector('button[onclick="simpanBukuKas()"]');
+    let old = btn.innerText; btn.innerText = "Menyimpan..."; btn.disabled = true;
+
+    try {
+        const { error } = await supabase.from('buku_kas').insert([{
+            jenis: jenis, kategori: kategori, keterangan: keterangan, nominal: Number(nominal)
+        }]);
+        if (error) throw error;
+        Swal.fire('Sukses', 'Transaksi kas berhasil dicatat', 'success');
+        document.getElementById('kasKet').value = "";
+        document.getElementById('kasNominal').value = "";
+        muatKas();
+    } catch (e) {
+        Swal.fire('Gagal', e.message || JSON.stringify(e), 'error');
+    } finally {
+        if(btn) { btn.innerText = old; btn.disabled = false; }
+    }
+};
+
+window.muatKas = async function() {
+    try {
+        const { data, error } = await supabase.from('buku_kas').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        
+        let masuk = 0;
+        let keluar = 0;
+        let pLangganan = 0, pOTA = 0, pLain = 0;
+        let bOpr = 0, bMar = 0, bGaji = 0, bLain = 0;
+        
+        let html = "";
+        
+        if (!data || data.length === 0) {
+            document.getElementById('tableKasBody').innerHTML = '<tr><td colspan="6" style="text-align: center;">Belum ada riwayat kas.</td></tr>';
+        } else {
+            data.forEach(item => {
+                let nom = Number(item.nominal || 0);
+                if (item.jenis === 'Pemasukan') {
+                    masuk += nom;
+                    if (item.kategori === 'Langganan Mitra') pLangganan += nom;
+                    else if (item.kategori === 'Komisi OTA' || item.kategori === 'Komisi OTA / Platform') pOTA += nom;
+                    else pLain += nom;
+                } else {
+                    keluar += nom;
+                    if (item.kategori === 'Operasional' || item.kategori === 'Operasional / Server') bOpr += nom;
+                    else if (item.kategori === 'Pemasaran' || item.kategori === 'Pemasaran (Marketing)') bMar += nom;
+                    else if (item.kategori === 'Gaji' || item.kategori === 'Gaji / Fee') bGaji += nom;
+                    else bLain += nom;
+                }
+                
+                let tgl = item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-';
+                let warna = item.jenis === 'Pemasukan' ? '#10B981' : '#EF4444';
+                let tanda = item.jenis === 'Pemasukan' ? '+' : '-';
+                html += `<tr>
+                  <td>${tgl}</td>
+                  <td style="color:${warna}; font-weight:600;">${item.jenis}</td>
+                  <td>${item.kategori}</td>
+                  <td>${item.keterangan}</td>
+                  <td style="color:${warna}; font-weight:600;">${tanda} Rp ${nom.toLocaleString('id-ID')}</td>
+                  <td><button onclick="hapusKas('${item.id}')" style="background:#EF4444; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>`;
+            });
+            document.getElementById('tableKasBody').innerHTML = html;
+        }
+        
+        document.getElementById('valKasMasuk').innerHTML = `Rp ${masuk.toLocaleString('id-ID')}`;
+        document.getElementById('valKasKeluar').innerHTML = `Rp ${keluar.toLocaleString('id-ID')}`;
+        let saldo = masuk - keluar;
+        document.getElementById('valKasSaldo').innerHTML = `Rp ${saldo.toLocaleString('id-ID')}`;
+        
+        document.getElementById('lrLangganan').innerText = `Rp ${pLangganan.toLocaleString('id-ID')}`;
+        document.getElementById('lrOTA').innerText = `Rp ${pOTA.toLocaleString('id-ID')}`;
+        document.getElementById('lrLainP').innerText = `Rp ${pLain.toLocaleString('id-ID')}`;
+        document.getElementById('lrTotalP').innerText = `Rp ${masuk.toLocaleString('id-ID')}`;
+        
+        document.getElementById('lrOpr').innerText = `Rp ${bOpr.toLocaleString('id-ID')}`;
+        document.getElementById('lrMar').innerText = `Rp ${bMar.toLocaleString('id-ID')}`;
+        document.getElementById('lrGaji').innerText = `Rp ${bGaji.toLocaleString('id-ID')}`;
+        document.getElementById('lrLainB').innerText = `Rp ${bLain.toLocaleString('id-ID')}`;
+        document.getElementById('lrTotalB').innerText = `Rp ${keluar.toLocaleString('id-ID')}`;
+        
+        document.getElementById('lrNet').innerText = `Rp ${saldo.toLocaleString('id-ID')}`;
+        
+    } catch (e) {
+        console.error('Kas err:', e);
+        document.getElementById('valKasMasuk').innerHTML = 'Err';
+        document.getElementById('valKasKeluar').innerHTML = 'Err';
+        document.getElementById('valKasSaldo').innerHTML = 'Err';
+        document.getElementById('tableKasBody').innerHTML = `<tr><td colspan="6" style="color:red;text-align:center;">Gagal memuat data kas: ${e.message}</td></tr>`;
+    }
+};
+
+window.hapusKas = async function(id) {
+    if(!confirm('Hapus transaksi kas ini?')) return;
+    try {
+        const { error } = await supabase.from('buku_kas').delete().eq('id', id);
+        if (error) throw error;
+        muatKas();
+    } catch(e) {
+        alert('Gagal hapus: ' + e.message);
+    }
+};
 
 </script>
 </div>
