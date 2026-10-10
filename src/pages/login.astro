@@ -198,7 +198,7 @@ import { supabase } from '../lib/supabase.js';
       const { data, error } = await supabase
         .from('users')
         .select('*')
-        .eq('nama', identitas)
+        .or(`nama.eq."${identitas}",email.eq."${identitas}",username.eq."${identitas}",wa.eq."${identitas}"`)
         .eq('password', pass)
         .single();
         
