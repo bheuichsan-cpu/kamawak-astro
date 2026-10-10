@@ -252,6 +252,8 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 
 
   <script>
+    import { supabase } from '../lib/supabase.js';
+
     const BASE_URL = "";
     let dataMaster = []; let layoutMaster = []; 
     let kategoriAktif = 'Semua';
@@ -322,112 +324,34 @@ import GASPolyfill from '../components/GASPolyfill.astro';
     function muatIklanBanner() {
       jalankanSliderHero(); // Jalankan hero banner statis
 
-      google.script.run
-        .withSuccessHandler(function(resString) {
-          try {
-            let res = JSON.parse(resString);
-            if(res.success && res.data.length > 0) {
-              let track = document.getElementById('adCarouselTrack');
-              let container = document.getElementById('adCarouselContainer');
-              
-              // Filter out default promo if real data exists, max 6 ads
-              let realAds = res.data.filter(ad => ad.nama !== 'Promo Default').slice(0, 6);
-              let adsToShow = realAds.length > 0 ? realAds : res.data;
-              
-              let sliderHtml = "";
-              adsToShow.forEach((ad) => {
-                let link = ad.id_iklan || "";
-                google.script.run.catatMetrikIklan(ad.baris, 'impresi');
-                sliderHtml += `<div class="ad-card" onclick="klikIklanServer(${ad.baris}, '${link}')"><img src="${ad.foto}" alt="${ad.nama}"></div>`;
-              });
-              
-              if(sliderHtml !== "") {
-                  container.style.display = "block";
-                  track.innerHTML = sliderHtml;
-                  jalankanCarouselIklan(adsToShow.length);
-              }
-            }
-          } catch(e) {}
-        }).getAdsData();
-    }
-    
-    window.klikIklanServer = function(baris, linkTujuan) {
-      google.script.run.catatMetrikIklan(baris, 'klik');
-      if (linkTujuan && (linkTujuan.startsWith('http') || linkTujuan.startsWith('www'))) {
-          if(!linkTujuan.startsWith('http')) linkTujuan = 'https://' + linkTujuan;
-          window.open(linkTujuan, '_blank');
-      } else if (linkTujuan) {
-          // Fallback if they entered a store name
-          document.getElementById('searchInput').value = linkTujuan; 
-          panggilDataServer();
-          window.scrollTo({ top: document.getElementById('areaKatalog').offsetTop - 20, behavior: 'smooth' });
-      }
-    }
-
-    function jalankanSliderHero() {
-      let currentSlide = 0; const slides = document.querySelectorAll('#heroSlider .slide');
-      if(slides.length > 1) { setInterval(() => { slides[currentSlide].classList.remove('active'); currentSlide = (currentSlide + 1) % slides.length; slides[currentSlide].classList.add('active'); }, 4000); }
-    }
-
-    function jalankanCarouselIklan(totalAds) {
-      if (totalAds <= 3) return; // Tidak perlu geser jika iklan <= 3 (di desktop)
-      let track = document.getElementById('adCarouselTrack');
-      let currentShift = 0;
-      let totalShifts = totalAds; 
       
-      setInterval(() => {
-         currentShift++;
-         let itemWidth = track.children[0].offsetWidth + 15; // Lebar card + gap
-         // Reset jika sudah melewati batas yang wajar untuk ditampilkan
-         if (currentShift > totalAds - (window.innerWidth < 768 ? 2 : 3)) {
-            currentShift = 0;
-            track.style.transition = 'none';
-            track.style.transform = `translateX(0px)`;
-            setTimeout(() => { track.style.transition = 'transform 0.5s ease'; }, 50);
-         } else {
-            track.style.transform = `translateX(-${currentShift * itemWidth}px)`;
-         }
-      }, 3500);
-    }
-
-    window.klikKotaPintas = function(namaKota) { document.getElementById('searchInput').value = namaKota; panggilDataServer(); window.scrollTo({ top: document.getElementById('areaKatalog').offsetTop - 20, behavior: 'smooth' }); }
-    function handleEnter(e) { if (e.key === 'Enter') panggilDataServer(); }
-    function formatUang(angka) { return "Rp " + Number(String(angka).replace(/[^0-9]/g, '') || 0).toLocaleString('id-ID'); }
-
-    function panggilDataServer() {
-      tampilkanSkeleton();
-      let keyword = document.getElementById('searchInput').value;
-
-      google.script.run.withFailureHandler(function(e) {
-          console.error("Server Error:", e);
-          document.getElementById('productGrid').innerHTML = '<p style="color:red;text-align:center;">Gagal memuat data dari server: ' + e + '</p>';
-      }).withSuccessHandler(function(resString) {
-        try { 
-          let res = JSON.parse(resString); 
-          if (res.success) { 
-            dataMaster = res.data; 
-            dataMaster = res.data; 
-            if (res.layout) layoutMaster = res.layout;
-            
-            if (layoutMaster.length > 0) {
-               document.getElementById('sectionPopuler').style.display = "none";
-            } else {
-               document.getElementById('sectionPopuler').style.display = "block";
-               renderSeksiPopuler();
-            }
-            
-            terapkanFilterDanUrutan();
-            terapkanFilterDanUrutan(); 
-          } else {
-            console.error("API Error:", res.error);
-            document.getElementById('productGrid').innerHTML = '<p style="color:red;text-align:center;">Kesalahan API: ' + res.error + '</p>';
+      (async () => {
+        try {
+          // Fetch wisata data
+          let query = supabase.from('wisata').select('*').eq('status', 'Aktif');
+          if (keyword && keyword !== '') {
+             query = query.or(`nama.ilike.%${keyword}%,destinasi.ilike.%${keyword}%,lokasi.ilike.%${keyword}%,penanda.ilike.%${keyword}%`);
           }
+          const { data: wisataData, error: wisataErr } = await query;
+          if (wisataErr) throw wisataErr;
+          
+          // MOCK layout for now or fetch from a layouts table if it exists
+          let layoutMaster = []; 
+          
+          dataMaster = wisataData || [];
+          if (layoutMaster.length > 0) {
+             document.getElementById('sectionPopuler').style.display = "none";
+          } else {
+             document.getElementById('sectionPopuler').style.display = "block";
+             renderSeksiPopuler();
+          }
+          terapkanFilterDanUrutan();
         } catch(e) {
-            console.error("JSON Parse Error:", e, resString);
-            document.getElementById('productGrid').innerHTML = '<p style="color:red;text-align:center;">Error parsing data.</p>';
+          console.error("API Error:", e);
+          document.getElementById('productGrid').innerHTML = '<p style="color:red;text-align:center;">Kesalahan API: ' + e.message + '</p>';
         }
-
-      }).cariDataWisata('Semua', keyword); 
+      })();
+ 
     }
 
     function renderSeksiPopuler() {
@@ -499,95 +423,10 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       });
     }
     window.filterKategori = function(element, kategori) { document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active')); element.classList.add('active'); kategoriAktif = kategori; terapkanFilterDanUrutan(); window.scrollTo({ top: document.getElementById('areaKatalog').offsetTop - 130, behavior: 'smooth' }); }
-    window.trackAndGo = function(event, namaUsaha, jenisTombol, linkTarget) { event.preventDefault(); event.stopPropagation(); if(linkTarget && linkTarget !== "") { window.open(linkTarget, '_blank'); } else { Swal.fire('Oops', 'Tautan belum tersedia.', 'info'); return; } google.script.run.simpanLead(namaUsaha, jenisTombol); }
-    window.goToPDP = function(id) { 
-      // Menggunakan _top agar lolos dari keamanan Iframe Google
-      window.open(BASE_URL + "/pdp?id=" + id, '_top'); 
-    }
+    window.trackAndGo = function(event, namaUsaha, jenisTombol, linkTarget) { event.preventDefault(); event.stopPropagation(); if(linkTarget && linkTarget !== "") { window.open(linkTarget, '_blank'); } else { Swal.fire('Oops', 'Tautan belum tersedia.', 'info'); return; } 
+      // Mock tags data
+      document.getElementById('tagScrollContainer').innerHTML = '<div style="text-align:center; width:100%; color:var(--text-gray);">Koleksi akan segera hadir.</div>';
 
-    function terapkanFilterDanUrutan() {
-      let grid = document.getElementById('productGrid'); 
-      let tipeSort = document.getElementById('sortSelect').value; 
-      let tipeHarga = document.getElementById('priceSelect').value;
-      let keyword = document.getElementById('searchInput').value.toLowerCase().trim();
-
-      let dataFiltered = dataMaster.filter(item => {
-        let hrg = Number(item.harga || item.hargaJual || 0); // Pastikan mengambil harga yang benar
-        let mHarga = (tipeHarga === 'under500') ? (hrg > 0 && hrg < 500000) : (tipeHarga === '500to1m') ? (hrg >= 500000 && hrg <= 1000000) : (tipeHarga === 'above1m') ? (hrg > 1000000) : true;
-        let strKat = item.kategori ? String(item.kategori).toLowerCase() : "";
-        let mKat = true;
-        if(kategoriAktif !== 'Semua') {
-           if(kategoriAktif === 'Atraksi') { mKat = strKat.includes('atraksi') || strKat.includes('tiket'); }
-           else { mKat = strKat.includes(kategoriAktif.toLowerCase()); }
-        }
-        
-        let teksUtama = (item.nama + " " + (item.destinasi || item.lokasi || "") + " " + (item.penanda || "")).toLowerCase();
-        let mKeyword = (keyword === "") ? true : teksUtama.includes(keyword);
-
-        return mKat && mHarga && mKeyword;
-      });
-
-      if (tipeSort === 'termurah') dataFiltered.sort((a, b) => Number(a.harga || a.hargaJual || 0) - Number(b.harga || b.hargaJual || 0)); 
-      else if (tipeSort === 'termahal') dataFiltered.sort((a, b) => Number(b.harga || b.hargaJual || 0) - Number(a.harga || a.hargaJual || 0)); 
-      else if (tipeSort === 'rating') dataFiltered.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
-      
-      grid.innerHTML = ""; 
-      if (dataFiltered.length === 0) { 
-          grid.innerHTML = `\x3Cdiv style="text-align:center; padding: 60px; grid-column: 1/-1; color: var(--text-gray);">\x3Ch3>Oops! Destinasi tidak ditemukan.\x3C/h3>\x3Cp>Coba gunakan kata kunci atau filter lain.\x3C/p>\x3C/div>`; 
-      } else {
-          grid.innerHTML = generateCardsHTML(dataFiltered, false);
-      }
-      
-      if (layoutMaster && layoutMaster.length > 0) {
-          renderDynamicSections(layoutMaster);
-      }
-    }
-
-    function generateCardsHTML(arrayData, isPopularList) {
-      let html = "";
-      arrayData.forEach((item, index) => {
-        let hargaAkurat = item.hargaJual || item.harga || 0;
-        let hargaFormated = formatUang(hargaAkurat); 
-        let lokasiAkurat = item.destinasi || item.lokasi || "-";
-        
-        let ratingBersih = String(item.rating).length > 5 ? "5.0" : item.rating; 
-        let wrapperClass = isPopularList ? "popular-card" : ""; 
-        let fireBadge = (isPopularList && index < 3) ? `<span class="card-badge-fire"><i class="fa-solid fa-fire"></i> Hot</span>` : "";
-        let isMitra = (String(item.kategori).toLowerCase().includes("penginapan") || String(item.kategori).toLowerCase().includes("rental")); 
-        
-        let actionButtons = "";
-        if (isMitra) { 
-            let btnMedsos = "";
-            if(item.linkIG) btnMedsos += `<button class="btn-social bg-ig" onclick="trackAndGo(event, '${item.nama}', 'Instagram', '${item.linkIG}')" title="Instagram"><i class="fa-brands fa-instagram"></i></button>`;
-            if(item.linkTikTok) btnMedsos += `\x3Cbutton class="btn-social bg-tiktok" style="background:#000; color:#fff;" onclick="trackAndGo(event, '${item.nama}', 'TikTok', '${item.linkTikTok}')" title="TikTok">\x3Ci class="fa-brands fa-tiktok">\x3C/i>\x3C/button>`;
-            if(item.linkFB) btnMedsos += `\x3Cbutton class="btn-social bg-fb" style="background:#1877F2; color:#fff;" onclick="trackAndGo(event, '${item.nama}', 'Facebook', '${item.linkFB}')" title="Facebook">\x3Ci class="fa-brands fa-facebook-f">\x3C/i>\x3C/button>`;
-            
-            actionButtons = `\x3Cbutton class="btn-wa" onclick="trackAndGo(event, '${item.nama}', 'WhatsApp', '${item.linkWA}')">\x3Ci class="fa-brands fa-whatsapp">\x3C/i> Tanya Owner\x3C/button>\x3Cdiv class="social-icons" style="display:flex; gap:8px;">${btnMedsos}\x3C/div>`; 
-        } else { 
-            actionButtons = `<button class="btn-booking" onclick="goToPDP('${item.id}')">Lihat Detail & Pesan</button>`; 
-        }
-        
-        html += `\x3Cdiv class="card ${wrapperClass}">\x3Cdiv class="card-clickable" onclick="goToPDP('${item.id}')">\x3Cdiv class="card-img-wrapper">\x3Cspan class="card-badge">${item.kategori}\x3C/span>${fireBadge}\x3Cimg src="${item.foto}" class="card-img" alt="${item.nama}" loading="lazy">\x3C/div>\x3Cdiv class="card-content">\x3Cdiv class="card-location">\x3Ci class="fa-solid fa-location-dot">\x3C/i> ${lokasiAkurat}\x3C/div>\x3Ch3 class="card-title">${item.nama}\x3C/h3>\x3Cdiv class="card-price-row">\x3Cdiv>\x3Cspan class="card-price-label">Mulai dari\x3C/span>\x3Cdiv class="card-price">${hargaFormated}\x3C/div>\x3C/div>\x3Cdiv class="card-rating">\x3Ci class="fa-solid fa-star" style="color: #F59E0B;">\x3C/i> ${ratingBersih}\x3C/div>\x3C/div>\x3C/div>\x3C/div>\x3Cdiv class="card-action">${actionButtons}\x3C/div>\x3C/div>`;
-      });
-      return html;
-    }
-
-
-    function muatKoleksiTag() {
-      google.script.run
-        .withSuccessHandler(function(resString) {
-          try {
-            let res = JSON.parse(resString);
-            if(res.success && res.data.length > 0) {
-              let tagHtml = "";
-              res.data.forEach(tag => {
-                let subHtml = tag.subtag ? `\x3Cspan style="display:block; font-size:11px; font-weight:400; margin-top:2px; opacity:0.9;">${tag.subtag}\x3C/span>` : "";
-                tagHtml += `\x3Cdiv class="city-card" onclick="klikKotaPintas('${tag.nama}')">\x3Cimg src="${tag.foto}" alt="${tag.nama}">\x3Cdiv class="city-overlay">\x3Cspan class="city-name" style="line-height:1.2;">${tag.nama}${subHtml}\x3C/span>\x3C/div>\x3C/div>`;
-              });
-              document.getElementById('tagScrollContainer').innerHTML = tagHtml;
-            }
-          } catch(e) {}
-        }).getTagsFrontend();
     }
 </script>
 
