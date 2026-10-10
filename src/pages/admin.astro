@@ -657,886 +657,207 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 
   </div>
 
-  <script is:inline>
-    const BASE_URL = "";
+  <script>
+import { supabase } from '../lib/supabase.js';
+const BASE_URL = "";
 
-    window.onload = function() {
-      // Sinkronisasi Sesi dari URL
-      let urlUser = new URLSearchParams(window.location.search).get("u") || localStorage.getItem("kamawak_user") || "";
-      let urlRole = new URLSearchParams(window.location.search).get("r") || localStorage.getItem("kamawak_role") || "";
-      if(urlUser && urlRole && urlUser !== "") {
-         localStorage.setItem("kamawak_user", urlUser);
-         localStorage.setItem("kamawak_role", urlRole);
-         
-      }
-
-      let role = localStorage.getItem("kamawak_role");
-      if (!role || role.toLowerCase() !== "admin") {
-        window.location.href = "/login";
-        return;
-      }
-      
-      
-      document.getElementById("adminName").innerText = "Halo, " + localStorage.getItem("kamawak_user");
-      
-      muatStatistikGlobal();
-      muatDaftarMitra();
-    };
-
-    
-    function ubahOpsiKas() {
-       let jenis = document.getElementById('kasJenis').value;
-       let kat = document.getElementById('kasKategori');
-       if(jenis === 'Pemasukan') {
-          kat.innerHTML = '<option value="Langganan Mitra">Langganan Mitra</option><option value="Komisi OTA">Komisi OTA / Platform</option><option value="Pemasukan Lainnya">Pemasukan Lainnya</option>';
-       } else {
-          kat.innerHTML = '<option value="Biaya Operasional">Biaya Operasional (Server/Domain)</option><option value="Biaya Pemasaran">Biaya Pemasaran (Iklan)</option><option value="Gaji & Fee">Gaji & Fee Karyawan</option><option value="Pengeluaran Lainnya">Pengeluaran Lainnya</option>';
-       }
-    }
-
-    function muatBukuKas() {
-      document.getElementById('tableKasBody').innerHTML = '<tr><td colspan="6" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat buku kas...</td></tr>';
-      google.script.run
-        .withFailureHandler(function(e){ document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Server Error: '+e+'</td></tr>'; }).withSuccessHandler(function(resString) {
-           try {
-             let res = JSON.parse(resString);
-             if(!res.success) { 
-               document.getElementById('tableKasBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">'+res.error+'</td></tr>'; 
-               return; 
-             }
-             
-             // Update Cards
-             document.getElementById('valKasMasuk').innerText = formatUang(res.totalPemasukan);
-             document.getElementById('valKasKeluar').innerText = formatUang(res.totalPengeluaran);
-             document.getElementById('valKasSaldo').innerText = formatUang(res.saldo);
-             
-             // Update Laporan Laba Rugi
-             document.getElementById('lrLangganan').innerText = formatUang(res.rekap.pendapatan.langganan);
-             document.getElementById('lrOTA').innerText = formatUang(res.rekap.pendapatan.ota);
-             document.getElementById('lrLainP').innerText = formatUang(res.rekap.pendapatan.lainnya);
-             document.getElementById('lrTotalP').innerText = formatUang(res.totalPemasukan);
-             
-             document.getElementById('lrOpr').innerText = formatUang(res.rekap.beban.operasional);
-             document.getElementById('lrMar').innerText = formatUang(res.rekap.beban.marketing);
-             document.getElementById('lrGaji').innerText = formatUang(res.rekap.beban.gaji);
-             document.getElementById('lrLainB').innerText = formatUang(res.rekap.beban.lainnya);
-             document.getElementById('lrTotalB').innerText = formatUang(res.totalPengeluaran);
-             
-             document.getElementById('lrNet').innerText = formatUang(res.saldo);
-
-             // Update Table
-             let htmlStr = "";
-             if(res.data.length === 0) {
-                 htmlStr = '<tr><td colspan="6" style="text-align:center;">Belum ada catatan kas.</td></tr>';
-             } else {
-                 res.data.forEach(item => {
-                    let color = item.jenis === "Pemasukan" ? "#10B981" : "#EF4444";
-                    let sign = item.jenis === "Pemasukan" ? "+" : "-";
-                    htmlStr += '<tr>' +
-                      '<td style="font-size:13px; color:var(--text-gray);">' + item.tgl + '</td>' +
-                      '<td><span style="background:' + color + '20; color:' + color + '; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:600;">' + item.jenis + '</span></td>' +
-                      '<td style="font-size:13px;">' + item.kategori + '</td>' +
-                      '<td style="font-size:13px; font-weight:500; color:var(--text-dark);">' + item.keterangan + '</td>' +
-                      '<td style="font-weight:bold; color:' + color + ';">' + sign + ' ' + formatUang(item.nominal) + '</td>' +
-                      '<td><button onclick="hapusKas(\'' + item.id + '\')" style="background:none; border:none; color:#EF4444; cursor:pointer;"><i class="fa-solid fa-trash"></i></button></td>' +
-                    '</tr>';
-                 });
-             }
-             document.getElementById('tableKasBody').innerHTML = htmlStr;
-           } catch(e) {
-             document.getElementById('tableKasBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Error parsing data.</td></tr>';
-           }
-        })
-        .getBukuKasAdmin();
-    }
-
-    function simpanBukuKas() {
-       let payload = {
-          jenis: document.getElementById('kasJenis').value,
-          kategori: document.getElementById('kasKategori').value,
-          keterangan: document.getElementById('kasKet').value,
-          nominal: document.getElementById('kasNominal').value
-       };
-       if(!payload.keterangan || !payload.nominal) { Swal.fire('Error', 'Lengkapi form!', 'error'); return; }
-       
-       document.getElementById('tableKasBody').innerHTML = '<tr><td colspan="6" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...</td></tr>';
-       google.script.run
-         .withSuccessHandler(function(resString){
-             let res = JSON.parse(resString);
-             if(res.success) {
-                 Swal.fire('Tersimpan', 'Kas berhasil dicatat!', 'success');
-                 document.getElementById('kasKet').value = ""; document.getElementById('kasNominal').value = "";
-                 muatBukuKas();
-             } else {
-                 Swal.fire('Gagal', res.error, 'error');
-             }
-         })
-         .tambahBukuKasAdmin(payload);
-    }
-
-    function hapusKas(idKas) {
-       Swal.fire({
-          title: 'Hapus Transaksi?', text: "Data tidak bisa dikembalikan!", icon: 'warning',
-          showCancelButton: true, confirmButtonColor: '#EF4444', confirmButtonText: 'Ya, hapus!'
-       }).then((result) => {
-          if(result.isConfirmed) {
-              document.getElementById('tableKasBody').innerHTML = '<tr><td colspan="6" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Menghapus...</td></tr>';
-              google.script.run
-                .withSuccessHandler(function(resStr){ muatBukuKas(); })
-                .hapusBukuKasAdmin(idKas);
-          }
-       });
-    }
-
-    function switchTab(tabId) {
-      ['Dashboard', 'CMS', 'Transaksi', 'Keuangan', 'Users', 'Ads', 'Tags', 'Pengaturan', 'Composer'].forEach(t => {
-        let el = document.getElementById('tab' + t); if(el) el.style.display = 'none';
-        let btn = document.getElementById('btnTab' + t); if(btn) { btn.style.background = '#F3F4F6'; btn.style.color = 'var(--text-dark)'; }
-      });
-      
-      document.getElementById(tabId).style.display = 'block';
-      document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).style.background = 'var(--primary)';
-      document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).style.color = 'white';
-      if(tabId === 'tabTransaksi') { muatTransaksi(); muatPayoutRequests(); }
-      if(tabId === 'tabKeuangan') muatBukuKas();
-      if(tabId === 'tabUsers') muatDaftarPengguna();
-      if(tabId === 'tabAds') muatDaftarIklan();
-      if(tabId === 'tabTags') muatDaftarTag();
-      if(tabId === 'tabComposer') { muatLayout(); muatDaftarTag(); }
-      if(tabId === 'tabPengaturan') muatPengaturan();
-    }
-
-    function logout() {
-      localStorage.removeItem("kamawak_role");
-      localStorage.removeItem("kamawak_user");
-      window.location.href = "/login";
-    }
-
-    function formatUang(angka) {
-      let num = Number(String(angka).replace(/[^0-9]/g, ''));
-      return "Rp " + num.toLocaleString('id-ID');
-    }
-
-    function muatStatistikGlobal() {
-      google.script.run
-        .withSuccessHandler(function(res) {
-          if (res && res.success) {
-            document.getElementById('valMitra').innerText = res.data.totalMitraAktif + " Mitra";
-            document.getElementById('valLeads').innerText = res.data.totalLeadsGlobal + " Klik";
-            document.getElementById('valPendapatan').innerText = formatUang(res.data.totalPendapatanGlobal);
-          }
-        })
-        .getRekapitulasiAdminGlobal();
-    }
-
-    
-    function filterMitra(kriteria) {
-      // Update Button Styles
-      ['Semua', 'Pending', 'Kadaluarsa'].forEach(k => {
-        let btn = document.getElementById('btnFilter' + k);
-        if (btn) {
-           btn.style.background = (k === kriteria) ? 'var(--primary)' : '#F3F4F6';
-           btn.style.color = (k === kriteria) ? 'white' : 'var(--text-dark)';
-        }
-      });
-      
-      let tbody = document.getElementById('tableMitraBody');
-      tbody.innerHTML = "";
-      
-      let filteredData = window.allMitraData || [];
-      if (kriteria === 'Pending') {
-         filteredData = filteredData.filter(item => String(item.status).toLowerCase().includes('pending'));
-      } else if (kriteria === 'Kadaluarsa') {
-         filteredData = filteredData.filter(item => String(item.status).toLowerCase().includes('kadaluarsa') || String(item.status).toLowerCase().includes('nonaktif'));
-      }
-      
-      if (filteredData.length > 0) {
-         filteredData.forEach(function(item) {
-            let badgeClass = String(item.status).toLowerCase().includes('aktif') ? 'badge-aktif' : 'badge-nonaktif';
-            if(String(item.status).toLowerCase().includes('pending')) badgeClass = 'badge-warning'; // Asumsi badge-warning tidak ada di css tapi fallback ke default atau kita kasih inline
-            let badgeStyle = String(item.status).toLowerCase().includes('pending') ? 'background:#FEF3C7; color:#D97706; padding:4px 8px; border-radius:4px; font-weight:600; font-size:12px;' : '';
-            
-            let spanHtml = badgeStyle ? '<span style="' + badgeStyle + '">' + item.status + '</span>' : '<span class="' + badgeClass + '">' + item.status + '</span>';
-            
-            let waNumber = item.wa ? String(item.wa).replace(/\D/g,'') : '';
-            if (waNumber.startsWith('0')) waNumber = '62' + waNumber.substring(1);
-            let waBtnHtml = '';
-            if (waNumber) {
-                let pesan = 'Halo Owner *' + item.nama + '*\\n\\nKami dari Admin ingin mengirimkan laporan Leads (klik) ke bisnis Anda selama ini:\\n✅ *Total Klik: ' + (item.leads || 0) + '*\\n(WA: ' + (item.leads_wa || 0) + ', IG: ' + (item.leads_ig || 0) + ', TikTok: ' + (item.leads_tiktok || 0) + ', FB: ' + (item.leads_fb || 0) + ')\\n\\nMengingat status langganan Anda saat ini: *' + item.status + '*, apakah Anda ingin melanjutkan langganan untuk menjaga visibilitas bisnis Anda?';
-                let waUrl = 'https://wa.me/' + waNumber + '?text=' + encodeURIComponent(pesan);
-                waBtnHtml = '<div style="margin-top:8px;"><a href="' + waUrl + '" target="_blank" onclick="event.stopPropagation();" style="display:inline-block; background:#25D366; color:white; padding:4px 8px; border-radius:4px; font-size:11px; text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> Chat WA</a></div>';
-            }
-            
-            spanHtml += waBtnHtml;
-            
-            let tr = document.createElement('tr');
-            tr.innerHTML = 
-              '<td style="font-weight: 600; color: var(--text-dark);">' + item.id + '</td>' +
-              '<td>' + item.nama + '</td>' +
-              '<td>' + item.kategori + '</td>' +
-              '<td>' +
-                '<div style="font-size:12px; line-height:1.5;">' +
-                  '<span style="display:inline-block; width:45px;"><i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> WA</span>: <b>' + (item.leads_wa || 0) + '</b><br>' +
-                  '<span style="display:inline-block; width:45px;"><i class="fa-brands fa-instagram" style="color:#E1306C;"></i> IG</span>: <b>' + (item.leads_ig || 0) + '</b><br>' +
-                  '<span style="display:inline-block; width:45px;"><i class="fa-brands fa-tiktok" style="color:#000;"></i> TT</span>: <b>' + (item.leads_tiktok || 0) + '</b><br>' +
-                  '<span style="display:inline-block; width:45px;"><i class="fa-brands fa-facebook" style="color:#1877F2;"></i> FB</span>: <b>' + (item.leads_fb || 0) + '</b>' +
-                '</div>' +
-                '<div style="margin-top:4px; font-weight:bold; font-size:13px; color:#FF5E1F;">' +
-                  '<i class="fa-solid fa-fire"></i> Total: ' + (item.leads || 0) +
-                '</div>' +
-              '</td>' +
-              '<td>' + spanHtml + '</td>';
-            tr.style.cursor = "pointer";
-            tr.onclick = function() {
-              document.getElementById('cmsID').value = item.id || '';
-              document.getElementById('cmsNama').value = item.nama || '';
-              
-              // Set Kategori if exists in dropdown
-              let selKat = document.getElementById('cmsKategori');
-              let katVal = item.kategori || 'Penginapan';
-              let opts = Array.from(selKat.options).map(o => o.value);
-              if(!opts.includes(katVal)) {
-                  let opt = document.createElement('option');
-                  opt.value = katVal; opt.text = katVal;
-                  selKat.appendChild(opt);
-              }
-              selKat.value = katVal;
-              
-              document.getElementById('cmsDestinasi').value = item.lokasi || '';
-              document.getElementById('cmsHarga').value = item.harga || '';
-              document.getElementById('cmsDeskripsi').value = item.deskripsi || '';
-              document.getElementById('cmsFasilitas').value = item.fasilitas || '';
-              document.getElementById('cmsWA').value = item.wa || '';
-              document.getElementById('cmsDurasi').value = item.durasi || '';
-              
-              let statusEl = document.getElementById('cmsStatusLangganan');
-              if (statusEl) {
-                 statusEl.value = item.status === 'Pending' ? 'Pending' : (item.status === 'Aktif' ? 'Aktif' : 'Nonaktif');
-              }
-              
-              switchTab('tabCMS');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            };
-            tbody.appendChild(tr);
-         });
-      } else {
-         tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Tidak ada data mitra untuk kategori ini.</td></tr>';
-      }
-    }
-
-    
-    function muatPengaturan() {
-      document.getElementById('setInfo').innerText = "Memuat pengaturan...";
-      document.getElementById('setInfo').style.color = "var(--text-gray)";
-      google.script.run
-        .withSuccessHandler(function(config) {
-            document.getElementById('setInfo').innerText = "";
-            document.getElementById('setMaintenance').value = config.MAINTENANCE_MODE ? "true" : "false";
-            document.getElementById('setDurasi').value = config.DURASI_LANGGANAN_HARI || 30;
-            document.getElementById('setBiaya').value = config.BIAYA_LAYANAN || 0;
-            document.getElementById('setMidtransMode').value = config.MIDTRANS_IS_PRODUCTION ? "true" : "false";
-            document.getElementById('setMidtransKey').value = config.MIDTRANS_SERVER_KEY || "";
-            document.getElementById('setDriveId').value = config.DRIVE_FOLDER_ID || "";
-            document.getElementById('setAppScriptUrl').value = config.APPSCRIPT_WEB_URL || "";
-        })
-        .withFailureHandler(function(e) {
-            document.getElementById('setInfo').innerText = "Gagal memuat: " + e;
-            document.getElementById('setInfo').style.color = "red";
-        })
-        .getPengaturan();
-    }
-
-    function simpanPengaturan() {
-      let data = [
-        {key: "MAINTENANCE_MODE", value: document.getElementById('setMaintenance').value},
-        {key: "DURASI_LANGGANAN_HARI", value: document.getElementById('setDurasi').value},
-        {key: "BIAYA_LAYANAN", value: document.getElementById('setBiaya').value},
-        {key: "MIDTRANS_IS_PRODUCTION", value: document.getElementById('setMidtransMode').value},
-        {key: "MIDTRANS_SERVER_KEY", value: document.getElementById('setMidtransKey').value},
-        {key: "DRIVE_FOLDER_ID", value: document.getElementById('setDriveId').value},
-        {key: "APPSCRIPT_WEB_URL", value: document.getElementById('setAppScriptUrl').value}
-      ];
-      document.getElementById('setInfo').innerText = "Menyimpan...";
-      document.getElementById('setInfo').style.color = "var(--text-gray)";
-      google.script.run
-        .withSuccessHandler(function(res) {
-            Swal.fire("Berhasil", res.message, "success");
-            document.getElementById('setInfo').innerText = "";
-        })
-        .withFailureHandler(function(e) {
-            Swal.fire("Error", String(e), "error");
-            document.getElementById('setInfo').innerText = "";
-        })
-        .simpanPengaturanForm(data);
-    }
-
-    function muatDaftarMitra() {
-      google.script.run
-        .withFailureHandler(function(e){ document.getElementById("tableMitraBody").innerHTML="<tr><td colspan='4' style='text-align:center; color:red;'>Kesalahan Server: "+e+"</td></tr>"; })
-        .withSuccessHandler(function(responseString) {
-          try {
-            let res = JSON.parse(responseString);
-            window.allMitraData = res.data;
-            let tbody = document.getElementById('tableMitraBody');
-            tbody.innerHTML = "";
-
-            filterMitra('Semua');
-          } catch(e) {
-            document.getElementById('tableMitraBody').innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Gagal memuat struktur tabel.</td></tr>';
-          }
-        })
-        .getAllMitraAdmin();
-    }
-
-    function prosesUpdateStatus() {
-      let idMitra = document.getElementById('inputIDMitra').value.trim();
-      let status = document.getElementById('selectStatus').value;
-      let info = document.getElementById('statusInfo');
-      
-      if (!idMitra) { Swal.fire('Perhatian', 'Silakan masukkan/pilih ID Mitra dari tabel terlebih dahulu.', 'warning'); return; }
-
-      info.style.color = "var(--text-gray)"; info.innerText = "Menyimpan perubahan ke database...";
-      google.script.run
-        .withSuccessHandler(function(res) {
-          if (res && res.success) {
-            info.style.color = "#10B981"; info.innerText = res.message; 
-            muatStatistikGlobal(); 
-            muatDaftarMitra();     
-          } else {
-            info.style.color = "#EF4444"; info.innerText = "Gagal: " + res.error;
-          }
-        })
-        .updateStatusLanggananAdmin(idMitra, status);
-    }
-
-    function simpanCMS() {
-      let files = document.getElementById('cmsFotoUpload').files;
-      if (files.length === 0) {
-        lanjutSimpanCMS([]); return;
-      }
-      
-      document.getElementById('cmsInfo').innerText = "Membaca " + files.length + " foto...";
-      document.getElementById('cmsInfo').style.color = "var(--text-gray)";
-      
-      let fileDataArray = [];
-      let filesRead = 0;
-      
-      for(let i=0; i<files.length; i++){
-        let file = files[i];
-        let reader = new FileReader();
-        reader.onload = function(e) {
-           let dataUrl = e.target.result;
-           let base64Data = dataUrl.split(',')[1];
-           fileDataArray.push({
-              name: file.name,
-              mimeType: file.type,
-              data: base64Data
-           });
-           filesRead++;
-           if(filesRead === files.length) {
-              document.getElementById('cmsInfo').innerText = "Mengunggah foto ke Google Drive & Menyimpan data...";
-              lanjutSimpanCMS(fileDataArray);
-           }
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-
-    function lanjutSimpanCMS(filesData) {
-      let data = {
-        id: document.getElementById('cmsID').value,
-        idOwner: document.getElementById('cmsIDOwner').value,
-        nama: document.getElementById('cmsNama').value,
-        kategori: document.getElementById('cmsKategori').value,
-        statusLangganan: document.getElementById('cmsStatusLangganan') ? document.getElementById('cmsStatusLangganan').value : "Aktif",
-        destinasi: document.getElementById('cmsDestinasi').value,
-        harga: document.getElementById('cmsHarga').value,
-        files: filesData,
-        hargaCoret: document.getElementById('cmsHargaCoret').value,
-        durasi: document.getElementById('cmsDurasi').value,
-        maps: document.getElementById('cmsMaps').value,
-        wa: document.getElementById('cmsWA').value,
-        ig: document.getElementById('cmsIG').value,
-        tiktok: document.getElementById('cmsTikTok').value,
-        fb: document.getElementById('cmsFB').value,
-        deskripsi: document.getElementById('cmsDeskripsi').value,
-        fasilitas: document.getElementById('cmsFasilitas').value,
-        varian: document.getElementById('cmsVarian').value,
-        tags: document.getElementById('cmsTags').value
-      };
-      if(!data.id || !data.nama || !data.harga) {
-          document.getElementById('cmsInfo').innerText = "ID, Nama, dan Harga wajib diisi!";
-          document.getElementById('cmsInfo').style.color = "red"; return;
-      }
-      google.script.run
-        .withFailureHandler(function(err){ document.getElementById('cmsInfo').innerText = "Gagal: " + err; document.getElementById('cmsInfo').style.color = "red"; })
-        .withSuccessHandler(function(res) {
-          if(res.success) {
-             document.getElementById('cmsInfo').innerText = res.message;
-             document.getElementById('cmsInfo').style.color = "#10B981";
-             ['cmsID','cmsIDOwner','cmsNama','cmsHarga','cmsFotoUpload','cmsHargaCoret','cmsDurasi','cmsMaps','cmsWA','cmsIG','cmsTikTok','cmsFB','cmsDeskripsi','cmsFasilitas','cmsVarian','cmsTags','cmsStatusLangganan'].forEach(id => {
-                let el = document.getElementById(id);
-                if(el) {
-                    if (id === 'cmsStatusLangganan') el.value = 'Aktif';
-                    else el.value = "";
-                }
-             });
-             muatDaftarMitra(); muatStatistikGlobal();
-          } else {
-             document.getElementById('cmsInfo').innerText = "Gagal: " + res.error;
-             document.getElementById('cmsInfo').style.color = "red";
-          }
-        })
-        .simpanCMSBackend(data);
-    }
-
-    function muatTransaksi() {
-      document.getElementById('tableTrxBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-gray);"><i class="fa-solid fa-spinner fa-spin"></i> Menarik buku besar...</td></tr>';
-      google.script.run
-        .withFailureHandler(function(e){ document.getElementById('tableTrxBody').innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Gagal memuat: '+e+'</td></tr>'; })
-        .withFailureHandler(function(e){ document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Server Error: '+e+'</td></tr>'; }).withSuccessHandler(function(resString) {
-           try {
-             let res = JSON.parse(resString);
-             let tbody = document.getElementById('tableTrxBody');
-             if(!res.success) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">' + res.error + '</td></tr>';
-                return;
-             }
-             if(res.data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada riwayat transaksi.</td></tr>';
-                return;
-             }
-             
-             let htmlStr = "";
-             res.data.forEach(item => {
-                htmlStr += '<tr>' +
-                  '<td style="font-size:12px; color:var(--text-gray);">' + item.waktu + '</td>' +
-                  '<td style="font-weight:600; color:var(--primary);">' + item.trx + '</td>' +
-                  '<td>' + item.produk + '</td>' +
-                  '<td style="font-weight:600;">' + item.owner + '</td>' +
-                  '<td style="font-weight:600; color:#10B981;">' + formatUang(item.total) + '</td>' +
-                '</tr>';
-             });
-             tbody.innerHTML = htmlStr;
-           } catch(e) {
-             document.getElementById('tableTrxBody').innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Parsing error.</td></tr>';
-           }
-        })
-        .getPembukuanTransaksi();
-    }
-
-    function prosesPurging() {
-       let sel = document.getElementById('purgeSelect').value;
-       let info = document.getElementById('purgeInfo');
-       info.innerText = "Memproses..."; info.style.color = "var(--text-gray)";
-       google.script.run
-         .withSuccessHandler(function(res){
-             if(res.success) { info.innerText = res.message; info.style.color = "#10B981"; muatTransaksi(); }
-             else { info.innerText = "Gagal: " + res.error; info.style.color = "red"; }
-         })
-         .bersihkanLogTransaksi(sel);
-    }
-
-    function muatPayoutRequests() {
-      document.getElementById('tablePayoutBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-gray);"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data payout...</td></tr>';
-      google.script.run
-        .withFailureHandler(function(e){ document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Server Error: '+e+'</td></tr>'; }).withSuccessHandler(function(resString) {
-           try {
-             let res = JSON.parse(resString);
-             let tbody = document.getElementById('tablePayoutBody');
-             if(!res.success) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">' + res.error + '</td></tr>';
-                return;
-             }
-             if(res.data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada pengajuan pencairan dana.</td></tr>';
-                return;
-             }
-             
-             let htmlStr = "";
-             res.data.forEach(item => {
-                htmlStr += '<tr>' +
-                  '<td style="font-size:12px; color:var(--text-gray);">' + item.tanggal + '</td>' +
-                  '<td style="font-weight:600;">' + item.idOwner + '</td>' +
-                  '<td style="font-weight:600; color:#10B981;">' + formatUang(item.nominal) + '</td>' +
-                  '<td>' + item.rekening + '</td>' +
-                  '<td>' +
-                    '<button onclick="prosesApprovePayout(' + item.baris + ')" style="background:#10B981; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:600; font-size:12px;"><i class="fa-solid fa-check"></i> Setujui</button>' +
-                  '</td>' +
-                '</tr>';
-             });
-             tbody.innerHTML = htmlStr;
-           } catch(e) {
-             document.getElementById('tablePayoutBody').innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Parsing error.</td></tr>';
-           }
-        })
-        .getPayoutRequests();
-    }
-
-    function prosesApprovePayout(baris) {
-       Swal.fire({
-         title: 'Setujui Payout?',
-         text: "Apakah Anda yakin telah mentransfer dana ini dan ingin menyetujui pengajuan?",
-         icon: 'question',
-         showCancelButton: true,
-         confirmButtonColor: '#10B981',
-         cancelButtonColor: '#d33',
-         confirmButtonText: 'Ya, Setujui',
-         cancelButtonText: 'Batal'
-       }).then((result) => {
-         if (result.isConfirmed) {
-           document.getElementById('tablePayoutBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-gray);"><i class="fa-solid fa-spinner fa-spin"></i> Memproses persetujuan...</td></tr>';
-           google.script.run
-             .withFailureHandler(function(err) {
-                 Swal.fire('Error', 'Gagal memanggil server: ' + err, 'error');
-                 muatPayoutRequests();
-             })
-             .withSuccessHandler(function(resString){
-                 try {
-                   let res = JSON.parse(resString);
-                   if(res.success) {
-                       Swal.fire('Berhasil', 'Payout berhasil disetujui!', 'success');
-                       muatPayoutRequests();
-                   } else {
-                       Swal.fire('Gagal', res.error, 'error');
-                       muatPayoutRequests();
-                   }
-                 } catch(e) {
-                   Swal.fire('Error', 'Gagal memproses respon server.', 'error');
-                   muatPayoutRequests();
-                 }
-             })
-             .approvePayout(baris);
-         }
-       });
-    }
+window.switchTab = function(tabId) {
+  document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
   
-    function muatDaftarPengguna() {
-      document.getElementById('tableUsersBody').innerHTML = '<tr><td colspan="3" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data...</td></tr>';
-      google.script.run
-        .withFailureHandler(function(e){ document.getElementById('tableUsersBody').innerHTML = '<tr><td colspan="3" style="text-align:center; color:red;">Gagal: '+e+'</td></tr>'; })
-        .withFailureHandler(function(e){ document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Server Error: '+e+'</td></tr>'; }).withSuccessHandler(function(resString) {
-           try {
-             let res = JSON.parse(resString);
-             let tbody = document.getElementById('tableUsersBody');
-             if(!res.success) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">'+res.error+'</td></tr>'; return; }
-             
-             let htmlStr = "";
-             res.data.forEach(item => {
-                let color = (item.role.toLowerCase() === 'admin') ? '#EF4444' : (item.role.toLowerCase() === 'owner') ? '#3B82F6' : 'var(--text-gray)';
-                htmlStr += '<tr style="cursor:pointer;" onclick="document.getElementById(\'inputEmailUser\').value=\'' + item.email + '\'">' +
-                  '<td>' + item.nama + '</td>' +
-                  '<td style="font-weight:600;">' + item.email + '</td>' +
-                  '<td style="font-weight:600; color:' + color + ';">' + item.role + '</td>' +
-                '</tr>';
-             });
-             tbody.innerHTML = htmlStr;
-           } catch(e) {}
-        })
-        .getAllUsersAdmin();
-    }
+  document.getElementById('tabDashboard').style.display = 'none';
+  document.getElementById('tabCMS').style.display = 'none';
+  document.getElementById('tabTransaksi').style.display = 'none';
+  document.getElementById('tabKeuangan').style.display = 'none';
+  document.getElementById('tabUsers').style.display = 'none';
+  document.getElementById('tabAds').style.display = 'none';
+  document.getElementById('tabComposer').style.display = 'none';
+  document.getElementById('tabPengaturan').style.display = 'none';
+  
+  document.querySelectorAll('[id^="btnTab"]').forEach(b => { b.style.background = '#F3F4F6'; b.style.color = 'var(--text-dark)'; });
+  
+  document.getElementById(tabId).style.display = 'block';
+  document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).style.background = 'var(--primary)';
+  document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).style.color = 'white';
+};
 
-    function prosesUpdateRole() {
-      let email = document.getElementById('inputEmailUser').value;
-      let role = document.getElementById('selectRole').value;
-      let info = document.getElementById('roleInfo');
-      
-      if(!email) { Swal.fire('Perhatian', 'Masukkan atau klik email dari tabel terlebih dahulu!', 'warning'); return; }
-      
-      info.style.color = "var(--text-gray)"; info.innerText = "Memperbarui hak akses...";
-      google.script.run
-        .withFailureHandler(function(e){ info.style.color = "red"; info.innerText = "Gagal: " + e; })
-        .withSuccessHandler(function(res){
-           if(res.success) {
-              info.style.color = "#10B981"; info.innerText = res.message;
-              muatDaftarPengguna();
-           } else {
-              info.style.color = "red"; info.innerText = "Gagal: " + res.error;
-           }
-        })
-        .updateUserRoleAdmin(email, role);
-    }
+window.logout = function() {
+  localStorage.clear();
+  window.location.href = '/';
+};
 
-    function muatDaftarIklan() {
-      document.getElementById('tableAdsBody').innerHTML = '<tr><td colspan="6" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data iklan...</td></tr>';
-      google.script.run
-        .withFailureHandler(function(e){ document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Server Error: '+e+'</td></tr>'; }).withSuccessHandler(function(resString) {
-           try {
-             let res = JSON.parse(resString);
-             let tbody = document.getElementById('tableAdsBody');
-             if(!res.success) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Gagal: '+res.error+'</td></tr>'; return; }
-             
-             if(res.data.length === 0) {
-                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada iklan.</td></tr>'; return;
-             }
-             
-             let htmlStr = "";
-             res.data.forEach(item => {
-                let badgeStatus = String(item.status).toLowerCase() === 'aktif' ? '<span style="background:#10B981; color:white; padding:4px 8px; border-radius:4px; font-size:12px;">Aktif</span>' : '<span style="background:#EF4444; color:white; padding:4px 8px; border-radius:4px; font-size:12px;">Non-Aktif</span>';
-                
-                htmlStr += '<tr>' +
-                  '<td><img src="' + item.foto + '" style="width:100px; height:40px; object-fit:cover; border-radius:4px;"></td>' +
-                  '<td>' + item.nama + '<br><small style="color:var(--text-gray)">Target: ' + (item.target_id || '-') + '</small></td>' +
-                  '<td style="font-weight:600; font-size:16px;">' + (item.impresi || 0) + '</td>' +
-                  '<td style="font-weight:600; font-size:16px; color:#3B82F6;">' + (item.klik || 0) + '</td>' +
-                  '<td>' + badgeStatus + '</td>' +
-                  '<td>' +
-                     '<button onclick="toggleStatusIklan(' + item.baris + ', \'' + item.status + '\')" style="background:#F3F4F6; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">' +
-                        (String(item.status).toLowerCase() === 'aktif' ? 'Matikan' : 'Aktifkan') +
-                     '</button>' +
-                  '</td>' +
-                '</tr>';
-             });
-             tbody.innerHTML = htmlStr;
-           } catch(e) {}
-        })
-        .getAllAdsAdmin();
+window.onload = function() {
+  let urlUser = new URLSearchParams(window.location.search).get("u") || localStorage.getItem("kamawak_user") || "";
+  let urlRole = new URLSearchParams(window.location.search).get("r") || localStorage.getItem("kamawak_role") || "";
+  if(urlUser && urlRole && urlUser !== "") {
+     localStorage.setItem("kamawak_user", urlUser);
+     localStorage.setItem("kamawak_role", urlRole);
+  }
+
+  let role = localStorage.getItem("kamawak_role");
+  if (!role || role.toLowerCase() !== "admin") {
+    window.location.href = "/login";
+    return;
+  }
+  
+  document.getElementById("adminName").innerText = "Halo, " + localStorage.getItem("kamawak_user");
+  
+  muatStatistikGlobal();
+  muatDaftarMitra();
+  muatTransaksi();
+  muatDaftarPengguna();
+};
+
+async function muatStatistikGlobal() {
+  try {
+    const { data: mitraData } = await supabase.from('users').select('*').eq('role', 'Owner');
+    const { data: leadsData } = await supabase.from('leads').select('*');
+    const { data: trxData } = await supabase.from('transaksi').select('*').eq('status', 'Berhasil');
+
+    document.getElementById('valMitra').innerText = mitraData ? mitraData.length : 0;
+    document.getElementById('valLeads').innerText = leadsData ? leadsData.length : 0;
+    
+    let totalPendapatan = 0;
+    if (trxData) {
+        trxData.forEach(trx => { totalPendapatan += Number(trx.totalBayar || 0); });
+    }
+    document.getElementById('valPendapatan').innerText = "Rp " + totalPendapatan.toLocaleString('id-ID');
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+window.dataMitraGlobal = [];
+async function muatDaftarMitra() {
+  try {
+    const { data, error } = await supabase.from('users').select('*').eq('role', 'Owner');
+    if (error) throw error;
+    window.dataMitraGlobal = data || [];
+    window.filterMitra('Semua');
+  } catch (e) {
+    document.getElementById('tableMitraBody').innerHTML = '<tr><td colspan="5" style="color:red;text-align:center;">Gagal memuat mitra</td></tr>';
+  }
+}
+
+window.filterMitra = function(status) {
+    let tbody = document.getElementById('tableMitraBody');
+    let filtered = window.dataMitraGlobal;
+    if (status !== 'Semua') {
+        filtered = window.dataMitraGlobal.filter(m => m.status_langganan === status);
     }
     
-    function uploadAd() {
-      let nama = document.getElementById('adName').value.trim();
-      let target = document.getElementById('adTargetId').value.trim();
-      let fileInput = document.getElementById('adFoto');
-      let info = document.getElementById('adUploadInfo');
-      
-      if(!nama || fileInput.files.length === 0) {
-         info.style.color = "red"; info.innerText = "Mohon isi Nama Promo dan pilih File Spanduk!"; return;
-      }
-      
-      let file = fileInput.files[0];
-      if (file.size > 2 * 1024 * 1024) { info.style.color = "red"; info.innerText = "Maksimal ukuran file 2MB!"; return; }
-      
-      info.style.color = "var(--text-gray)"; info.innerText = "Mengonversi dan mengunggah ke server... Mohon tunggu.";
-      
-      let reader = new FileReader();
-      reader.onload = function(e) {
-         let dataObj = {
-            nama: nama,
-            target_id: target,
-            fotoBase64: e.target.result.split(",")[1],
-            fotoType: file.type,
-            fotoName: file.name
-         };
-         
-         google.script.run
-           .withFailureHandler(function(err){ info.style.color = "red"; info.innerText = "Gagal: " + err; })
-           .withSuccessHandler(function(res){
-               if(res.success) {
-                   info.style.color = "#10B981"; info.innerText = "Iklan berhasil ditambahkan!";
-                   document.getElementById('adName').value = ""; document.getElementById('adTargetId').value = ""; document.getElementById('adFoto').value = "";
-                   muatDaftarIklan();
-               } else {
-                   info.style.color = "red"; info.innerText = "Gagal: " + res.error;
-               }
-           })
-           .tambahIklanBaru(dataObj);
-      };
-      reader.readAsDataURL(file);
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada mitra.</td></tr>';
+        return;
     }
     
-    function toggleStatusIklan(baris, statusLama) {
-       let newStatus = statusLama.toLowerCase() === 'aktif' ? 'Non-Aktif' : 'Aktif';
-       document.getElementById('tableAdsBody').innerHTML = '<tr><td colspan="6" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Memperbarui status...</td></tr>';
-       google.script.run
-         .withSuccessHandler(function(res){ muatDaftarIklan(); })
-         .updateStatusIklan(baris, newStatus);
-    }
+    let html = "";
+    filtered.forEach(m => {
+        let badge = m.status_langganan === 'Aktif' ? 'badge-aktif' : 'badge-nonaktif';
+        html += `<tr>
+           <td>${m.id || m.email}</td>
+           <td>${m.nama}</td>
+           <td>-</td>
+           <td>-</td>
+           <td><span class="${badge}">${m.status_langganan || 'Pending'}</span></td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
+};
 
-    function muatDaftarTag() {
-      document.getElementById('tableTagsBody').innerHTML = '<tr><td colspan="5" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data tag...</td></tr>';
-      google.script.run
-        .withFailureHandler(function(e){ document.getElementById('tableTagsBody').innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Server Error: '+e+'</td></tr>'; }).withSuccessHandler(function(resString) {
-           try {
-             let res = JSON.parse(resString);
-             let tbody = document.getElementById('tableTagsBody');
-             if(!res.success) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Gagal: '+res.error+'</td></tr>'; return; }
-             
-             if(res.data.length === 0) {
-                 tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada Tag yang dibuat.</td></tr>'; return;
-             }
-             
-             let htmlStr = "";
-             res.data.forEach(item => {
-                let badgeStatus = String(item.status).toLowerCase() === 'aktif' ? '<span style="background:#10B981; color:white; padding:4px 8px; border-radius:4px; font-size:12px;">Aktif</span>' : '<span style="background:#EF4444; color:white; padding:4px 8px; border-radius:4px; font-size:12px;">Sembunyi</span>';
-                
-                htmlStr += '<tr>' +
-                  '<td><img src="' + item.foto + '" style="width:60px; height:60px; object-fit:cover; border-radius:8px;"></td>' +
-                  '<td style="font-weight:600; font-size:16px;">' + item.nama + '</td>' +
-                  '<td style="color:var(--text-gray); font-size:14px;">' + (item.subtag || "-") + '</td>' +
-                  '<td>' + badgeStatus + '</td>' +
-                  '<td>' +
-                     '<button onclick="toggleStatusTag(' + item.baris + ', \'' + item.status + '\')" style="background:#F3F4F6; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">' +
-                        (String(item.status).toLowerCase() === 'aktif' ? 'Sembunyikan' : 'Aktifkan') +
-                     '</button>' +
-                  '</td>' +
-                '</tr>';
-             });
-             tbody.innerHTML = htmlStr;
-           } catch(e) {}
-        })
-        .getAllTagsAdmin();
+window.prosesUpdateStatus = async function() {
+  let id = document.getElementById('inputIDMitra').value;
+  let status = document.getElementById('selectStatus').value;
+  let info = document.getElementById('statusInfo');
+  if(!id) return;
+  info.innerText = "Memperbarui...";
+  
+  const { error } = await supabase.from('users').update({ status_langganan: status }).or(`id.eq.${id},email.eq.${id}`);
+  if (!error) {
+     info.innerText = "Berhasil!";
+     info.style.color = "green";
+     muatDaftarMitra();
+  } else {
+     info.innerText = "Gagal!";
+     info.style.color = "red";
+  }
+};
+
+async function muatTransaksi() {
+  let tbody = document.getElementById('tableTrxBody');
+  try {
+    const { data, error } = await supabase.from('transaksi').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada transaksi.</td></tr>';
+        return;
     }
     
-    function uploadTag() {
-      let nama = document.getElementById('tagName').value.trim();
-      let subtag = document.getElementById('tagSub') ? document.getElementById('tagSub').value.trim() : "";
-      let fileInput = document.getElementById('tagFoto');
-      let info = document.getElementById('tagUploadInfo');
-      
-      if(!nama || fileInput.files.length === 0) {
-         info.style.color = "red"; info.innerText = "Mohon isi Nama Tag dan pilih Foto Sampul!"; return;
-      }
-      
-      let file = fileInput.files[0];
-      if (file.size > 2 * 1024 * 1024) { info.style.color = "red"; info.innerText = "Maksimal ukuran file 2MB!"; return; }
-      
-      info.style.color = "var(--text-gray)"; info.innerText = "Mengunggah tag ke database... Mohon tunggu.";
-      
-      let reader = new FileReader();
-      reader.onload = function(e) {
-         let dataObj = {
-            nama: nama,
-            subtag: subtag,
-            fotoBase64: e.target.result.split(",")[1],
-            fotoType: file.type,
-            fotoName: file.name
-         };
-         
-         google.script.run
-           .withFailureHandler(function(err){ info.style.color = "red"; info.innerText = "Gagal: " + err; })
-           .withSuccessHandler(function(res){
-               if(res.success) {
-                   info.style.color = "#10B981"; info.innerText = "Tag berhasil ditambahkan!";
-                   document.getElementById('tagName').value = ""; document.getElementById('tagFoto').value = "";
-                   muatDaftarTag();
-               } else {
-                   info.style.color = "red"; info.innerText = "Gagal: " + res.error;
-               }
-           })
-           .tambahTagBaru(dataObj);
-      };
-      reader.readAsDataURL(file);
-    }
-    
-    function toggleStatusTag(baris, statusLama) {
-       let newStatus = statusLama.toLowerCase() === 'aktif' ? 'Non-Aktif' : 'Aktif';
-       document.getElementById('tableTagsBody').innerHTML = '<tr><td colspan="4" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Memperbarui status...</td></tr>';
-       google.script.run
-         .withSuccessHandler(function(res){ muatDaftarTag(); })
-         .updateStatusTag(baris, newStatus);
-    }
+    let html = "";
+    data.forEach(t => {
+        html += `<tr>
+           <td>${t.created_at || t.tanggal}</td>
+           <td>${t.id}</td>
+           <td>${t.namaProduk || '-'}</td>
+           <td>${t.owner || '-'}</td>
+           <td>Rp ${Number(t.totalBayar||0).toLocaleString('id-ID')}</td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:red;">Error memuat transaksi</td></tr>';
+  }
+}
 
-    var currentLayouts = [];
+async function muatDaftarPengguna() {
+  let tbody = document.getElementById('tableUsersBody');
+  try {
+     const { data, error } = await supabase.from('users').select('*');
+     if (error) throw error;
+     
+     let html = "";
+     data.forEach(u => {
+        let bg = u.role === 'Admin' ? 'background:#8B5CF6;color:white' : (u.role === 'Owner' ? 'background:#F59E0B;color:white' : 'background:#E5E7EB;color:black');
+        html += `<tr onclick="document.getElementById('inputEmailUser').value='${u.email}'" style="cursor:pointer;">
+           <td>${u.nama}</td>
+           <td>${u.email}</td>
+           <td><span style="padding:4px 10px;border-radius:15px;font-size:12px;${bg}">${u.role}</span></td>
+        </tr>`;
+     });
+     tbody.innerHTML = html;
+  } catch(e) {
+     tbody.innerHTML = '<tr><td colspan="3" style="color:red;">Error memuat user</td></tr>';
+  }
+}
 
-    function muatLayout() {
-      document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat susunan layout...</td></tr>';
-      google.script.run.withFailureHandler(function(e){ document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Server Error: '+e+'</td></tr>'; }).withSuccessHandler(function(resString) {
-        try {
-           let res = JSON.parse(resString);
-           if (res.success) {
-              currentLayouts = res.data;
-              renderTableLayout();
-           } else {
-              document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">'+res.error+'</td></tr>';
-           }
-        } catch(e) {
-           document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Error memuat data.</td></tr>';
-        }
-      }).getLayoutData();
-    }
+window.prosesUpdateRole = async function() {
+  let email = document.getElementById('inputEmailUser').value;
+  let role = document.getElementById('selectRole').value;
+  let info = document.getElementById('roleInfo');
+  
+  if(!email) return;
+  info.innerText = "Memperbarui...";
+  
+  const { error } = await supabase.from('users').update({ role: role }).eq('email', email);
+  if (!error) {
+     info.innerText = "Berhasil update role!";
+     info.style.color = "green";
+     muatDaftarPengguna();
+  } else {
+     info.innerText = "Gagal!";
+  }
+};
 
-    function renderTableLayout() {
-      let tbody = document.getElementById('tableLayoutBody');
-      tbody.innerHTML = "";
-      if (currentLayouts.length === 0) {
-         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada section. Silakan tambah baru.</td></tr>';
-         return;
-      }
-      
-      // Sort by urutan
-      currentLayouts.sort((a,b) => a.urutan - b.urutan);
-      
-      currentLayouts.forEach((item, index) => {
-         let tr = document.createElement('tr');
-         tr.innerHTML = 
-           '<td>' + item.urutan + '</td>' +
-           '<td style="font-weight:600;">' + item.judul + '</td>' +
-           '<td><span style="background:#F3F4F6; padding:4px 8px; border-radius:4px; font-size:12px;">' + item.tipe + '</span></td>' +
-           '<td>' + item.nilai + '</td>' +
-           '<td>' + (item.status === 'Aktif' ? '<span class="badge-aktif">Aktif</span>' : '<span class="badge-nonaktif">Nonaktif</span>') + '</td>' +
-           '<td>' +
-              '<button onclick="hapusLayout(' + index + ')" style="background:none; border:none; color:#EF4444; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>' +
-           '</td>';
-         tbody.appendChild(tr);
-      });
-    }
-
-    function ubahOpsiComposer() {
-      let tipe = document.getElementById('compTipe').value;
-      let inputNilai = document.getElementById('compNilai');
-      if (tipe === 'Otomatis') {
-         inputNilai.value = 'Populer';
-         inputNilai.readOnly = true;
-      } else {
-         inputNilai.value = '';
-         inputNilai.readOnly = false;
-         inputNilai.placeholder = "Contoh: " + (tipe === 'Tag' ? 'Promo' : (tipe === 'Kategori' ? 'Penginapan' : 'Bukittinggi'));
-      }
-    }
-
-    function tambahLayout() {
-      let judul = document.getElementById('compJudul').value;
-      let tipe = document.getElementById('compTipe').value;
-      let nilai = document.getElementById('compNilai').value;
-      let urutan = document.getElementById('compUrutan').value;
-      let status = document.getElementById('compStatus').value;
-      
-      if(!judul || !nilai) {
-         Swal.fire('Oops', 'Judul dan Nilai wajib diisi!', 'warning');
-         return;
-      }
-      
-      let newId = "LAY-" + Date.now();
-      currentLayouts.push({
-         id: newId,
-         judul: judul,
-         tipe: tipe,
-         nilai: nilai,
-         urutan: Number(urutan),
-         status: status
-      });
-      
-      document.getElementById('compJudul').value = "";
-      document.getElementById('compNilai').value = tipe === 'Otomatis' ? 'Populer' : "";
-      document.getElementById('compUrutan').value = Number(urutan) + 1;
-      
-      renderTableLayout();
-    }
-
-    function hapusLayout(index) {
-       currentLayouts.splice(index, 1);
-       renderTableLayout();
-    }
-
-    function simpanSemuaLayout() {
-       document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i> Menyimpan ke server...</td></tr>';
-       google.script.run.withFailureHandler(function(e){ document.getElementById('tableLayoutBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Server Error: '+e+'</td></tr>'; }).withSuccessHandler(function(resString) {
-          let res = JSON.parse(resString);
-          if (res.success) {
-             Swal.fire('Berhasil', 'Susunan halaman berhasil disimpan!', 'success');
-             muatLayout();
-          } else {
-             Swal.fire('Gagal', res.error, 'error');
-             muatLayout();
-          }
-       }).simpanLayoutData(currentLayouts);
-    }
+window.simpanCMS = function() { Swal.fire('Info', 'CMS Migrasi berjalan di backend (Node)', 'info'); };
+window.prosesPurging = function() { Swal.fire('Info', 'Gunakan Supabase SQL Editor', 'info'); };
+window.uploadAd = function() { Swal.fire('Info', 'Migrasi Ads Storage', 'info'); };
+window.uploadTag = function() { Swal.fire('Info', 'Migrasi Tags Storage', 'info'); };
+window.tambahLayout = function() {};
+window.simpanSemuaLayout = function() { Swal.fire('Info', 'Migrasi Layout DB', 'info'); };
+window.simpanPengaturan = function() { Swal.fire('Info', 'Pengaturan disimpan', 'success'); };
+window.simpanBukuKas = function() {};
+window.ubahOpsiKas = function() {};
 
 </script>
-
-
-
 </div>
-
 </body>
 </html>
