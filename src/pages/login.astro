@@ -194,42 +194,36 @@ import { supabase } from '../lib/supabase.js';
       if (!identitas || !pass) { txtBox.innerText = "Identitas dan Sandi wajib diisi."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; return; }
       btn.style.display = "none"; loader.style.display = "block"; msgBox.style.display = "none";
 
-      google.script.run.withFailureHandler(function(err) {
-          loader.style.display = "none"; btn.style.display = "block";
-          txtBox.innerText = "Error koneksi: " + err.message; msgBox.style.display = "block";
-      }).withSuccessHandler(function(resString) {
-          try {
-            let res = JSON.parse(resString);
-            if (res.success) {
-              localStorage.setItem("kamawak_user", res.nama); 
-              localStorage.setItem("kamawak_role", res.role);
-              
-              let roleStr = res.role.toLowerCase();
-              let halamanTujuan = "";
-              
-              // LOGIKA BARU: Cek Hak Akses (Role) Pengguna
-              if (roleStr.includes("admin")) {
-                halamanTujuan = "/admin"; // Ke Dasbor Admin
-              } else if (roleStr.includes("owner") || roleStr.includes("mitra")) {
-                halamanTujuan = "/owner"; // Ke Dasbor Mitra/Usaha
-              } else {
-                halamanTujuan = "/"; // Wisatawan kembali ke Landing Page
-              }
-              
-              let urlAkhir = BASE_URL + halamanTujuan + "?u=" + encodeURIComponent(res.nama) + "&r=" + encodeURIComponent(res.role);
-              
-              // Redirect ke dasbor yang sesuai
-              window.top.location.href = urlAkhir;
-              
-            } else { 
-              loader.style.display = "none"; btn.style.display = "block"; 
-              txtBox.innerText = res.error; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; 
-            }
-          } catch(e) {
-             loader.style.display = "none"; btn.style.display = "block"; 
-             txtBox.innerText = "Kesalahan server."; msgBox.style.display = "block";
+            // MENGGUNAKAN SUPABASE
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('nama', identitas)
+        .eq('password', pass)
+        .single();
+        
+      loader.style.display = "none"; btn.style.display = "block";
+      
+      if (error || !data) {
+          txtBox.innerText = "Kredensial tidak valid atau tidak ditemukan."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+      } else {
+          localStorage.setItem("kamawak_user", data.nama); 
+          localStorage.setItem("kamawak_role", data.role);
+          
+          let roleStr = data.role.toLowerCase();
+          let halamanTujuan = "";
+          
+          if (roleStr.includes("admin")) {
+            halamanTujuan = "/admin";
+          } else if (roleStr.includes("owner") || roleStr.includes("mitra")) {
+            halamanTujuan = "/owner";
+          } else {
+            halamanTujuan = "/profil";
           }
-        }).verifikasiLogin(identitas, pass);
+          
+          let urlAkhir = halamanTujuan + "?u=" + encodeURIComponent(data.nama) + "&r=" + encodeURIComponent(data.role);
+          window.top.location.href = urlAkhir;
+      }
     }
     // --- 2. PROSES REGISTER ---
     window.prosesRegister = function() {
