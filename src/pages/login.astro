@@ -152,11 +152,13 @@ import GASPolyfill from '../components/GASPolyfill.astro';
     <div class="footer-link">Salah memasukkan email? <a onclick="tukarMode('register')">Kembali</a></div>
   </div>
 
-  <script is:inline>
+  <script>
+import { supabase } from '../lib/supabase.js';
+
     const BASE_URL = "";
     let emailTerdaftar = ""; 
 
-    function tukarMode(mode) {
+    window.tukarMode = function(mode) {
       // Sembunyikan semua kartu
       document.getElementById('cardLogin').style.display = 'none';
       document.getElementById('cardRegister').style.display = 'none';
@@ -172,16 +174,16 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       }
     }
 
-    function togglePass(inputId, iconId) {
+    window.togglePass = function(inputId, iconId) {
       let p = document.getElementById(inputId); let i = document.getElementById(iconId);
       if (p.type === "password") { p.type = "text"; i.classList.remove('fa-eye-slash'); i.classList.add('fa-eye'); i.style.color = "var(--primary)"; }
       else { p.type = "password"; i.classList.remove('fa-eye'); i.classList.add('fa-eye-slash'); i.style.color = "var(--text-gray)"; }
     }
 
     // --- 1. PROSES LOGIN (DENGAN PEMISAHAN ROLE YANG BENAR) ---
-    document.getElementById("logPassword").addEventListener("keypress", function(e) { if(e.key === "Enter") { e.preventDefault(); prosesLogin(); } });
+    document.getElementById("logPassword").addEventListener("keypress", function(e) { if(e.key === "Enter") { e.preventDefault(); window.prosesLogin(); } });
     
-    function prosesLogin() {
+    window.prosesLogin = async function() {
       let identitas = document.getElementById('logIdentitas').value.trim();
       let pass = document.getElementById('logPassword').value.trim();
       let loader = document.getElementById('loadingLogin'); 
@@ -230,7 +232,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
         }).verifikasiLogin(identitas, pass);
     }
     // --- 2. PROSES REGISTER ---
-    function prosesRegister() {
+    window.prosesRegister = function() {
       let data = {
         nama: document.getElementById('regNama').value.trim(), username: document.getElementById('regUser').value.trim(),
         wa: document.getElementById('regWA').value.trim(), email: document.getElementById('regEmail').value.trim(),
@@ -271,7 +273,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
     }
 
     // --- 3. PROSES VERIFIKASI OTP ---
-    function prosesOTP() {
+    window.prosesOTP = function() {
       let otpInput = document.getElementById('inputOTP').value.trim();
       let loader = document.getElementById('loadingOTP'); let msgBox = document.getElementById('msgOTP'); let txtBox = document.getElementById('txtOTP'); let btn = document.getElementById('btnVerifikasi');
       

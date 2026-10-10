@@ -1,0 +1,409 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@11.19.0
+2 info using node@v24.21.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/bayuichsanalgani/Documents/kamawak-astro/.npmrc
+5 silly config load:file:/Users/bayuichsanalgani/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm install @supabase/supabase-js
+8 verbose argv "install" "@supabase/supabase-js" "--cache" ".npm-cache"
+9 verbose logfile logs-max:10 dir:/Users/bayuichsanalgani/Documents/kamawak-astro/.npm-cache/_logs/2026-10-10T13_48_31_537Z-
+10 verbose logfile /Users/bayuichsanalgani/Documents/kamawak-astro/.npm-cache/_logs/2026-10-10T13_48_31_537Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+13 verbose shrinkwrap failed to load node_modules/.package-lock.json out of date, updated: node_modules
+14 silly idealTree buildDeps
+15 silly fetch manifest @supabase/supabase-js@*
+16 silly packumentCache full:https://registry.npmjs.org/@supabase%2fsupabase-js cache-miss
+17 http fetch GET 200 https://registry.npmjs.org/npm 461ms
+18 http fetch GET 200 https://registry.npmjs.org/@supabase%2fsupabase-js 501ms (cache miss)
+19 silly packumentCache full:https://registry.npmjs.org/@supabase%2fsupabase-js set size:undefined disposed:false
+20 silly fetch manifest @opentelemetry/api@>=1.0.0
+21 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fapi cache-miss
+22 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2fapi 199ms (cache miss)
+23 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fapi set size:undefined disposed:false
+24 silly placeDep ROOT @supabase/supabase-js@2.117.3 OK for: kamawak-astro@0.0.1 want: *
+25 silly fetch manifest @supabase/auth-js@2.117.3
+26 silly packumentCache full:https://registry.npmjs.org/@supabase%2fauth-js cache-miss
+27 silly fetch manifest @supabase/storage-js@2.117.3
+28 silly packumentCache full:https://registry.npmjs.org/@supabase%2fstorage-js cache-miss
+29 silly fetch manifest @supabase/realtime-js@2.117.3
+30 silly packumentCache full:https://registry.npmjs.org/@supabase%2frealtime-js cache-miss
+31 silly fetch manifest @supabase/functions-js@2.117.3
+32 silly packumentCache full:https://registry.npmjs.org/@supabase%2ffunctions-js cache-miss
+33 silly fetch manifest @supabase/postgrest-js@2.117.3
+34 silly packumentCache full:https://registry.npmjs.org/@supabase%2fpostgrest-js cache-miss
+35 http fetch GET 200 https://registry.npmjs.org/@supabase%2fstorage-js 117ms (cache miss)
+36 silly packumentCache full:https://registry.npmjs.org/@supabase%2fstorage-js set size:undefined disposed:false
+37 http fetch GET 200 https://registry.npmjs.org/@supabase%2fauth-js 155ms (cache miss)
+38 silly packumentCache full:https://registry.npmjs.org/@supabase%2fauth-js set size:undefined disposed:false
+39 http fetch GET 200 https://registry.npmjs.org/@supabase%2ffunctions-js 318ms (cache miss)
+40 silly packumentCache full:https://registry.npmjs.org/@supabase%2ffunctions-js set size:undefined disposed:false
+41 http fetch GET 200 https://registry.npmjs.org/@supabase%2fpostgrest-js 342ms (cache miss)
+42 silly packumentCache full:https://registry.npmjs.org/@supabase%2fpostgrest-js set size:undefined disposed:false
+43 http fetch GET 200 https://registry.npmjs.org/@supabase%2frealtime-js 371ms (cache miss)
+44 silly packumentCache full:https://registry.npmjs.org/@supabase%2frealtime-js set size:undefined disposed:false
+45 silly placeDep ROOT @supabase/auth-js@2.117.3 OK for: @supabase/supabase-js@2.117.3 want: 2.117.3
+46 silly placeDep ROOT @supabase/functions-js@2.117.3 OK for: @supabase/supabase-js@2.117.3 want: 2.117.3
+47 silly placeDep ROOT @supabase/postgrest-js@2.117.3 OK for: @supabase/supabase-js@2.117.3 want: 2.117.3
+48 silly placeDep ROOT @supabase/realtime-js@2.117.3 OK for: @supabase/supabase-js@2.117.3 want: 2.117.3
+49 silly placeDep ROOT @supabase/storage-js@2.117.3 OK for: @supabase/supabase-js@2.117.3 want: 2.117.3
+50 silly fetch manifest @supabase/phoenix@0.4.5
+51 silly packumentCache full:https://registry.npmjs.org/@supabase%2fphoenix cache-miss
+52 silly fetch manifest iceberg-js@^0.8.1
+53 silly packumentCache full:https://registry.npmjs.org/iceberg-js cache-miss
+54 http fetch GET 200 https://registry.npmjs.org/iceberg-js 66ms (cache miss)
+55 silly packumentCache full:https://registry.npmjs.org/iceberg-js set size:undefined disposed:false
+56 http fetch GET 200 https://registry.npmjs.org/@supabase%2fphoenix 141ms (cache miss)
+57 silly packumentCache full:https://registry.npmjs.org/@supabase%2fphoenix set size:undefined disposed:false
+58 silly placeDep ROOT @supabase/phoenix@0.4.5 OK for: @supabase/realtime-js@2.117.3 want: 0.4.5
+59 silly placeDep ROOT iceberg-js@0.8.1 OK for: @supabase/storage-js@2.117.3 want: ^0.8.1
+60 silly reify moves {}
+61 silly audit bulk request {
+61 silly audit   '@astrojs/compiler-binding': [ '0.5.1' ],
+61 silly audit   '@astrojs/compiler-binding-android-arm64': [ '0.5.1' ],
+61 silly audit   '@astrojs/compiler-binding-darwin-arm64': [ '0.5.1' ],
+61 silly audit   '@astrojs/compiler-binding-darwin-x64': [ '0.5.1' ],
+61 silly audit   '@astrojs/compiler-binding-linux-arm64-gnu': [ '0.5.1' ],
+61 silly audit   '@astrojs/compiler-binding-linux-arm64-musl': [ '0.5.1' ],
+61 silly audit   '@astrojs/compiler-binding-linux-x64-gnu': [ '0.5.1' ],
+61 silly audit   '@astrojs/compiler-binding-linux-x64-musl': [ '0.5.1' ],
+61 silly audit   '@astrojs/compiler-binding-wasm32-wasi': [ '0.5.1' ],
+61 silly audit   '@astrojs/compiler-binding-win32-arm64-msvc': [ '0.5.1' ],
+61 silly audit   '@astrojs/compiler-binding-win32-x64-msvc': [ '0.5.1' ],
+61 silly audit   '@astrojs/compiler-rs': [ '0.5.1' ],
+61 silly audit   '@astrojs/internal-helpers': [ '0.12.0' ],
+61 silly audit   '@astrojs/markdown-satteri': [ '0.4.3' ],
+61 silly audit   '@astrojs/prism': [ '4.0.2' ],
+61 silly audit   '@astrojs/react': [ '7.0.1' ],
+61 silly audit   '@astrojs/telemetry': [ '3.3.3' ],
+61 silly audit   '@babel/helper-string-parser': [ '7.29.7' ],
+61 silly audit   '@babel/helper-validator-identifier': [ '7.29.7' ],
+61 silly audit   '@babel/parser': [ '7.29.9' ],
+61 silly audit   '@babel/types': [ '7.29.8' ],
+61 silly audit   '@bruits/satteri-darwin-arm64': [ '0.10.5' ],
+61 silly audit   '@bruits/satteri-darwin-x64': [ '0.10.5' ],
+61 silly audit   '@bruits/satteri-linux-arm64-gnu': [ '0.10.5' ],
+61 silly audit   '@bruits/satteri-linux-arm64-musl': [ '0.10.5' ],
+61 silly audit   '@bruits/satteri-linux-x64-gnu': [ '0.10.5' ],
+61 silly audit   '@bruits/satteri-linux-x64-musl': [ '0.10.5' ],
+61 silly audit   '@bruits/satteri-wasm32-wasi': [ '0.10.5' ],
+61 silly audit   '@emnapi/core': [ '1.11.1', '1.11.3' ],
+61 silly audit   '@emnapi/runtime': [ '1.11.1', '1.11.3' ],
+61 silly audit   '@emnapi/wasi-threads': [ '1.2.2', '1.2.3' ],
+61 silly audit   '@bruits/satteri-win32-arm64-msvc': [ '0.10.5' ],
+61 silly audit   '@bruits/satteri-win32-x64-msvc': [ '0.10.5' ],
+61 silly audit   '@capsizecss/unpack': [ '4.0.1' ],
+61 silly audit   '@clack/core': [ '1.5.1' ],
+61 silly audit   '@clack/prompts': [ '1.8.1' ],
+61 silly audit   '@img/colour': [ '1.1.0' ],
+61 silly audit   '@img/sharp-darwin-arm64': [ '0.35.5' ],
+61 silly audit   '@img/sharp-darwin-x64': [ '0.35.5' ],
+61 silly audit   '@img/sharp-freebsd-wasm32': [ '0.35.5' ],
+61 silly audit   '@img/sharp-libvips-darwin-arm64': [ '1.3.4' ],
+61 silly audit   '@img/sharp-libvips-darwin-x64': [ '1.3.4' ],
+61 silly audit   '@img/sharp-libvips-linux-arm': [ '1.3.4' ],
+61 silly audit   '@img/sharp-libvips-linux-arm64': [ '1.3.4' ],
+61 silly audit   '@img/sharp-libvips-linux-ppc64': [ '1.3.4' ],
+61 silly audit   '@img/sharp-libvips-linux-riscv64': [ '1.3.4' ],
+61 silly audit   '@img/sharp-libvips-linux-s390x': [ '1.3.4' ],
+61 silly audit   '@img/sharp-libvips-linux-x64': [ '1.3.4' ],
+61 silly audit   '@img/sharp-libvips-linuxmusl-arm64': [ '1.3.4' ],
+61 silly audit   '@img/sharp-libvips-linuxmusl-x64': [ '1.3.4' ],
+61 silly audit   '@img/sharp-linux-arm': [ '0.35.5' ],
+61 silly audit   '@img/sharp-linux-arm64': [ '0.35.5' ],
+61 silly audit   '@img/sharp-linux-ppc64': [ '0.35.5' ],
+61 silly audit   '@img/sharp-linux-riscv64': [ '0.35.5' ],
+61 silly audit   '@img/sharp-linux-s390x': [ '0.35.5' ],
+61 silly audit   '@img/sharp-linux-x64': [ '0.35.5' ],
+61 silly audit   '@img/sharp-linuxmusl-arm64': [ '0.35.5' ],
+61 silly audit   '@img/sharp-linuxmusl-x64': [ '0.35.5' ],
+61 silly audit   '@img/sharp-wasm32': [ '0.35.5' ],
+61 silly audit   '@img/sharp-webcontainers-wasm32': [ '0.35.5' ],
+61 silly audit   '@img/sharp-win32-arm64': [ '0.35.5' ],
+61 silly audit   '@img/sharp-win32-ia32': [ '0.35.5' ],
+61 silly audit   '@img/sharp-win32-x64': [ '0.35.5' ],
+61 silly audit   '@jridgewell/gen-mapping': [ '0.3.13' ],
+61 silly audit   '@jridgewell/remapping': [ '2.3.5' ],
+61 silly audit   '@jridgewell/resolve-uri': [ '3.1.2' ],
+61 silly audit   '@jridgewell/sourcemap-codec': [ '1.6.0' ],
+61 silly audit   '@jridgewell/trace-mapping': [ '0.3.31' ],
+61 silly audit   '@napi-rs/wasm-runtime': [ '1.2.5' ],
+61 silly audit   '@oslojs/encoding': [ '1.1.0' ],
+61 silly audit   '@oxc-project/types': [ '0.153.0' ],
+61 silly audit   '@rolldown/binding-android-arm-eabi': [ '1.2.13' ],
+61 silly audit   '@rolldown/binding-android-arm64': [ '1.2.13' ],
+61 silly audit   '@rolldown/binding-darwin-arm64': [ '1.2.13' ],
+61 silly audit   '@rolldown/binding-darwin-x64': [ '1.2.13' ],
+61 silly audit   '@rolldown/binding-freebsd-x64': [ '1.2.13' ],
+61 silly audit   '@rolldown/binding-linux-arm-gnueabihf': [ '1.2.13' ],
+61 silly audit   '@rolldown/binding-linux-arm64-gnu': [ '1.2.13' ],
+61 silly audit   '@rolldown/binding-linux-arm64-musl': [ '1.2.13' ],
+61 silly audit   '@rolldown/binding-linux-ppc64-gnu': [ '1.2.13' ],
+61 silly audit   '@rolldown/binding-linux-s390x-gnu': [ '1.2.13' ],
+61 silly audit   '@rolldown/binding-linux-x64-gnu': [ '1.2.13' ],
+61 silly audit   '@rolldown/binding-linux-x64-musl': [ '1.2.13' ],
+61 silly audit   '@rolldown/binding-openharmony-arm64': [ '1.2.13' ],
+61 silly audit   '@rolldown/binding-win32-arm64-msvc': [ '1.2.13' ],
+61 silly audit   '@rolldown/binding-win32-x64-msvc': [ '1.2.13' ],
+61 silly audit   '@rolldown/pluginutils': [ '1.0.1' ],
+61 silly audit   '@shikijs/core': [ '4.5.0' ],
+61 silly audit   '@shikijs/engine-javascript': [ '4.5.0' ],
+61 silly audit   '@shikijs/engine-oniguruma': [ '4.5.0' ],
+61 silly audit   '@shikijs/langs': [ '4.5.0' ],
+61 silly audit   '@shikijs/primitive': [ '4.5.0' ],
+61 silly audit   '@shikijs/themes': [ '4.5.0' ],
+61 silly audit   '@shikijs/types': [ '4.5.0' ],
+61 silly audit   '@shikijs/vscode-textmate': [ '10.0.2' ],
+61 silly audit   '@tailwindcss/node': [ '4.3.3' ],
+61 silly audit   lightningcss: [ '1.32.0', '1.33.0' ],
+61 silly audit   'lightningcss-android-arm64': [ '1.32.0', '1.33.0' ],
+61 silly audit   'lightningcss-darwin-arm64': [ '1.32.0', '1.33.0' ],
+61 silly audit   'lightningcss-darwin-x64': [ '1.32.0', '1.33.0' ],
+61 silly audit   'lightningcss-freebsd-x64': [ '1.32.0', '1.33.0' ],
+61 silly audit   'lightningcss-linux-arm-gnueabihf': [ '1.32.0', '1.33.0' ],
+61 silly audit   'lightningcss-linux-arm64-gnu': [ '1.32.0', '1.33.0' ],
+61 silly audit   'lightningcss-linux-arm64-musl': [ '1.32.0', '1.33.0' ],
+61 silly audit   'lightningcss-linux-x64-gnu': [ '1.32.0', '1.33.0' ],
+61 silly audit   'lightningcss-linux-x64-musl': [ '1.32.0', '1.33.0' ],
+61 silly audit   'lightningcss-win32-arm64-msvc': [ '1.32.0', '1.33.0' ],
+61 silly audit   'lightningcss-win32-x64-msvc': [ '1.32.0', '1.33.0' ],
+61 silly audit   'magic-string': [ '0.30.21', '1.4.3' ],
+61 silly audit   '@tailwindcss/oxide': [ '4.3.3' ],
+61 silly audit   '@tailwindcss/oxide-android-arm64': [ '4.3.3' ],
+61 silly audit   '@tailwindcss/oxide-darwin-arm64': [ '4.3.3' ],
+61 silly audit   '@tailwindcss/oxide-darwin-x64': [ '4.3.3' ],
+61 silly audit   '@tailwindcss/oxide-freebsd-x64': [ '4.3.3' ],
+61 silly audit   '@tailwindcss/oxide-linux-arm-gnueabihf': [ '4.3.3' ],
+61 silly audit   '@tailwindcss/oxide-linux-arm64-gnu': [ '4.3.3' ],
+61 silly audit   '@tailwindcss/oxide-linux-arm64-musl': [ '4.3.3' ],
+61 silly audit   '@tailwindcss/oxide-linux-x64-gnu': [ '4.3.3' ],
+61 silly audit   '@tailwindcss/oxide-linux-x64-musl': [ '4.3.3' ],
+61 silly audit   '@tailwindcss/oxide-wasm32-wasi': [ '4.3.3' ],
+61 silly audit   '@tailwindcss/oxide-win32-arm64-msvc': [ '4.3.3' ],
+61 silly audit   '@tailwindcss/oxide-win32-x64-msvc': [ '4.3.3' ],
+61 silly audit   '@tailwindcss/vite': [ '4.3.3' ],
+61 silly audit   '@tybys/wasm-util': [ '0.10.4' ],
+61 silly audit   '@types/estree': [ '1.0.9' ],
+61 silly audit   '@types/estree-jsx': [ '1.0.5' ],
+61 silly audit   '@types/hast': [ '3.0.5' ],
+61 silly audit   '@types/mdast': [ '4.0.4' ],
+61 silly audit   '@types/nlcst': [ '2.0.3' ],
+61 silly audit   '@types/react': [ '19.3.0' ],
+61 silly audit   '@types/react-dom': [ '19.3.0' ],
+61 silly audit   '@types/unist': [ '3.0.3' ],
+61 silly audit   '@ungap/structured-clone': [ '1.4.0' ],
+61 silly audit   '@vitejs/plugin-react': [ '6.1.2' ],
+61 silly audit   'am-i-vibing': [ '0.5.0' ],
+61 silly audit   anymatch: [ '3.1.3' ],
+61 silly audit   picomatch: [ '2.3.2', '4.0.7' ],
+61 silly audit   'aria-query': [ '5.3.2' ],
+61 silly audit   astro: [ '7.3.8' ],
+61 silly audit   'axobject-query': [ '4.1.0' ],
+61 silly audit   bail: [ '2.0.2' ],
+61 silly audit   boolbase: [ '1.0.0' ],
+61 silly audit   ccount: [ '2.0.1' ],
+61 silly audit   'character-entities-html4': [ '2.1.0' ],
+61 silly audit   'character-entities-legacy': [ '3.0.0' ],
+61 silly audit   chokidar: [ '5.0.0' ],
+61 silly audit   'ci-info': [ '4.4.0' ],
+61 silly audit   clsx: [ '2.1.1' ],
+61 silly audit   'comma-separated-tokens': [ '2.0.3' ],
+61 silly audit   commander: [ '11.1.0' ],
+61 silly audit   'common-ancestor-path': [ '2.0.0' ],
+61 silly audit   cookie: [ '2.0.1' ],
+61 silly audit   'cookie-es': [ '1.2.3' ],
+61 silly audit   crossws: [ '0.3.5' ],
+61 silly audit   'css-select': [ '6.0.0' ],
+61 silly audit   'css-tree': [ '3.2.1', '2.2.1' ],
+61 silly audit   'css-what': [ '7.0.0' ],
+61 silly audit   csso: [ '5.0.5' ],
+61 silly audit   'mdn-data': [ '2.0.28', '2.27.1' ],
+61 silly audit   csstype: [ '3.2.3' ],
+61 silly audit   defu: [ '6.1.7' ],
+61 silly audit   dequal: [ '2.0.3' ],
+61 silly audit   destr: [ '2.0.5' ],
+61 silly audit   'detect-libc': [ '2.1.2' ],
+61 silly audit   devalue: [ '5.9.4' ],
+61 silly audit   devlop: [ '1.1.0' ],
+61 silly audit   diff: [ '9.0.0' ],
+61 silly audit   'dom-serializer': [ '2.0.0' ],
+61 silly audit   domelementtype: [ '2.3.0' ],
+61 silly audit   domhandler: [ '5.0.3' ],
+61 silly audit   domutils: [ '3.2.2' ],
+61 silly audit   dset: [ '3.1.4' ],
+61 silly audit   'enhanced-resolve': [ '5.26.0' ],
+61 silly audit   entities: [ '4.5.0' ],
+61 silly audit   'es-module-lexer': [ '3.0.3' ],
+61 silly audit   eventemitter3: [ '5.0.4' ],
+61 silly audit   extend: [ '3.0.2' ],
+61 silly audit   'fast-string-truncated-width': [ '3.0.3' ],
+61 silly audit   'fast-string-width': [ '3.0.2' ],
+61 silly audit   'fast-wrap-ansi': [ '0.2.2' ],
+61 silly audit   fdir: [ '6.5.0' ],
+61 silly audit   'find-proc': [ '0.2.0' ],
+61 silly audit   flattie: [ '1.1.1' ],
+61 silly audit   fontace: [ '0.4.1' ],
+61 silly audit   fontkitten: [ '1.0.3' ],
+61 silly audit   fsevents: [ '2.3.3' ],
+61 silly audit   'get-tsconfig': [ '5.0.0-beta.6' ],
+61 silly audit   'github-slugger': [ '2.0.0' ],
+61 silly audit   'graceful-fs': [ '4.2.11' ],
+61 silly audit   h3: [ '1.15.11' ],
+61 silly audit   'hast-util-to-html': [ '9.0.5' ],
+61 silly audit   'hast-util-whitespace': [ '3.0.0' ],
+61 silly audit   'html-escaper': [ '3.0.3' ],
+61 silly audit   'html-void-elements': [ '3.0.0' ],
+61 silly audit   'http-cache-semantics': [ '4.3.0' ],
+61 silly audit   'iron-webcrypto': [ '1.2.1' ],
+61 silly audit   'is-docker': [ '4.0.0' ],
+61 silly audit   'is-plain-obj': [ '4.1.0' ],
+61 silly audit   jiti: [ '2.7.0' ],
+61 silly audit   'jsonc-parser': [ '3.3.1' ],
+61 silly audit   'lru-cache': [ '11.5.3' ],
+61 silly audit   magicast: [ '0.5.5' ],
+61 silly audit   'mdast-util-to-hast': [ '13.2.1' ],
+61 silly audit   'micromark-util-character': [ '2.1.1' ],
+61 silly audit   'micromark-util-encode': [ '2.0.1' ],
+61 silly audit   'micromark-util-sanitize-uri': [ '2.0.1' ],
+61 silly audit   'micromark-util-symbol': [ '2.0.1' ],
+61 silly audit   'micromark-util-types': [ '2.0.3' ],
+61 silly audit   mrmime: [ '2.0.1' ],
+61 silly audit   nanoid: [ '3.3.20' ],
+61 silly audit   neotraverse: [ '1.0.1' ],
+61 silly audit   'nlcst-to-string': [ '4.0.0' ],
+61 silly audit   'node-fetch-native': [ '1.6.7' ],
+61 silly audit   'node-mock-http': [ '1.0.5' ],
+61 silly audit   'normalize-path': [ '3.0.0' ],
+61 silly audit   'nth-check': [ '2.1.1' ],
+61 silly audit   obug: [ '3.0.0' ],
+61 silly audit   ofetch: [ '1.5.1' ],
+61 silly audit   ohash: [ '2.0.12' ],
+61 silly audit   'oniguruma-parser': [ '0.12.2' ],
+61 silly audit   'oniguruma-to-es': [ '4.3.6' ],
+61 silly audit   'p-limit': [ '7.3.3' ],
+61 silly audit   'p-queue': [ '9.3.3' ],
+61 silly audit   'p-timeout': [ '7.0.2' ],
+61 silly audit   'package-manager-detector': [ '1.9.0' ],
+61 silly audit   piccolore: [ '0.1.3' ],
+61 silly audit   picocolors: [ '1.1.1' ],
+61 silly audit   postcss: [ '8.5.29' ],
+61 silly audit   prismjs: [ '1.30.0' ],
+61 silly audit   'process-ancestry': [ '0.1.0' ],
+61 silly audit   'property-information': [ '7.2.0' ],
+61 silly audit   radix3: [ '1.1.2' ],
+61 silly audit   react: [ '19.3.0' ],
+61 silly audit   'react-dom': [ '19.3.0' ],
+61 silly audit   readdirp: [ '5.1.1' ],
+61 silly audit   regex: [ '6.1.0' ],
+61 silly audit   'regex-recursion': [ '6.0.2' ],
+61 silly audit   'regex-utilities': [ '2.3.0' ],
+61 silly audit   'resolve-pkg-maps': [ '1.0.0' ],
+61 silly audit   'retext-smartypants': [ '6.2.0' ],
+61 silly audit   rolldown: [ '1.2.13' ],
+61 silly audit   satteri: [ '0.10.5' ],
+61 silly audit   sax: [ '1.6.1' ],
+61 silly audit   scheduler: [ '0.28.0' ],
+61 silly audit   semver: [ '7.8.5' ],
+61 silly audit   sharp: [ '0.35.5' ],
+61 silly audit   shiki: [ '4.5.0' ],
+61 silly audit   sisteransi: [ '1.0.5' ],
+61 silly audit   'smol-toml': [ '1.9.1' ],
+61 silly audit   'source-map-js': [ '1.2.2' ],
+61 silly audit   'space-separated-tokens': [ '2.0.2' ],
+61 silly audit   'stringify-entities': [ '4.0.4' ],
+61 silly audit   svgo: [ '4.1.0' ],
+61 silly audit   tailwindcss: [ '4.3.3' ],
+61 silly audit   tapable: [ '2.3.3' ],
+61 silly audit   'tiny-inflate': [ '1.0.3' ],
+61 silly audit   tinyclip: [ '1.0.3' ],
+61 silly audit   tinyexec: [ '1.3.1' ],
+61 silly audit   tinyglobby: [ '0.2.17' ],
+61 silly audit   'trim-lines': [ '3.0.1' ],
+61 silly audit   trough: [ '2.2.0' ],
+61 silly audit   tslib: [ '2.8.1' ],
+61 silly audit   ufo: [ '1.6.4' ],
+61 silly audit   ultrahtml: [ '1.7.0' ],
+61 silly audit   uncrypto: [ '0.1.3' ],
+61 silly audit   undici: [ '8.11.2' ],
+61 silly audit   unified: [ '11.0.5' ],
+61 silly audit   unifont: [ '0.7.5' ],
+61 silly audit   'unist-util-is': [ '6.0.1' ],
+61 silly audit   'unist-util-position': [ '5.0.0' ],
+61 silly audit   'unist-util-stringify-position': [ '4.0.0' ],
+61 silly audit   'unist-util-visit': [ '5.1.0' ],
+61 silly audit   'unist-util-visit-parents': [ '6.0.2' ],
+61 silly audit   unstorage: [ '1.17.5' ],
+61 silly audit   verkit: [ '0.5.0' ],
+61 silly audit   vfile: [ '6.0.3' ],
+61 silly audit   'vfile-message': [ '4.0.3' ],
+61 silly audit   vite: [ '8.3.4' ],
+61 silly audit   vitefu: [ '1.1.3' ],
+61 silly audit   'xxhash-wasm': [ '1.1.0' ],
+61 silly audit   yaml: [ '2.9.1' ],
+61 silly audit   'yargs-parser': [ '22.0.0' ],
+61 silly audit   'yocto-queue': [ '1.2.2' ],
+61 silly audit   zod: [ '4.6.5' ],
+61 silly audit   zwitch: [ '2.0.4' ],
+61 silly audit   '@supabase/supabase-js': [ '2.117.3' ],
+61 silly audit   '@supabase/auth-js': [ '2.117.3' ],
+61 silly audit   '@supabase/functions-js': [ '2.117.3' ],
+61 silly audit   '@supabase/postgrest-js': [ '2.117.3' ],
+61 silly audit   '@supabase/realtime-js': [ '2.117.3' ],
+61 silly audit   '@supabase/storage-js': [ '2.117.3' ],
+61 silly audit   '@supabase/phoenix': [ '0.4.5' ],
+61 silly audit   'iceberg-js': [ '0.8.1' ]
+61 silly audit }
+62 http cache iceberg-js@https://registry.npmjs.org/iceberg-js/-/iceberg-js-0.8.1.tgz 0ms (cache hit)
+63 http cache @supabase/phoenix@https://registry.npmjs.org/@supabase/phoenix/-/phoenix-0.4.5.tgz 0ms (cache hit)
+64 http cache @supabase/storage-js@https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.117.3.tgz 0ms (cache hit)
+65 http cache @supabase/realtime-js@https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.117.3.tgz 0ms (cache hit)
+66 http cache @supabase/functions-js@https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.117.3.tgz 0ms (cache hit)
+67 http cache @supabase/postgrest-js@https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-2.117.3.tgz 0ms (cache hit)
+68 http cache @supabase/supabase-js@https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.117.3.tgz 0ms (cache hit)
+69 http cache @supabase/auth-js@https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.117.3.tgz 0ms (cache hit)
+70 silly tarball no local data for iceberg-js@https://registry.npmjs.org/iceberg-js/-/iceberg-js-0.8.1.tgz. Extracting by manifest.
+71 silly tarball no local data for @supabase/phoenix@https://registry.npmjs.org/@supabase/phoenix/-/phoenix-0.4.5.tgz. Extracting by manifest.
+72 http cache tslib@https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz 0ms (cache hit)
+73 silly tarball no local data for @supabase/storage-js@https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.117.3.tgz. Extracting by manifest.
+74 silly tarball no local data for @supabase/realtime-js@https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.117.3.tgz. Extracting by manifest.
+75 silly tarball no local data for @supabase/functions-js@https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.117.3.tgz. Extracting by manifest.
+76 silly tarball no local data for @supabase/postgrest-js@https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-2.117.3.tgz. Extracting by manifest.
+77 silly tarball no local data for @supabase/supabase-js@https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.117.3.tgz. Extracting by manifest.
+78 silly tarball no local data for @supabase/auth-js@https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.117.3.tgz. Extracting by manifest.
+79 silly tarball no local data for tslib@https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz. Extracting by manifest.
+80 http fetch GET 200 https://registry.npmjs.org/iceberg-js/-/iceberg-js-0.8.1.tgz 74ms (cache miss)
+81 http fetch GET 200 https://registry.npmjs.org/@supabase/phoenix/-/phoenix-0.4.5.tgz 129ms (cache miss)
+82 http fetch GET 200 https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.117.3.tgz 133ms (cache miss)
+83 http fetch GET 200 https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.117.3.tgz 139ms (cache miss)
+84 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 246ms
+85 silly audit report {}
+86 http fetch GET 200 https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz 280ms (cache miss)
+87 http fetch GET 200 https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.117.3.tgz 296ms (cache miss)
+88 http fetch GET 200 https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.117.3.tgz 357ms (cache miss)
+89 http fetch GET 200 https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-2.117.3.tgz 416ms (cache miss)
+90 http fetch GET 200 https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.117.3.tgz 621ms (cache miss)
+91 silly ADD node_modules/iceberg-js
+92 silly ADD node_modules/@supabase/phoenix
+93 silly ADD node_modules/@supabase/storage-js
+94 silly ADD node_modules/@supabase/realtime-js
+95 silly ADD node_modules/@supabase/postgrest-js
+96 silly ADD node_modules/@supabase/functions-js
+97 silly ADD node_modules/@supabase/auth-js
+98 silly ADD node_modules/@supabase/supabase-js
+99 silly ADD node_modules/tslib
+100 warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+100 warn install-scripts   fsevents@2.3.3 (install: (install scripts present))
+100 warn install-scripts
+100 warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+101 verbose cwd /Users/bayuichsanalgani/Documents/kamawak-astro
+102 verbose os Darwin 27.0.0
+103 verbose node v24.21.0
+104 verbose npm  v11.19.0
+105 notice
+105 notice New [31mmajor[39m version of npm available! [31m11.19.0[39m -> [34m12.2.0[39m
+105 notice Changelog: [34mhttps://github.com/npm/cli/releases/tag/v12.2.0[39m
+105 notice To update run: [4mnpm install -g npm@12.2.0[24m
+105 notice  { force: true, Symbol(proc-log.meta): true }
+106 verbose exit 0
+107 info ok
