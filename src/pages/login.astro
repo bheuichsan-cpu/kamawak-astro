@@ -153,36 +153,33 @@ import GASPolyfill from '../components/GASPolyfill.astro';
   </div>
 
   <script>
-import { supabase } from '../lib/supabase.js';
+    import { supabase } from '../lib/supabase.js';
 
-    const BASE_URL = "";
-    let emailTerdaftar = ""; 
+    // --- Fungsi Hash Sandi ---
+    async function hashPassword(password) {
+      const msgBuffer = new TextEncoder().encode(password);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
 
+    // --- Fungsi Beralih Antar Kartu (UI) ---
     window.tukarMode = function(mode) {
-      // Sembunyikan semua kartu
       document.getElementById('cardLogin').style.display = 'none';
-      document.getElementById('cardRegister').style.display = 'none';
+      document.getElementById('cardReg').style.display = 'none';
       document.getElementById('cardOTP').style.display = 'none';
-      
-      // Tampilkan kartu yang dipilih (otomatis memicu animasi fadeIn CSS)
-      if(mode === 'register') {
-        document.getElementById('cardRegister').style.display = 'block';
-      } else if(mode === 'otp') {
-        document.getElementById('cardOTP').style.display = 'block';
-      } else {
-        document.getElementById('cardLogin').style.display = 'block';
-      }
+      if(mode === 'login') document.getElementById('cardLogin').style.display = 'block';
+      if(mode === 'register') document.getElementById('cardReg').style.display = 'block';
+      if(mode === 'otp') document.getElementById('cardOTP').style.display = 'block';
     }
-
-    window.togglePass = function(inputId, iconId) {
-      let p = document.getElementById(inputId); let i = document.getElementById(iconId);
-      if (p.type === "password") { p.type = "text"; i.classList.remove('fa-eye-slash'); i.classList.add('fa-eye'); i.style.color = "var(--primary)"; }
-      else { p.type = "password"; i.classList.remove('fa-eye'); i.classList.add('fa-eye-slash'); i.style.color = "var(--text-gray)"; }
-    }
-
-    // --- 1. PROSES LOGIN (DENGAN PEMISAHAN ROLE YANG BENAR) ---
-    document.getElementById("logPassword").addEventListener("keypress", function(e) { if(e.key === "Enter") { e.preventDefault(); window.prosesLogin(); } });
     
+    window.togglePass = function(inputId, iconId) {
+      let ipt = document.getElementById(inputId); let icn = document.getElementById(iconId);
+      if(ipt.type === "password") { ipt.type = "text"; icn.className = "fa-solid fa-eye eye-btn"; } 
+      else { ipt.type = "password"; icn.className = "fa-solid fa-eye-slash eye-btn"; }
+    }
+
+    // --- 1. PROSES LOGIN ---
     window.prosesLogin = async function() {
       let identitas = document.getElementById('logIdentitas').value.trim();
       let pass = document.getElementById('logPassword').value.trim();
@@ -194,84 +191,91 @@ import { supabase } from '../lib/supabase.js';
       if (!identitas || !pass) { txtBox.innerText = "Identitas dan Sandi wajib diisi."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; return; }
       btn.style.display = "none"; loader.style.display = "block"; msgBox.style.display = "none";
 
-            // MENGGUNAKAN SUPABASE
-      const { data, error } = await supabase
+      let hashedPass = await hashPassword(pass);
+
+      // Coba cari dengan password yang sudah di-hash
+      let { data, error } = await supabase
         .from('users')
         .select('*')
         .or(`nama.eq."${identitas}",email.eq."${identitas}",username.eq."${identitas}",wa.eq."${identitas}"`)
-        .eq('password', pass)
+        .eq('password', hashedPass)
         .single();
         
+      if (error || !data) {
+          // Jika tidak ketemu, coba cari dengan plaintext (Migrasi)
+          let { data: dataLegacy, error: errLegacy } = await supabase
+            .from('users')
+            .select('*')
+            .or(`nama.eq."${identitas}",email.eq."${identitas}",username.eq."${identitas}",wa.eq."${identitas}"`)
+            .eq('password', pass)
+            .single();
+            
+          if (dataLegacy) {
+              data = dataLegacy;
+              // Update sandi ke versi hash secara background
+              await supabase.from('users').update({password: hashedPass}).eq('id', dataLegacy.id);
+          }
+      }
+      
       loader.style.display = "none"; btn.style.display = "block";
       
-      if (error || !data) {
+      if (!data) {
           txtBox.innerText = "Kredensial tidak valid atau tidak ditemukan."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
       } else {
           localStorage.setItem("kamawak_user", data.nama); 
           localStorage.setItem("kamawak_role", data.role);
           
           let roleStr = data.role.toLowerCase();
-          let halamanTujuan = "";
-          
-          if (roleStr.includes("admin")) {
-            halamanTujuan = "/admin";
-          } else if (roleStr.includes("owner") || roleStr.includes("mitra")) {
-            halamanTujuan = "/owner";
-          } else {
-            halamanTujuan = "/profil";
-          }
-          
-          let urlAkhir = halamanTujuan + "?u=" + encodeURIComponent(data.nama) + "&r=" + encodeURIComponent(data.role);
-          window.top.location.href = urlAkhir;
+          if (roleStr === "admin") { window.location.href = "/admin"; }
+          else if (roleStr === "owner" || roleStr === "mitra") { window.location.href = "/owner"; }
+          else { window.location.href = "/"; }
       }
-    }
-    // Variabel sementara untuk menyimpan data registrasi sebelum diverifikasi
+    };
+
     let tempRegData = null;
     let tempOTP = null;
 
     // --- 2. PROSES REGISTER ---
     window.prosesRegister = async function() {
+      let rawPass = document.getElementById('regPassword').value.trim();
+      let hashedPass = await hashPassword(rawPass);
+      
       let data = {
         nama: document.getElementById('regNama').value.trim(), username: document.getElementById('regUser').value.trim(),
         wa: document.getElementById('regWA').value.trim(), email: document.getElementById('regEmail').value.trim(),
-        password: document.getElementById('regPassword').value.trim()
+        password: hashedPass
       };
       
-      let passConfirm = document.getElementById('regConfirm').value.trim(); // Ambil input konfirmasi sandi
+      let passConfirm = document.getElementById('regConfirm').value.trim();
       
       let loader = document.getElementById('loadingReg'); let msgBox = document.getElementById('msgReg'); let txtBox = document.getElementById('txtReg'); let btn = document.getElementById('btnDaftar');
       
-      // Validasi kosong
-      if(!data.nama || !data.username || !data.wa || !data.email || !data.password || !passConfirm) {
-        txtBox.innerText = "Seluruh kolom wajib diisi!"; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; return;
-      }
+      if (!data.nama || !data.username || !data.wa || !data.email || !rawPass || !passConfirm) { txtBox.innerText = "Mohon lengkapi seluruh form pendaftaran."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; return; }
+      if (rawPass !== passConfirm) { txtBox.innerText = "Konfirmasi kata sandi tidak cocok!"; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; return; }
       
-      // Validasi Kecocokan Kata Sandi
-      if(data.password !== passConfirm) {
-        txtBox.innerText = "Kata sandi dan konfirmasi sandi tidak cocok!"; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; return;
-      }
-
       btn.style.display = "none"; loader.style.display = "block"; msgBox.style.display = "none";
-
-      // Cek duplikasi di Supabase terlebih dahulu
-      const { data: existingUser, error: errCheck } = await supabase
+      
+      // CEK SUPABASE
+      const { data: existingUser, error: errCek } = await supabase
         .from('users')
-        .select('id')
-        .or(`email.eq."${data.email}",username.eq."${data.username}",wa.eq."${data.wa}"`)
-        .limit(1);
-
+        .select('id, email, username, wa')
+        .or(`email.eq."${data.email}",username.eq."${data.username}",wa.eq."${data.wa}"`);
+        
       if (existingUser && existingUser.length > 0) {
-        loader.style.display = "none"; btn.style.display = "block";
-        txtBox.innerText = "Email, Username, atau WA sudah terdaftar di sistem kami."; 
-        msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
-        return;
+         let conflict = existingUser[0];
+         let msg = "Identitas sudah terdaftar: ";
+         if(conflict.email === data.email) msg += "Email ";
+         else if(conflict.username === data.username) msg += "Username ";
+         else if(conflict.wa === data.wa) msg += "WhatsApp ";
+         
+         loader.style.display = "none"; btn.style.display = "block";
+         txtBox.innerText = msg + "sudah digunakan. Silakan gunakan yang lain."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+         return;
       }
 
-      // Generate OTP lokal
       tempOTP = Math.floor(100000 + Math.random() * 900000).toString();
       tempRegData = data;
 
-      // Panggil GAS HANYA untuk mengirim email OTP (Tanpa simpan ke Spreadsheet)
       google.script.run.withFailureHandler(function(err) {
         loader.style.display = "none"; btn.style.display = "block";
         txtBox.innerText = "Error koneksi pengiriman email: " + err.message; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
@@ -279,17 +283,16 @@ import { supabase } from '../lib/supabase.js';
         try {
           let res = JSON.parse(resString); loader.style.display = "none"; btn.style.display = "block";
           if (res.success) {
-            emailTerdaftar = data.email; 
-            document.getElementById('displayEmail').innerText = emailTerdaftar;
-            tukarMode('otp');
+            document.getElementById('displayEmail').innerText = data.email;
+            window.tukarMode('otp');
           } else {
-            txtBox.innerText = res.error; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+            txtBox.innerText = "Gagal mengirim OTP: " + res.error; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
           }
-        } catch(e) {}
+        } catch(e) { loader.style.display = "none"; btn.style.display = "block"; txtBox.innerText = "Terjadi kesalahan sistem pengiriman OTP."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; }
       }).kirimEmailOTP(data.email, data.nama, tempOTP);
-    }
+    };
 
-    // --- 3. PROSES VERIFIKASI OTP ---
+    // --- 3. PROSES OTP ---
     window.prosesOTP = async function() {
       let otpInput = document.getElementById('inputOTP').value.trim();
       let loader = document.getElementById('loadingOTP'); let msgBox = document.getElementById('msgOTP'); let txtBox = document.getElementById('txtOTP'); let btn = document.getElementById('btnVerifikasi');
@@ -306,24 +309,25 @@ import { supabase } from '../lib/supabase.js';
             username: tempRegData.username,
             wa: tempRegData.wa,
             email: tempRegData.email,
-            password: tempRegData.password,
-            role: 'wisatawan' // Default role
+            password: tempRegData.password, // Sudah ter-hash
+            role: 'Wisatawan', // Default role dengan huruf besar agar konsisten
+            status_langganan: 'Aktif'
           }]);
 
         loader.style.display = "none"; btn.style.display = "block";
-
         if (errInsert) {
-          txtBox.innerText = "Gagal menyimpan data ke database: " + errInsert.message; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+           txtBox.innerText = "Gagal menyimpan pendaftaran: " + errInsert.message; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
         } else {
-          txtBox.innerText = "Akun berhasil dibuat! Silakan masuk."; msgBox.className = "msg-box msg-success"; msgBox.style.display = "block";
-          tempOTP = null; tempRegData = null; // Bersihkan memori
-          setTimeout(() => { document.getElementById('logIdentitas').value = emailTerdaftar; document.getElementById('inputOTP').value = ""; msgBox.style.display = "none"; tukarMode('login'); }, 2000);
+           // Auto-login setelah register
+           localStorage.setItem("kamawak_user", tempRegData.nama);
+           localStorage.setItem("kamawak_role", "Wisatawan");
+           Swal.fire('Berhasil', 'Akun Anda berhasil dibuat!', 'success').then(() => { window.location.href = "/"; });
         }
       } else {
         loader.style.display = "none"; btn.style.display = "block";
-        txtBox.innerText = "Kode OTP tidak valid atau kadaluarsa."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+        txtBox.innerText = "Kode OTP tidak valid atau salah."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
       }
-    }
-  </script>
+    };
+</script>
 </body>
 </html>
