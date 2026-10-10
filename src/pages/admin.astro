@@ -861,7 +861,7 @@ window.simpanCMS = async function() {
       return;
   }
   
-  let btn = event.target || document.querySelector('button[onclick="simpanCMS()"]');
+  let btn = (window.event && window.event.target) || document.querySelector('button[onclick="simpanCMS()"]');
   let oldText = btn.innerText;
   btn.innerText = "Menyimpan..."; btn.disabled = true;
   
