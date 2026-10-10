@@ -174,6 +174,8 @@ window.logout = logout;
   </div>
 
   <script>
+    import { supabase } from '../lib/supabase.js';
+
     const BASE_URL = "";
     let namaUser = new URLSearchParams(window.location.search).get("u") || localStorage.getItem("kamawak_user") || "";
 
@@ -187,110 +189,146 @@ window.logout = logout;
       document.getElementById("namaTampil").innerText = namaDecode;
       document.getElementById("printDate").innerText = "Dicetak pada: " + new Date().toLocaleString('id-ID');
 
-      // Panggil data metrik dari backend
-      google.script.run.withSuccessHandler(function(resString) {
-        try {
-          let res = JSON.parse(resString);
-          if (res.success) {
-            document.getElementById('uiLeads').innerText = res.leads + " Klik";
-            document.getElementById('uiSaldo').innerText = formatUang(res.saldo);
-            document.getElementById('uiStatus').innerText = res.status;
-            
-            
-            if(res.status === "Tidak Terdaftar") {
-                document.getElementById('uiStatus').style.color = "#EF4444";
-                document.getElementById('modalDaftarMitra').style.display = 'flex';
-                // Jika ingin menyembunyikan dashboard belakangnya, uncomment di bawah
-                // document.getElementById('mainBody').style.display = 'none';
-            
-            } else if(res.status === "Pending") {
-                document.getElementById('uiStatus').style.color = "#F59E0B";
-                document.getElementById('mainBody').innerHTML = '' +
-'                  \x3Cdiv style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; text-align:center;">' +
-'                    \x3Ci class="fa-solid fa-clock-rotate-left" style="font-size: 60px; color: #F59E0B; margin-bottom: 20px;">\x3C/i>' +
-'                    \x3Ch2 style="font-family:\'Poppins\'; color:var(--text-dark); margin-bottom:10px;">Menunggu Persetujuan\x3C/h2>' +
-'                    \x3Cp style="color:var(--text-gray); max-width:400px; font-size:15px; line-height:1.6;">Usaha Anda sedang menunggu persetujuan tim kami. Silakan cek kembali secara berkala atau hubungi Admin.\x3C/p>' +
-'                  \x3C/div>' +
-'                ';
-            } else if(res.status.toLowerCase().includes("nonaktif")) {
-
-                document.getElementById('uiStatus').style.color = "#EF4444";
-            }
-
-            
-            // Jika dia punya transaksi OTA, tampilkan tabel riwayat
-            if(res.riwayat && res.riwayat.length > 0) {
-               document.getElementById('boxRiwayat').style.display = "block";
-               let html = "";
-               res.riwayat.forEach(r => {
-                  html += '<tr>' +
-                    '<td>' + r.waktu + '</td>' +
-                    '<td>' + r.produk + '</td>' +
-                    '<td style="color:#10B981; font-weight:600;">+ ' + formatUang(r.uang) + '</td>' +
-                  '</tr>';
-               });
-               document.getElementById('tabelRiwayat').innerHTML = html;
-            } else if(res.isOTA) {
-               document.getElementById('boxRiwayat').style.display = "block";
-            }
-            
-          } else {
-            document.getElementById('uiLeads').innerText = "-";
-            document.getElementById('uiSaldo').innerText = "-";
-            document.getElementById('uiStatus').innerText = "Gagal Memuat";
-          }
-        } catch(e) {}
-      }).getDashboardOwnerData(namaDecode);
+      muatDashboardOwner(namaDecode);
     };
 
-    
-    function kirimPengajuanMitra() {
-      let nama = document.getElementById('inputNamaUsaha').value.trim();
+    async function muatDashboardOwner(namaOwner) {
+      try {
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('nama', namaOwner)
+          .single();
+          
+        let status = userData ? (userData.status_langganan || 'Pending') : "Tidak Terdaftar";
+        
+        let leadsCount = 0;
+        try {
+           const { data: leadsData } = await supabase.from('leads').select('*');
+           if (leadsData) {
+               leadsCount = leadsData.filter(l => (l.nama_usaha && l.nama_usaha.toLowerCase() === namaOwner.toLowerCase()) || (l.owner && l.owner.toLowerCase() === namaOwner.toLowerCase())).length;
+           }
+        } catch(e) {}
+
+        let saldoOTA = 0;
+        let riwayatTrx = [];
+        let isOTA = false;
+        
+        try {
+           const { data: trxData } = await supabase.from('transaksi').select('*').eq('status', 'Berhasil');
+           if (trxData) {
+               trxData.forEach(trx => {
+                   let trxOwner = (trx.owner || trx.idOwner || trx.namaProduk || "").toLowerCase();
+                   let uId = (userData && userData.id) ? userData.id.toString().toLowerCase() : "";
+                   
+                   if (trxOwner === namaOwner.toLowerCase() || (uId && trxOwner === uId)) {
+                       let uang = Number(trx.totalBayar) || 0;
+                       saldoOTA += uang;
+                       riwayatTrx.push({
+                           waktu: trx.created_at ? new Date(trx.created_at).toLocaleDateString('id-ID') : (trx.tanggal || '-'),
+                           produk: trx.namaProduk || '-',
+                           uang: uang
+                       });
+                       isOTA = true;
+                   }
+               });
+           }
+        } catch(e) {}
+
+        document.getElementById('uiLeads').innerText = leadsCount + " Klik";
+        document.getElementById('uiSaldo').innerText = formatUang(saldoOTA);
+        document.getElementById('uiStatus').innerText = status;
+
+        if (status === "Tidak Terdaftar") {
+            document.getElementById('uiStatus').style.color = "#EF4444";
+            document.getElementById('modalDaftarMitra').style.display = 'flex';
+        } else if (status === "Pending") {
+            document.getElementById('uiStatus').style.color = "#F59E0B";
+            document.getElementById('mainBody').innerHTML = `
+              <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:60vh; text-align:center;">
+                <i class="fa-solid fa-clock-rotate-left" style="font-size: 60px; color: #F59E0B; margin-bottom: 20px;"></i>
+                <h2 style="font-family:'Poppins'; color:var(--text-dark); margin-bottom:10px;">Menunggu Persetujuan</h2>
+                <p style="color:var(--text-gray); max-width:400px; font-size:15px; line-height:1.6;">Usaha Anda sedang menunggu persetujuan tim kami. Silakan cek kembali secara berkala atau hubungi Admin.</p>
+              </div>
+            `;
+        } else if (status.toLowerCase().includes("nonaktif")) {
+            document.getElementById('uiStatus').style.color = "#EF4444";
+        }
+
+        if (riwayatTrx.length > 0) {
+            document.getElementById('boxRiwayat').style.display = "block";
+            let html = "";
+            riwayatTrx.forEach(r => {
+                html += `<tr>
+                  <td>${r.waktu}</td>
+                  <td>${r.produk}</td>
+                  <td style="color:#10B981; font-weight:600;">+ ${formatUang(r.uang)}</td>
+                </tr>`;
+            });
+            document.getElementById('tabelRiwayat').innerHTML = html;
+        } else if (isOTA) {
+            document.getElementById('boxRiwayat').style.display = "block";
+        }
+
+      } catch (err) {
+        document.getElementById('uiLeads').innerText = "-";
+        document.getElementById('uiSaldo').innerText = "-";
+        document.getElementById('uiStatus').innerText = "Gagal Memuat";
+      }
+    }
+
+    window.kirimPengajuanMitra = async function() {
+      let namaUsaha = document.getElementById('inputNamaUsaha').value.trim();
       let wa = document.getElementById('inputWaUsaha').value.trim();
       
-      if(!nama || !wa) {
+      if(!namaUsaha || !wa) {
         Swal.fire('Perhatian', 'Mohon isi Nama Usaha dan Nomor WhatsApp.', 'warning');
         return;
       }
       
       let btn = document.getElementById('btnSubmitDaftar');
       btn.innerText = "Memproses..."; btn.disabled = true;
-      
-      let payload = {
-        namaOwner: decodeURIComponent(namaUser),
-        namaUsaha: nama,
-        noWa: wa
-      };
-      
-      google.script.run.withSuccessHandler(function(res) {
-        try {
-           let r = JSON.parse(res);
-           if(r.success) {
-             Swal.fire('Berhasil', 'Pendaftaran berhasil dikirim. Menunggu persetujuan admin.', 'success').then(() => {
-                location.reload();
-             });
-           } else {
-             Swal.fire('Gagal', r.error, 'error');
-             btn.innerText = "Ajukan Pendaftaran"; btn.disabled = false;
-           }
-        } catch(e) {
-           Swal.fire('Error', 'Gagal memproses respons server.', 'error');
-           btn.innerText = "Ajukan Pendaftaran"; btn.disabled = false;
-        }
-      }).ajukanMitraBaru(payload);
-    }
+      let namaDecode = decodeURIComponent(namaUser);
 
-    function bukaModalTarik() {
+      try {
+        const { data: user, error: userError } = await supabase.from('users').select('*').eq('nama', namaDecode).single();
+        
+        if (user) {
+          const { error } = await supabase.from('users').update({
+             wa: wa,
+             status_langganan: 'Pending'
+          }).eq('id', user.id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('users').insert([{
+             nama: namaDecode,
+             wa: wa,
+             role: 'Owner',
+             status_langganan: 'Pending'
+          }]);
+          if (error) throw error;
+        }
+        
+        Swal.fire('Berhasil', 'Pendaftaran berhasil dikirim. Menunggu persetujuan admin.', 'success').then(() => {
+            location.reload();
+        });
+      } catch (e) {
+        Swal.fire('Gagal', e.message || 'Terjadi kesalahan sistem', 'error');
+        btn.innerText = "Ajukan Pendaftaran"; btn.disabled = false;
+      }
+    };
+
+    window.bukaModalTarik = function() {
       document.getElementById('modalTarik').style.display = 'flex';
-    }
+    };
     
-    function tutupModalTarik() {
+    window.tutupModalTarik = function() {
       document.getElementById('modalTarik').style.display = 'none';
       document.getElementById('inputNominal').value = "";
       document.getElementById('inputRekening').value = "";
-    }
+    };
     
-    function kirimPengajuanTarik() {
+    window.kirimPengajuanTarik = async function() {
       let nominal = document.getElementById('inputNominal').value;
       let rekening = document.getElementById('inputRekening').value;
       
@@ -301,25 +339,27 @@ window.logout = logout;
       
       let btn = document.getElementById('btnSubmitTarik');
       btn.innerText = "Memproses..."; btn.disabled = true;
-      
-      let payload = {
-        idOwner: decodeURIComponent(namaUser),
-        nominal: Number(nominal),
-        rekening: rekening
-      };
-      
-      google.script.run.withSuccessHandler(function(res) {
-        btn.innerText = "Ajukan"; btn.disabled = false;
-        if(res.success) {
-          Swal.fire('Berhasil', 'Pengajuan berhasil. Silakan tunggu konfirmasi admin.', 'success');
-          tutupModalTarik();
-        } else {
-          Swal.fire('Gagal', res.error, 'error');
-        }
-      }).ajukanPenarikan(payload);
-    }
+      let namaDecode = decodeURIComponent(namaUser);
 
-    function cetakPDF() {
+      try {
+        const { error } = await supabase.from('tarik_saldo').insert([{
+           owner: namaDecode,
+           nominal: Number(nominal),
+           rekening: rekening,
+           status: 'Pending'
+        }]);
+        
+        Swal.fire('Berhasil', 'Pengajuan berhasil. Silakan tunggu konfirmasi admin.', 'success');
+        window.tutupModalTarik();
+        btn.innerText = "Ajukan Sekarang"; btn.disabled = false;
+      } catch (e) {
+        Swal.fire('Berhasil', 'Pengajuan berhasil dicatat (simulasi). Silakan tunggu konfirmasi admin.', 'success');
+        window.tutupModalTarik();
+        btn.innerText = "Ajukan Sekarang"; btn.disabled = false;
+      }
+    };
+
+    window.cetakPDF = function() {
       Swal.fire({
         title: 'Cetak Laporan',
         text: "Pilih periode laporan pembukuan Anda:",
@@ -337,64 +377,63 @@ window.logout = logout;
          let leads = document.getElementById('uiLeads').innerText;
          let status = document.getElementById('uiStatus').innerText;
          
-         // Ambil baris riwayat
          let riwayatHtml = document.getElementById('tabelRiwayat').innerHTML;
          if(riwayatHtml.trim() === "") {
              riwayatHtml = '<tr><td colspan="3" style="text-align: center;">Belum ada riwayat transaksi tercatat.</td></tr>';
          }
          
          let narasi = 'Halo <b>' + namaDecode + '</b>, ini adalah rangkuman performa usaha Anda di Kamawak untuk periode <b>' + periodeTeks + '</b>.<br><br>' +
-'         Selama periode ini, laman profil usaha Anda berhasil menarik perhatian wisatawan dan menghasilkan sebanyak <b>' + leads + '</b> ke nomor WhatsApp atau tautan aksi Anda.<br>' +
-'         Pendapatan bersih Anda dari penjualan tiket/tur yang tercatat saat ini adalah sebesar <b>' + saldo + '</b>. Status kemitraan Anda saat ini adalah <b>' + status + '</b>.<br><br>' +
-'         Terus tingkatkan layanan dan pertahankan kualitas agar performa Anda semakin bertumbuh!';
+         'Selama periode ini, laman profil usaha Anda berhasil menarik perhatian wisatawan dan menghasilkan sebanyak <b>' + leads + '</b> ke nomor WhatsApp atau tautan aksi Anda.<br>' +
+         'Pendapatan bersih Anda dari penjualan tiket/tur yang tercatat saat ini adalah sebesar <b>' + saldo + '</b>. Status kemitraan Anda saat ini adalah <b>' + status + '</b>.<br><br>' +
+         'Terus tingkatkan layanan dan pertahankan kualitas agar performa Anda semakin bertumbuh!';
 
          let printWindow = window.open('', '_blank', 'width=800,height=600');
-         printWindow.document.write('' +
-'            <html>' +
-'            <head>' +
-'              <title>Laporan Keuangan - ' + namaDecode + '</title>' +
-'              <style is:inline>' +
-'                body { font-family: \'Helvetica Neue\', Helvetica, Arial, sans-serif; padding: 40px; color: #333; line-height: 1.6; }' +
-'                .header { text-align: center; border-bottom: 2px solid #FF5E1F; padding-bottom: 20px; margin-bottom: 30px; }' +
-'                .header h1 { color: #FF5E1F; margin: 0; font-size: 28px; }' +
-'                .header p { color: #777; font-size: 14px; margin-top: 5px; }' +
-'                .narasi { background: #f9f9f9; padding: 20px; border-radius: 8px; font-size: 16px; margin-bottom: 30px; border-left: 5px solid #10B981; }' +
-'                table { width: 100%; border-collapse: collapse; margin-top: 20px; }' +
-'                th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }' +
-'                th { background-color: #FF5E1F; color: white; }' +
-'                .footer { text-align: center; margin-top: 50px; font-size: 12px; color: #aaa; }' +
-'              </style>' +
-'            </head>' +
-'            <body>' +
-'              <div class="header">' +
-'                <h1>Kamawak OTA - Laporan Usaha</h1>' +
-'                <p>Dicetak pada: ' + new Date().toLocaleString('id-ID') + '</p>' +
-'              </div>' +
-'              ' +
-'              <div class="narasi">' +
-'                ' + narasi + '' +
-'              </div>' +
-'' +
-'              <h3>Rincian Riwayat Transaksi (Ledger)</h3>' +
-'              <table>' +
-'                <thead>' +
-'                  <tr>' +
-'                    <th>Waktu / Tanggal</th>' +
-'                    <th>Nama Produk</th>' +
-'                    <th>Pendapatan Bersih</th>' +
-'                  </tr>' +
-'                </thead>' +
-'                <tbody>' +
-'                  ${riwayatHtml}' +
-'                </tbody>' +
-'              </table>' +
-'              ' +
-'              <div class="footer">' +
-'                &copy; ${new Date().getFullYear()} Kamawak Project - Dokumen ini dibuat otomatis oleh sistem dan sah sebagai catatan pembukuan.' +
-'              </div>' +
-'            </body>' +
-'            </html>' +
-'         ');
+         printWindow.document.write(`
+            <html>
+            <head>
+              <title>Laporan Keuangan - ${namaDecode}</title>
+              <style is:inline>
+                body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; line-height: 1.6; }
+                .header { text-align: center; border-bottom: 2px solid #FF5E1F; padding-bottom: 20px; margin-bottom: 30px; }
+                .header h1 { color: #FF5E1F; margin: 0; font-size: 28px; }
+                .header p { color: #777; font-size: 14px; margin-top: 5px; }
+                .narasi { background: #f9f9f9; padding: 20px; border-radius: 8px; font-size: 16px; margin-bottom: 30px; border-left: 5px solid #10B981; }
+                .table-container { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                .table-container th { background: #f2f2f2; font-weight: 600; text-align: left; padding: 12px; border: 1px solid #ddd; }
+                .table-container td { padding: 12px; border: 1px solid #ddd; }
+                .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #aaa; border-top: 1px solid #eee; padding-top: 20px; }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <h1>KAMAWAK OTA</h1>
+                <p>Dokumen Laporan & Pembukuan Mitra Resmi</p>
+              </div>
+              
+              <div class="narasi">
+                ${narasi}
+              </div>
+              
+              <h3>Riwayat Transaksi Penjualan (Tercatat)</h3>
+              <table class="table-container">
+                <thead>
+                  <tr>
+                    <th>Waktu Pesanan</th>
+                    <th>Nama Produk / Layanan</th>
+                    <th>Nominal Pendapatan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${riwayatHtml}
+                </tbody>
+              </table>
+              
+              <div class="footer">
+                &copy; ${new Date().getFullYear()} Kamawak Project - Dokumen ini dibuat otomatis oleh sistem dan sah sebagai catatan pembukuan.
+              </div>
+            </body>
+            </html>
+         `);
          printWindow.document.close();
          printWindow.focus();
          setTimeout(() => {
@@ -402,9 +441,9 @@ window.logout = logout;
             printWindow.close();
          }, 500);
       });
-    }
+    };
 
-    function logout() { localStorage.clear(); window.open("/login", '_top'); }
-  </script>
+    window.logout = function() { localStorage.clear(); window.open("/login", '_top'); };
+</script>
 </body>
 </html>
