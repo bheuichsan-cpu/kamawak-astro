@@ -251,7 +251,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 
 
 
-  <script is:inline>
+  <script>
     const BASE_URL = "";
     let dataMaster = []; let layoutMaster = []; 
     let kategoriAktif = 'Semua';
@@ -351,7 +351,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
         }).getAdsData();
     }
     
-    function klikIklanServer(baris, linkTujuan) {
+    window.klikIklanServer = function(baris, linkTujuan) {
       google.script.run.catatMetrikIklan(baris, 'klik');
       if (linkTujuan && (linkTujuan.startsWith('http') || linkTujuan.startsWith('www'))) {
           if(!linkTujuan.startsWith('http')) linkTujuan = 'https://' + linkTujuan;
@@ -390,7 +390,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       }, 3500);
     }
 
-    function klikKotaPintas(namaKota) { document.getElementById('searchInput').value = namaKota; panggilDataServer(); window.scrollTo({ top: document.getElementById('areaKatalog').offsetTop - 20, behavior: 'smooth' }); }
+    window.klikKotaPintas = function(namaKota) { document.getElementById('searchInput').value = namaKota; panggilDataServer(); window.scrollTo({ top: document.getElementById('areaKatalog').offsetTop - 20, behavior: 'smooth' }); }
     function handleEnter(e) { if (e.key === 'Enter') panggilDataServer(); }
     function formatUang(angka) { return "Rp " + Number(String(angka).replace(/[^0-9]/g, '') || 0).toLocaleString('id-ID'); }
 
@@ -498,9 +498,9 @@ import GASPolyfill from '../components/GASPolyfill.astro';
         }
       });
     }
-    function filterKategori(element, kategori) { document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active')); element.classList.add('active'); kategoriAktif = kategori; terapkanFilterDanUrutan(); window.scrollTo({ top: document.getElementById('areaKatalog').offsetTop - 130, behavior: 'smooth' }); }
-    function trackAndGo(event, namaUsaha, jenisTombol, linkTarget) { event.preventDefault(); event.stopPropagation(); if(linkTarget && linkTarget !== "") { window.open(linkTarget, '_blank'); } else { Swal.fire('Oops', 'Tautan belum tersedia.', 'info'); return; } google.script.run.simpanLead(namaUsaha, jenisTombol); }
-    function goToPDP(id) { 
+    window.filterKategori = function(element, kategori) { document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active')); element.classList.add('active'); kategoriAktif = kategori; terapkanFilterDanUrutan(); window.scrollTo({ top: document.getElementById('areaKatalog').offsetTop - 130, behavior: 'smooth' }); }
+    window.trackAndGo = function(event, namaUsaha, jenisTombol, linkTarget) { event.preventDefault(); event.stopPropagation(); if(linkTarget && linkTarget !== "") { window.open(linkTarget, '_blank'); } else { Swal.fire('Oops', 'Tautan belum tersedia.', 'info'); return; } google.script.run.simpanLead(namaUsaha, jenisTombol); }
+    window.goToPDP = function(id) { 
       // Menggunakan _top agar lolos dari keamanan Iframe Google
       window.open(BASE_URL + "/pdp?id=" + id, '_top'); 
     }
