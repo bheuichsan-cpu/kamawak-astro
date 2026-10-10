@@ -74,7 +74,8 @@ import GASPolyfill from '../components/GASPolyfill.astro';
     </div>
   </div>
 
-  <script is:inline>
+  <script>
+    import { supabase } from '../lib/supabase.js';
     const BASE_URL = "";
 
     function formatUang(angka) { return "Rp " + Number(angka || 0).toLocaleString('id-ID'); }
@@ -105,58 +106,61 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       loadHistoriPesanan(activeUser);
     };
 
-    function loadHistoriPesanan(user) {
-      google.script.run
-        .withSuccessHandler(function(resStr) {
-          try {
-            let res = JSON.parse(resStr);
-            let html = "";
-            if(res.success && res.data.length > 0) {
-              res.data.forEach(item => {
-                let badgeClass = "status-menunggu";
-                let statusText = item.status.toLowerCase();
-                if(statusText.includes("sukses") || statusText.includes("lunas")) badgeClass = "status-lunas";
-                if(statusText.includes("batal") || statusText.includes("gagal")) badgeClass = "status-batal";
-                
-                html += `
-                  <div class="order-item">
-                    <div class="order-header">
-                      <span><i class="fa-regular fa-clock"></i> ${item.tanggalPesan}</span>
-                      <span class="order-status ${badgeClass}">${item.status}</span>
-                    </div>
-                    <div class="order-body">
-                      <div>
-                        <div class="order-title">${item.namaProduk}</div>
-                        <div class="order-detail">
-                          <i class="fa-solid fa-calendar-day"></i> Tgl Wisata: ${item.tanggalWisata} <br>
-                          <i class="fa-solid fa-users"></i> ${item.pax} Pax | Paket: ${item.paket}
-                        </div>
-                      </div>
-                      <div class="order-price">${formatUang(item.totalBayar)}</div>
+    async function loadHistoriPesanan(user) {
+      try {
+        const { data, error } = await supabase
+          .from('transaksi')
+          .select('*')
+          .eq('user', user)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        let html = "";
+        if(data && data.length > 0) {
+          data.forEach(item => {
+            let badgeClass = "status-menunggu";
+            let statusText = (item.status || "menunggu").toLowerCase();
+            if(statusText.includes("sukses") || statusText.includes("berhasil") || statusText.includes("lunas")) badgeClass = "status-lunas";
+            if(statusText.includes("batal") || statusText.includes("gagal")) badgeClass = "status-batal";
+            
+            let tglPesan = item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-';
+            let tglWisata = item.tanggal || '-';
+
+            html += `
+              <div class="order-item">
+                <div class="order-header">
+                  <span><i class="fa-regular fa-clock"></i> ${tglPesan}</span>
+                  <span class="order-status ${badgeClass}">${item.status || 'Berhasil'}</span>
+                </div>
+                <div class="order-body">
+                  <div>
+                    <div class="order-title">${item.namaProduk || '-'}</div>
+                    <div class="order-detail">
+                      <i class="fa-solid fa-calendar-day"></i> Tgl Wisata: ${tglWisata} <br>
+                      <i class="fa-solid fa-users"></i> ${item.pax || 0} Pax | Paket: ${item.paket || '-'}
                     </div>
                   </div>
-                `;
-              });
-            } else {
-              html = `
-                <div class="empty-state">
-                  <i class="fa-solid fa-receipt"></i>
-                  <p>Belum ada histori pesanan.<br>Yuk mulai petualangan Anda bersama Kamawak!</p>
+                  <div class="order-price">${formatUang(item.totalBayar)}</div>
                 </div>
-              `;
-            }
-            document.getElementById("orderList").innerHTML = html;
-          } catch(e) {
-            document.getElementById("orderList").innerHTML = `<div class="empty-state">Gagal memuat data.</div>`;
-          }
-        })
-        .withFailureHandler(function(err) {
-           document.getElementById("orderList").innerHTML = `<div class="empty-state">Gagal memuat data: ${err}</div>`;
-        })
-        .getHistoriPesanan(user);
+              </div>
+            `;
+          });
+        } else {
+          html = `
+            <div class="empty-state">
+              <i class="fa-solid fa-receipt"></i>
+              <p>Belum ada histori pesanan.<br>Yuk mulai petualangan Anda bersama Kamawak!</p>
+            </div>
+          `;
+        }
+        document.getElementById("orderList").innerHTML = html;
+      } catch (err) {
+        document.getElementById("orderList").innerHTML = `<div class="empty-state">Gagal memuat data: ${err.message}</div>`;
+      }
     }
 
-    function kembaliKeHome() {
+    window.kembaliKeHome = function() {
       window.open(BASE_URL + "/", "_top");
     }
   </script>
