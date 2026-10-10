@@ -83,8 +83,10 @@ import GASPolyfill from '../components/GASPolyfill.astro';
   
     /* RESPONSIVE DESIGN (MOBILE) */
     @media (max-width: 768px) {
-        .navbar { padding: 12px 15px; }
-        .logo { font-size: 20px; }
+        .navbar { padding: 8px 10px; flex-direction: row; justify-content: space-between; align-items: center; }
+        .logo { font-size: 18px; }
+        .btn-back { padding: 8px !important; font-size: 0 !important; }
+        .btn-back i { font-size: 14px !important; margin: 0 !important; }
         .product-img { height: 250px; }
         .container { padding: 0 15px; margin: 15px auto; }
         .product-title { font-size: 22px; }
