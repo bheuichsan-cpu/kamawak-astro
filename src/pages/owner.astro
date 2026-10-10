@@ -52,12 +52,15 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 
     /* RESPONSIVE DESIGN (MOBILE) */
     @media (max-width: 768px) {
-        .navbar { padding: 12px 15px; flex-direction: column; gap: 10px; }
-        .stats-grid { grid-template-columns: 1fr; gap: 15px; }
-        .container { padding: 0 15px; margin: 20px auto; }
-        .welcome-header h1 { font-size: 22px; }
-        .stat-card { flex-direction: column; text-align: center; gap: 15px; }
-        .stat-icon { width: 60px; height: 60px; font-size: 24px; margin: 0 auto; }
+        .navbar { padding: 12px 15px; flex-direction: row; justify-content: space-between; align-items: center; }
+        .navbar div { display: flex; gap: 5px; align-items: center; }
+        .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .container { padding: 0 10px; margin: 10px auto; }
+        .welcome-header h1 { font-size: 18px; }
+        .stat-card { flex-direction: column; text-align: center; gap: 10px; padding: 15px; }
+        .stat-info h3 { font-size: 12px; }
+        .stat-info .value { font-size: 20px; }
+        .stat-icon { width: 40px; height: 40px; font-size: 18px; margin: 0 auto; }
         table { display: block; overflow-x: auto; white-space: nowrap; }
     }
   </style>
