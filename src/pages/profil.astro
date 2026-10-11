@@ -267,7 +267,7 @@ import BottomNav from '../components/BottomNav.astro';
     </div>
     
     <!-- KARTU VOUCHER & KUPON DISKON SAYA -->
-    <div class="card" style="background: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 100%); border-left: 4px solid var(--primary);">
+    <div class="card" id="cardVoucherProfil" style="background: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 100%); border-left: 4px solid var(--primary);">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
         <div class="section-title" style="margin-bottom: 0;"><i class="fa-solid fa-tags" style="color: var(--primary);"></i> Kupon Diskon Spesial Anda</div>
         <span style="font-size: 11px; background: #FFEDD5; color: #EA580C; font-weight: 700; padding: 3px 8px; border-radius: 12px;">Siap Digunakan</span>
@@ -727,13 +727,21 @@ import BottomNav from '../components/BottomNav.astro';
 
     function muatVoucherProfil() {
       const container = document.getElementById('listVoucherProfil');
+      const card = document.getElementById('cardVoucherProfil');
       if (!container) return;
+
+      const masterAktif = localStorage.getItem('kamawak_promo_master_aktif');
+      if (masterAktif === 'false') {
+        if (card) card.style.display = 'none';
+        return;
+      }
+      if (card) card.style.display = 'block';
+
       let raw = localStorage.getItem('kamawak_promo_codes');
       let list = [];
-      try {
-        if (raw) list = JSON.parse(raw);
-      } catch(e) {}
-      if (!list || list.length === 0) {
+      if (raw !== null && raw !== undefined) {
+        try { list = JSON.parse(raw); } catch(e) {}
+      } else {
         list = [
           { kode: 'MINANGSERU', tipe: 'persen', nilai: 10, min: 100000, deskripsi: 'Diskon 10% Spesial Jelajah Minangkabau', aktif: true },
           { kode: 'HEMAT50K', tipe: 'nominal', nilai: 50000, min: 200000, deskripsi: 'Potongan Langsung Rp 50.000', aktif: true },
@@ -741,8 +749,15 @@ import BottomNav from '../components/BottomNav.astro';
         ];
       }
 
+      const activeList = Array.isArray(list) ? list.filter(p => p.aktif !== false) : [];
+
+      if (activeList.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-gray); font-size: 13px; padding: 20px; background: #F9FAFB; border-radius: 8px;"><i class="fa-solid fa-tag"></i> Saat ini belum ada kupon promo aktif. Pantau terus penawaran menarik berikutnya!</div>';
+        return;
+      }
+
       let html = '';
-      list.filter(p => p.aktif !== false).forEach(p => {
+      activeList.forEach(p => {
         const diskonBadge = p.tipe === 'persen' ? `${p.nilai}% OFF` : `Hemat Rp ${Number(p.nilai).toLocaleString('id-ID')}`;
         html += `
           <div style="background: white; border: 1px dashed #FDBA74; border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
@@ -760,6 +775,21 @@ import BottomNav from '../components/BottomNav.astro';
         `;
       });
       container.innerHTML = html;
+    }
+
+    // Sinkronisasi cloud promo pada profil
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run.withSuccessHandler(function(config) {
+        if (!config) return;
+        if (config.VOUCHER_PROMO) {
+          let strVal = typeof config.VOUCHER_PROMO === 'string' ? config.VOUCHER_PROMO : JSON.stringify(config.VOUCHER_PROMO);
+          localStorage.setItem("kamawak_promo_codes", strVal);
+        }
+        if (config.FITUR_VOUCHER_AKTIF !== undefined) {
+          localStorage.setItem("kamawak_promo_master_aktif", String(config.FITUR_VOUCHER_AKTIF));
+        }
+        muatVoucherProfil();
+      }).getPengaturan();
     }
 
     window.salinKuponProfil = function(kode) {

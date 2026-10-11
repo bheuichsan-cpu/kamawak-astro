@@ -979,7 +979,7 @@ import BottomNav from '../components/BottomNav.astro';
 
   <!-- TAB MANAJEMEN VOUCHER & KODE PROMO -->
   <div id="tabPromo" class="tab-content" style="display:none;">
-    <div class="admin-header" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+    <div class="admin-header" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
       <div>
         <h2 style="margin:0;"><i class="fa-solid fa-tags" style="color: var(--primary);"></i> Manajemen Voucher & Kode Promo</h2>
         <p style="color:var(--text-gray); font-size:14px; margin: 4px 0 0 0;">Kelola kupon diskon untuk wisatawan pada saat checkout pemesanan paket wisata.</p>
@@ -987,6 +987,27 @@ import BottomNav from '../components/BottomNav.astro';
       <button class="btn-admin" onclick="bukaModalTambahPromo()" style="background: var(--primary); display: inline-flex; align-items: center; gap: 8px;">
         <i class="fa-solid fa-plus"></i> Tambah Kupon Baru
       </button>
+    </div>
+
+    <!-- Master Switch Fitur Voucher Global -->
+    <div style="background: white; border: 1px solid #E5E7EB; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 38px; height: 38px; border-radius: 10px; background: #FFF7ED; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 17px;">
+          <i class="fa-solid fa-power-off"></i>
+        </div>
+        <div>
+          <div style="font-weight: 700; font-size: 13.5px; color: var(--text-dark);">Master Kontrol Fitur Voucher Promo</div>
+          <div style="font-size: 12px; color: var(--text-gray);">Jika dimatikan, seluruh banner kupon di Beranda dan kolom voucher di PDP akan disembunyikan.</div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span id="badgeMasterPromo" style="font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px; background: #ECFDF5; color: #059669;">
+          <i class="fa-solid fa-circle-check"></i> Fitur Aktif
+        </span>
+        <button id="btnToggleMasterPromo" onclick="toggleMasterPromo()" class="btn-admin" style="background: #F3F4F6; color: #374151; font-size: 12.5px; padding: 6px 14px; border: 1px solid #D1D5DB; cursor: pointer;">
+          <i class="fa-solid fa-power-off"></i> Matikan Fitur
+        </button>
+      </div>
     </div>
 
     <!-- Ringkasan Statistik Voucher -->
@@ -2483,12 +2504,24 @@ window.muatPengaturan = function() {
                 if(config.PROFIL_TIKTOK && document.getElementById('profTikTok')) document.getElementById('profTikTok').value = config.PROFIL_TIKTOK;
                 if(config.PROFIL_FB && document.getElementById('profFB')) document.getElementById('profFB').value = config.PROFIL_FB;
 
+                if (config.VOUCHER_PROMO) {
+                    let strVal = typeof config.VOUCHER_PROMO === 'string' ? config.VOUCHER_PROMO : JSON.stringify(config.VOUCHER_PROMO);
+                    localStorage.setItem("kamawak_promo_codes", strVal);
+                }
+                if (config.FITUR_VOUCHER_AKTIF !== undefined) {
+                    localStorage.setItem("kamawak_promo_master_aktif", String(config.FITUR_VOUCHER_AKTIF));
+                }
+                if (typeof window.muatDaftarPromo === 'function') {
+                    window.muatDaftarPromo();
+                }
+
                 updateNavbarLogo();
             })
             .getPengaturan();
     }
 };
 
+// ==========================================
 // ==========================================
 // FITUR: MANAJEMEN VOUCHER PROMO ADMIN
 // ==========================================
@@ -2498,30 +2531,81 @@ const DEFAULT_ADMIN_PROMOS = [
   { kode: 'PROMOAWAL', tipe: 'persen', nilai: 15, min: 150000, deskripsi: 'Diskon 15% Eksklusif Wisatawan Baru', aktif: true }
 ];
 
+function isMasterPromoAktif() {
+  let val = localStorage.getItem('kamawak_promo_master_aktif');
+  if (val === null || val === undefined) return true;
+  return val === 'true';
+}
+
 function getPromosFromStorage() {
   let raw = localStorage.getItem('kamawak_promo_codes');
-  if (!raw) {
+  if (raw === null || raw === undefined) {
     localStorage.setItem('kamawak_promo_codes', JSON.stringify(DEFAULT_ADMIN_PROMOS));
     return DEFAULT_ADMIN_PROMOS;
   }
   try {
     let parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      localStorage.setItem('kamawak_promo_codes', JSON.stringify(DEFAULT_ADMIN_PROMOS));
-      return DEFAULT_ADMIN_PROMOS;
-    }
+    if (!Array.isArray(parsed)) return [];
     return parsed;
   } catch(e) {
-    return DEFAULT_ADMIN_PROMOS;
+    return [];
   }
 }
+
+function syncPromosToCloud(promos, masterAktif) {
+  localStorage.setItem('kamawak_promo_codes', JSON.stringify(promos));
+  localStorage.setItem('kamawak_promo_master_aktif', String(masterAktif));
+
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run
+      .withSuccessHandler(function() {})
+      .simpanPengaturanForm([
+        { key: 'VOUCHER_PROMO', value: JSON.stringify(promos), desc: 'Daftar Voucher Promo & Kupon Diskon' },
+        { key: 'FITUR_VOUCHER_AKTIF', value: String(masterAktif), desc: 'Status Fitur Voucher Global (true/false)' }
+      ]);
+  }
+}
+
+window.toggleMasterPromo = function() {
+  const current = isMasterPromoAktif();
+  const next = !current;
+  const promos = getPromosFromStorage();
+  syncPromosToCloud(promos, next);
+  muatDaftarPromo();
+  Swal.fire({
+    icon: next ? 'success' : 'warning',
+    title: next ? 'Fitur Voucher Diaktifkan' : 'Fitur Voucher Dimatikan',
+    text: next ? 'Voucher promo kini aktif dan dapat digunakan di website.' : 'Seluruh voucher promo dan kolom kupon kini disembunyikan dari Beranda & PDP.',
+    timer: 2000,
+    showConfirmButton: false
+  });
+};
 
 window.muatDaftarPromo = function() {
   const tbody = document.getElementById('tablePromoBody');
   if (!tbody) return;
 
   const promos = getPromosFromStorage();
-  
+  const masterAktif = isMasterPromoAktif();
+
+  const badgeMaster = document.getElementById('badgeMasterPromo');
+  const btnMaster = document.getElementById('btnToggleMasterPromo');
+  if (badgeMaster && btnMaster) {
+    if (masterAktif) {
+      badgeMaster.style.background = '#ECFDF5';
+      badgeMaster.style.color = '#059669';
+      badgeMaster.innerHTML = '<i class="fa-solid fa-circle-check"></i> Fitur Aktif';
+      btnMaster.innerHTML = '<i class="fa-solid fa-power-off"></i> Matikan Fitur';
+      btnMaster.style.color = '#DC2626';
+    } else {
+      badgeMaster.style.background = '#FEE2E2';
+      badgeMaster.style.color = '#DC2626';
+      badgeMaster.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Fitur Nonaktif';
+      btnMaster.innerHTML = '<i class="fa-solid fa-power-off"></i> Aktifkan Fitur';
+      btnMaster.style.color = '#059669';
+    }
+  }
+
   let totalAktif = 0;
   let totalPersen = 0;
   let totalNominal = 0;
@@ -2536,7 +2620,7 @@ window.muatDaftarPromo = function() {
   const elAktif = document.getElementById('valPromoAktif');
   const elTipe = document.getElementById('valPromoTipe');
   if (elTotal) elTotal.innerText = promos.length;
-  if (elAktif) elAktif.innerText = totalAktif;
+  if (elAktif) elAktif.innerText = masterAktif ? totalAktif : '0 (Fitur Off)';
   if (elTipe) elTipe.innerText = `${totalPersen} % / ${totalNominal} Rp`;
 
   if (promos.length === 0) {
@@ -2662,7 +2746,8 @@ window.simpanPromoBaru = function() {
     aktif: true
   });
 
-  localStorage.setItem('kamawak_promo_codes', JSON.stringify(list));
+  const masterAktif = isMasterPromoAktif();
+  syncPromosToCloud(list, masterAktif);
   tutupModalTambahPromo();
   muatDaftarPromo();
   Swal.fire('Kupon Dibuat! 🎉', `Voucher diskon <strong>${kode}</strong> berhasil disimpan dan langsung aktif di checkout PDP.`, 'success');
@@ -2672,7 +2757,8 @@ window.toggleStatusPromo = function(index) {
   const list = getPromosFromStorage();
   if (!list[index]) return;
   list[index].aktif = !list[index].aktif;
-  localStorage.setItem('kamawak_promo_codes', JSON.stringify(list));
+  const masterAktif = isMasterPromoAktif();
+  syncPromosToCloud(list, masterAktif);
   muatDaftarPromo();
   Swal.fire({
     toast: true,
@@ -2701,7 +2787,8 @@ window.hapusPromoAdmin = function(index) {
   }).then((res) => {
     if (res.isConfirmed) {
       list.splice(index, 1);
-      localStorage.setItem('kamawak_promo_codes', JSON.stringify(list));
+      const masterAktif = isMasterPromoAktif();
+      syncPromosToCloud(list, masterAktif);
       muatDaftarPromo();
       Swal.fire('Terhapus', `Kupon ${promo.kode} telah dihapus.`, 'success');
     }

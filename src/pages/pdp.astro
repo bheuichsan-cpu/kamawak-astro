@@ -564,8 +564,8 @@ import BottomNav from '../components/BottomNav.astro';
         </div>
       </div>
 
-      <!-- 4. Kode Promo / Kupon Diskon -->
-      <div class="promo-box">
+      <!-- 4. Kode Promo / Kupon Diskon (Dinamis) -->
+      <div class="promo-box" id="pdpPromoBox">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span style="font-size: 12px; font-weight: 700; color: var(--text-dark);">
             <i class="fa-solid fa-tags" style="color: var(--primary);"></i> Kode Promo / Voucher
@@ -575,15 +575,12 @@ import BottomNav from '../components/BottomNav.astro';
           </span>
         </div>
         <div class="promo-row">
-          <input type="text" id="inputKodePromo" class="promo-input" placeholder="Misal: MINANGSERU">
+          <input type="text" id="inputKodePromo" class="promo-input" placeholder="Masukkan kode promo">
           <button type="button" id="btnApplyPromo" class="btn-apply-promo" onclick="terapkanKodePromo()">Gunakan</button>
           <button type="button" id="btnRemovePromo" class="btn-remove-promo" onclick="hapusKodePromo()"><i class="fa-solid fa-xmark"></i> Batal</button>
         </div>
-        <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: center;">
-          <span style="font-size: 11px; color: var(--text-gray);">Kupon Cepat:</span>
-          <span class="promo-chip" onclick="isiKuponCepat('MINANGSERU')" style="background: #FFF7ED; color: #EA580C; border: 1px dashed #FDBA74; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer;">MINANGSERU (10%)</span>
-          <span class="promo-chip" onclick="isiKuponCepat('HEMAT50K')" style="background: #ECFDF5; color: #059669; border: 1px dashed #A7F3D0; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer;">HEMAT50K (-50rb)</span>
-          <span class="promo-chip" onclick="isiKuponCepat('PROMOAWAL')" style="background: #EFF6FF; color: #2563EB; border: 1px dashed #BFDBFE; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer;">PROMOAWAL (15%)</span>
+        <div id="containerKuponCepat" style="display: none; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: center;">
+          <!-- Di-render dinamis oleh renderKuponCepat() hanya untuk kupon yang berstatus AKTIF -->
         </div>
         <div id="promoAlert" style="font-size: 11px; margin-top: 6px; display: none;"></div>
       </div>
@@ -1487,23 +1484,75 @@ import BottomNav from '../components/BottomNav.astro';
       { kode: 'PROMOAWAL', tipe: 'persen', nilai: 15, min: 150000, deskripsi: 'Diskon 15% Eksklusif Wisatawan Baru', aktif: true }
     ];
 
+    function isMasterPromoAktif() {
+      let val = localStorage.getItem('kamawak_promo_master_aktif');
+      if (val === null || val === undefined) return true;
+      return val === 'true';
+    }
+
     function getDaftarPromoTersedia() {
       let raw = localStorage.getItem('kamawak_promo_codes');
-      if (!raw) {
+      if (raw === null || raw === undefined) {
         localStorage.setItem('kamawak_promo_codes', JSON.stringify(DEFAULT_PROMO_CODES));
         return DEFAULT_PROMO_CODES;
       }
       try {
         let list = JSON.parse(raw);
-        if (!Array.isArray(list) || list.length === 0) {
-          localStorage.setItem('kamawak_promo_codes', JSON.stringify(DEFAULT_PROMO_CODES));
-          return DEFAULT_PROMO_CODES;
-        }
+        if (!Array.isArray(list)) return [];
         return list;
       } catch(e) {
-        return DEFAULT_PROMO_CODES;
+        return [];
       }
     }
+
+    function renderKuponCepat() {
+      const box = document.getElementById('pdpPromoBox');
+      const container = document.getElementById('containerKuponCepat');
+      if (!container) return;
+
+      const masterAktif = isMasterPromoAktif();
+      if (!masterAktif) {
+        if (box) box.style.display = 'none';
+        return;
+      }
+      if (box) box.style.display = 'block';
+
+      const daftar = getDaftarPromoTersedia();
+      const aktifList = daftar.filter(p => p.aktif !== false);
+
+      if (aktifList.length === 0) {
+        container.style.display = 'none';
+        container.innerHTML = '';
+        return;
+      }
+
+      container.style.display = 'flex';
+      let html = '<span style="font-size: 11px; color: var(--text-gray);">Kupon Cepat:</span>';
+      aktifList.forEach(p => {
+        const valStr = p.tipe === 'persen' ? `${p.nilai}%` : `-${Math.round(p.nilai/1000)}rb`;
+        html += `<span class="promo-chip" onclick="isiKuponCepat('${p.kode}')" style="background: #FFF7ED; color: #EA580C; border: 1px dashed #FDBA74; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; cursor: pointer;">${p.kode} (${valStr})</span>`;
+      });
+      container.innerHTML = html;
+    }
+
+    // Inisialisasi sinkronisasi cloud promo untuk PDP
+    function initSyncPromoPdp() {
+      renderKuponCepat();
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function(config) {
+          if (!config) return;
+          if (config.VOUCHER_PROMO) {
+            let strVal = typeof config.VOUCHER_PROMO === 'string' ? config.VOUCHER_PROMO : JSON.stringify(config.VOUCHER_PROMO);
+            localStorage.setItem("kamawak_promo_codes", strVal);
+          }
+          if (config.FITUR_VOUCHER_AKTIF !== undefined) {
+            localStorage.setItem("kamawak_promo_master_aktif", String(config.FITUR_VOUCHER_AKTIF));
+          }
+          renderKuponCepat();
+        }).getPengaturan();
+      }
+    }
+    initSyncPromoPdp();
 
     function terapkanKodePromo() {
       const inputEl = document.getElementById('inputKodePromo');
@@ -1524,17 +1573,35 @@ import BottomNav from '../components/BottomNav.astro';
         return;
       }
 
+      if (!isMasterPromoAktif()) {
+        if (alertEl) {
+          alertEl.style.display = 'block';
+          alertEl.style.color = '#DC2626';
+          alertEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Fitur kupon promo saat ini sedang dinonaktifkan.';
+        }
+        return;
+      }
+
       let hargaPerOrang = hargaDasar + (paketAktif === 'vip' ? tambahanVIP : 0) + hargaTambahanPaket;
       let subtotal = hargaPerOrang * jumlahPax;
 
       const daftarPromo = getDaftarPromoTersedia();
-      const promoDitemukan = daftarPromo.find(p => p.kode.toUpperCase() === kodeInput && p.aktif !== false);
+      const promoDitemukan = daftarPromo.find(p => p.kode.toUpperCase() === kodeInput);
 
       if (!promoDitemukan) {
         if (alertEl) {
           alertEl.style.display = 'block';
           alertEl.style.color = '#DC2626';
-          alertEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> Kode voucher <strong>"${kodeInput}"</strong> tidak valid atau sudah kedaluwarsa.`;
+          alertEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> Kode voucher <strong>"${kodeInput}"</strong> tidak valid atau tidak ditemukan.`;
+        }
+        return;
+      }
+
+      if (promoDitemukan.aktif === false) {
+        if (alertEl) {
+          alertEl.style.display = 'block';
+          alertEl.style.color = '#DC2626';
+          alertEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> Kupon <strong>"${kodeInput}"</strong> saat ini sedang dinonaktifkan oleh pengelola.`;
         }
         return;
       }

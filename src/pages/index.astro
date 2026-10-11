@@ -245,22 +245,10 @@ import BottomNav from '../components/BottomNav.astro';
     <button class="tab-btn" onclick="filterKategori(this, 'Favorit')"><i class="fa-solid fa-heart" style="color: #EF4444;"></i> Favorit (<span id="wishlistCountBadge">0</span>)</button>
   </div>
 
-  <!-- BANNER PROMO KUPON DISKON KEKINIAN -->
-  <div id="promoBannerStrip" style="background: linear-gradient(90deg, #FFF7ED 0%, #FEF3C7 50%, #ECFDF5 100%); border-bottom: 1px solid #FED7AA; padding: 10px 5%; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; flex-wrap: wrap;">
-    <div style="display: flex; align-items: center; gap: 8px; color: #9A3412; font-weight: 600;">
-      <span style="background: #F97316; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
-        <i class="fa-solid fa-tags"></i> KUPON DISKON
-      </span>
-      <span>Gunakan kupon <strong style="letter-spacing: 0.5px; background: white; padding: 2px 6px; border-radius: 4px; border: 1px dashed #F97316;">MINANGSERU</strong> (Diskon 10%) & <strong style="letter-spacing: 0.5px; background: white; padding: 2px 6px; border-radius: 4px; border: 1px dashed #059669; color: #047857;">HEMAT50K</strong> (Potongan Rp 50rb) saat pemesanan tiket!</span>
-    </div>
-    <div style="display: flex; gap: 8px; align-items: center;">
-      <button onclick="salinKuponHome('MINANGSERU')" style="background: white; border: 1px solid #FB923C; color: #EA580C; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(234, 88, 12, 0.1);">
-        <i class="fa-regular fa-copy"></i> Salin Kupon 10%
-      </button>
-      <button onclick="salinKuponHome('HEMAT50K')" style="background: #ECFDF5; border: 1px solid #6EE7B7; color: #047857; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
-        <i class="fa-regular fa-copy"></i> Salin Potongan 50rb
-      </button>
-    </div>
+  <!-- BANNER PROMO KUPON DISKON KEKINIAN (DINAMIS) -->
+  <div id="promoBannerStrip" style="display: none; background: linear-gradient(90deg, #FFF7ED 0%, #FEF3C7 50%, #ECFDF5 100%); border-bottom: 1px solid #FED7AA; padding: 10px 5%; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; flex-wrap: wrap;">
+    <div id="promoBannerLeft" style="display: flex; align-items: center; gap: 8px; color: #9A3412; font-weight: 600; flex-wrap: wrap;"></div>
+    <div id="promoBannerRight" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;"></div>
   </div>
 
   <div class="hero-slider" id="heroSlider">
@@ -455,12 +443,23 @@ import BottomNav from '../components/BottomNav.astro';
             muatKoleksiTag();
           }
 
+          if (config.VOUCHER_PROMO) {
+            let strVal = typeof config.VOUCHER_PROMO === 'string' ? config.VOUCHER_PROMO : JSON.stringify(config.VOUCHER_PROMO);
+            localStorage.setItem("kamawak_promo_codes", strVal);
+          }
+          if (config.FITUR_VOUCHER_AKTIF !== undefined) {
+            localStorage.setItem("kamawak_promo_master_aktif", String(config.FITUR_VOUCHER_AKTIF));
+          }
+          muatBannerPromoHome();
+
           if (config.PROFIL_NO_WA) {
             let cs = document.querySelector('.floating-cs');
             if(cs) cs.href = "https://wa.me/" + config.PROFIL_NO_WA + "?text=Halo%20Admin%20Kamawak,%20saya%20butuh%20bantuan.";
           }
         }).getPengaturan();
       }
+
+      muatBannerPromoHome();
 
       let currentSlide = 0;
       if (slides.length > 1) {
@@ -896,6 +895,60 @@ import BottomNav from '../components/BottomNav.astro';
         setTimeout(() => { searchInput.focus(); }, 350);
       }
     };
+
+    function muatBannerPromoHome() {
+      const banner = document.getElementById('promoBannerStrip');
+      const bLeft = document.getElementById('promoBannerLeft');
+      const bRight = document.getElementById('promoBannerRight');
+      if (!banner || !bLeft || !bRight) return;
+
+      const masterAktif = localStorage.getItem('kamawak_promo_master_aktif');
+      if (masterAktif === 'false') {
+        banner.style.display = 'none';
+        return;
+      }
+
+      let raw = localStorage.getItem('kamawak_promo_codes');
+      let promos = [];
+      if (raw !== null && raw !== undefined) {
+        try { promos = JSON.parse(raw); } catch(e) {}
+      } else {
+        promos = [
+          { kode: 'MINANGSERU', tipe: 'persen', nilai: 10, min: 100000, deskripsi: 'Diskon 10% Spesial Jelajah Minangkabau', aktif: true },
+          { kode: 'HEMAT50K', tipe: 'nominal', nilai: 50000, min: 200000, deskripsi: 'Potongan Langsung Rp 50.000', aktif: true },
+          { kode: 'PROMOAWAL', tipe: 'persen', nilai: 15, min: 150000, deskripsi: 'Diskon 15% Eksklusif Wisatawan Baru', aktif: true }
+        ];
+      }
+
+      const activePromos = Array.isArray(promos) ? promos.filter(p => p.aktif !== false) : [];
+      if (activePromos.length === 0) {
+        banner.style.display = 'none';
+        return;
+      }
+
+      // Render Hanya Kupon Aktif
+      banner.style.display = 'flex';
+      let kuponTexts = activePromos.slice(0, 2).map(p => {
+        const valStr = p.tipe === 'persen' ? `${p.nilai}%` : `Rp ${Number(p.nilai).toLocaleString('id-ID')}`;
+        return `<strong style="letter-spacing: 0.5px; background: white; padding: 2px 6px; border-radius: 4px; border: 1px dashed #F97316; color: #EA580C;">${p.kode}</strong> (Hemat ${valStr})`;
+      }).join(' & ');
+
+      bLeft.innerHTML = `
+        <span style="background: #F97316; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+          <i class="fa-solid fa-tags"></i> KUPON DISKON
+        </span>
+        <span>Gunakan kupon ${kuponTexts} saat pemesanan tiket!</span>
+      `;
+
+      bRight.innerHTML = activePromos.slice(0, 2).map(p => {
+        const label = p.tipe === 'persen' ? `Salin ${p.nilai}%` : `Salin Rp ${Math.round(p.nilai/1000)}rb`;
+        return `
+          <button onclick="salinKuponHome('${p.kode}')" style="background: white; border: 1px solid #FB923C; color: #EA580C; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(234, 88, 12, 0.1);">
+            <i class="fa-regular fa-copy"></i> ${label}
+          </button>
+        `;
+      }).join('');
+    }
 
     window.salinKuponHome = function(kode) {
       navigator.clipboard.writeText(kode).then(() => {
