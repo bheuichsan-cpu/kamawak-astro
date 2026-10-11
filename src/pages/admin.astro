@@ -610,6 +610,12 @@ import BottomNav from '../components/BottomNav.astro';
             </div>
 
             <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 13px; font-weight: 600; color: #374151;">Sub-tag / Destinasi Populer</label>
+              <input type="text" id="tagSub" class="form-control" placeholder="Contoh: Jam Gadang, Ngarai Sianok, Kuliner" style="font-size: 13px;">
+              <small style="font-size: 11px; color: #6B7280;">Spot/tema populer di kota ini (pisahkan koma).</small>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
               <label style="font-size: 13px; font-weight: 600; color: #374151;">Upload Foto (HP / Laptop)</label>
               <input type="file" id="tagFotoFile" class="form-control" accept="image/*" onchange="uploadTagFotoFile(this)" style="font-size: 12px; padding: 7px 10px;">
               <small id="tagFotoFileMsg" style="font-size: 11px; color: #6B7280;">Disimpan otomatis ke Google Drive.</small>
@@ -651,12 +657,13 @@ import BottomNav from '../components/BottomNav.astro';
                 <th style="width: 70px;">Foto</th>
                 <th>Kata Kunci (Filter)</th>
                 <th>Label di Kartu</th>
+                <th>Sub-tag / Spot Populer</th>
                 <th>Status</th>
                 <th style="width: 140px; text-align: center;">Aksi</th>
               </tr>
             </thead>
             <tbody id="tableTagsBody">
-              <tr><td colspan="5" style="text-align: center; color: var(--text-gray); padding: 25px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat daftar kartu kota...</td></tr>
+              <tr><td colspan="6" style="text-align: center; color: var(--text-gray); padding: 25px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat daftar kartu kota...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1525,13 +1532,13 @@ window.hapusIklan = function(baris) {
 // PINTASAN KOTA / JELAJAHI KOTA (FASE 2)
 // ==========================================
 const KARTU_KOTA_DEFAULT = [
-  { nama: "Semua", label: "Semua Kota", img: "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-  { nama: "Bukittinggi", label: "Bukittinggi", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-  { nama: "Padang", label: "Kota Padang", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-  { nama: "Mandeh", label: "Pesisir Mandeh", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-  { nama: "Harau", label: "Lembah Harau", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-  { nama: "Mentawai", label: "Kep. Mentawai", img: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-  { nama: "Pariaman", label: "Pariaman", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=400&auto=format&fit=crop", status: "Aktif" }
+  { nama: "Semua", label: "Semua Kota", subtag: "Seluruh Destinasi Sumbar", img: "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+  { nama: "Bukittinggi", label: "Bukittinggi", subtag: "Jam Gadang, Ngarai Sianok, Kuliner", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+  { nama: "Padang", label: "Kota Padang", subtag: "Pantai Padang, Kuliner Rendang, Kota Tua", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+  { nama: "Mandeh", label: "Pesisir Mandeh", subtag: "Pulau Cubadak, Snorkeling, Wisata Bahari", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+  { nama: "Harau", label: "Lembah Harau", subtag: "Air Terjun, Tebing Granit, Homestay", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+  { nama: "Mentawai", label: "Kep. Mentawai", subtag: "Surfing, Budaya Sikerei, Kepulauan", img: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+  { nama: "Pariaman", label: "Pariaman", subtag: "Pantai Gandoriah, Pulau Angso Duo, Tabuik", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=400&auto=format&fit=crop", status: "Aktif" }
 ];
 
 window.previewTagUrl = function(url) {
@@ -1622,7 +1629,7 @@ function renderTabelPintasanKota(list) {
   let tbody = document.getElementById('tableTagsBody');
   if (!tbody) return;
   if (!list || list.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-gray); padding: 25px;">Belum ada kartu kota. Tambahkan melalui form di atas.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-gray); padding: 25px;">Belum ada kartu kota. Tambahkan melalui form di atas.</td></tr>';
     return;
   }
 
@@ -1633,6 +1640,7 @@ function renderTabelPintasanKota(list) {
       : `<span onclick="toggleStatusPintasanTag(${idx})" style="background:#FEE2E2; color:#991B1B; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:700; cursor:pointer; user-select:none;" title="Klik untuk aktifkan"><i class="fa-solid fa-pause"></i> Nonaktif</span>`;
     
     let imgFoto = item.img || item.foto || 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=400';
+    let subtagStr = item.subtag || '-';
 
     return `
       <tr>
@@ -1641,6 +1649,7 @@ function renderTabelPintasanKota(list) {
         </td>
         <td style="font-weight: 600; color: var(--text-dark);">${item.nama}</td>
         <td>${item.label || item.nama}</td>
+        <td><span style="font-size:12px; color:#4B5563;">${subtagStr}</span></td>
         <td>${badge}</td>
         <td style="text-align: center; white-space: nowrap;">
           <button onclick="editPintasanTag(${idx})" style="background:#EFF6FF; color:#2563EB; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; margin-right:6px;" title="Ubah Nama/Foto">
@@ -1659,6 +1668,7 @@ function renderTabelPintasanKota(list) {
 window.simpanPintasanTag = function() {
   let nama = document.getElementById('tagName').value.trim();
   let label = document.getElementById('tagLabel').value.trim();
+  let subtag = document.getElementById('tagSub') ? document.getElementById('tagSub').value.trim() : "";
   let url = document.getElementById('tagFotoUrl').value.trim();
   let editIdx = parseInt(document.getElementById('tagEditIndex').value, 10);
 
@@ -1681,9 +1691,10 @@ window.simpanPintasanTag = function() {
   if (editIdx >= 0 && editIdx < list.length) {
     list[editIdx].nama = nama;
     list[editIdx].label = label;
+    list[editIdx].subtag = subtag;
     list[editIdx].img = url;
   } else {
-    list.push({ nama: nama, label: label, img: url, status: "Aktif" });
+    list.push({ nama: nama, label: label, subtag: subtag, img: url, status: "Aktif" });
   }
 
   simpanDaftarPintasanServer(list, editIdx >= 0 ? "Kartu kota berhasil diperbarui!" : "Kartu kota baru berhasil ditambahkan!");
@@ -1699,6 +1710,7 @@ window.editPintasanTag = function(idx) {
   document.getElementById('tagEditIndex').value = idx;
   document.getElementById('tagName').value = item.nama;
   document.getElementById('tagLabel').value = item.label || item.nama;
+  if (document.getElementById('tagSub')) document.getElementById('tagSub').value = item.subtag || '';
   document.getElementById('tagFotoUrl').value = item.img || item.foto || '';
   window.previewTagUrl(item.img || item.foto || '');
 
@@ -1717,6 +1729,7 @@ window.batalEditTag = function() {
   document.getElementById('tagEditIndex').value = "-1";
   document.getElementById('tagName').value = "";
   document.getElementById('tagLabel').value = "";
+  if (document.getElementById('tagSub')) document.getElementById('tagSub').value = "";
   document.getElementById('tagFotoUrl').value = "";
   let fileIpt = document.getElementById('tagFotoFile');
   if (fileIpt) fileIpt.value = "";
