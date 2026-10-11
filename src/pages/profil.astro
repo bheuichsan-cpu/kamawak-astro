@@ -1,5 +1,6 @@
 ---
 import GASPolyfill from '../components/GASPolyfill.astro';
+import BottomNav from '../components/BottomNav.astro';
 ---
 <!DOCTYPE html>
 <html lang="id">
@@ -300,5 +301,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       window.open(BASE_URL + "/", "_top");
     }
   </script>
+
+  <BottomNav current="orders" />
 </body>
 </html>

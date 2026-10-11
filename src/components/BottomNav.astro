@@ -1,0 +1,127 @@
+---
+interface Props {
+  current?: string;
+}
+const { current = 'home' } = Astro.props;
+---
+
+<nav class="bottom-nav" id="appBottomNav">
+  <a href="/" class={`bottom-nav-item ${current === 'home' ? 'active' : ''}`} id="btnNavHome">
+    <i class="fa-solid fa-house"></i>
+    <span>Beranda</span>
+  </a>
+  <a href="/#areaKatalog" onclick="if(window.navAksiCari) { window.navAksiCari(event); } else { window.location.href='/#areaKatalog'; }" class={`bottom-nav-item ${current === 'search' ? 'active' : ''}`} id="btnNavSearch">
+    <i class="fa-solid fa-compass"></i>
+    <span>Eksplor</span>
+  </a>
+  <a href="/profil" class={`bottom-nav-item ${current === 'orders' ? 'active' : ''}`} id="btnNavTiket">
+    <i class="fa-solid fa-ticket"></i>
+    <span>Tiket Saya</span>
+  </a>
+  <a href="/login" class={`bottom-nav-item ${current === 'profile' || current === 'owner' ? 'active' : ''}`} id="btnNavAkun">
+    <i class="fa-solid fa-circle-user" id="iconNavAkun"></i>
+    <span id="labelNavAkun">Akun</span>
+  </a>
+</nav>
+
+<style is:inline>
+  .bottom-nav {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .bottom-nav {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid #E5E7EB;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+      z-index: 1000;
+      padding: 4px 0 env(safe-area-inset-bottom, 0);
+    }
+
+    .bottom-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #6B7280;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 500;
+      gap: 3px;
+      flex: 1;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .bottom-nav-item i {
+      font-size: 18px;
+      transition: transform 0.2s ease;
+    }
+
+    .bottom-nav-item.active {
+      color: #FF5E1F !important;
+      font-weight: 700;
+    }
+
+    .bottom-nav-item.active i {
+      transform: translateY(-2px);
+    }
+
+    body {
+      padding-bottom: 70px !important;
+    }
+
+    .floating-cs {
+      bottom: 75px !important;
+    }
+  }
+</style>
+
+<script is:inline>
+  function sesuaikanBottomNav() {
+    try {
+      let user = localStorage.getItem("kamawak_user");
+      let role = (localStorage.getItem("kamawak_role") || "").toLowerCase();
+      let btnAkun = document.getElementById("btnNavAkun");
+      let labelAkun = document.getElementById("labelNavAkun");
+      let iconAkun = document.getElementById("iconNavAkun");
+      if (!btnAkun) return;
+
+      if (user && user !== "") {
+        if (role.includes("owner") || role.includes("mitra")) {
+          btnAkun.href = "/owner?u=" + encodeURIComponent(user);
+          if (labelAkun) labelAkun.innerText = "Mitra";
+          if (iconAkun) iconAkun.className = "fa-solid fa-store";
+        } else if (role.includes("admin")) {
+          btnAkun.href = "/admin?u=" + encodeURIComponent(user);
+          if (labelAkun) labelAkun.innerText = "Admin";
+          if (iconAkun) iconAkun.className = "fa-solid fa-gauge-high";
+        } else {
+          btnAkun.href = "/profil?u=" + encodeURIComponent(user);
+          if (labelAkun) labelAkun.innerText = "Profil";
+          if (iconAkun) iconAkun.className = "fa-solid fa-circle-user";
+        }
+      } else {
+        btnAkun.href = "/login";
+        if (labelAkun) labelAkun.innerText = "Masuk";
+        if (iconAkun) iconAkun.className = "fa-solid fa-circle-user";
+      }
+    } catch(e) {}
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', sesuaikanBottomNav);
+  } else {
+    sesuaikanBottomNav();
+  }
+</script>

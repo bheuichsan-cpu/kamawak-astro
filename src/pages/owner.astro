@@ -1,5 +1,6 @@
 ---
 import GASPolyfill from '../components/GASPolyfill.astro';
+import BottomNav from '../components/BottomNav.astro';
 ---
 <!DOCTYPE html>
 <html lang="id">
@@ -774,5 +775,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 
     window.logout = function() { localStorage.clear(); window.open("/login", '_top'); };
 </script>
+
+<BottomNav current="owner" />
 </body>
 </html>

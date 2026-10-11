@@ -1,5 +1,6 @@
 ---
 import GASPolyfill from '../components/GASPolyfill.astro';
+import BottomNav from '../components/BottomNav.astro';
 ---
 <!DOCTYPE html>
 <html lang="id">
@@ -230,7 +231,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       <p>Temukan ratusan destinasi wisata, penginapan eksklusif, dan rental kendaraan terbaik di Sumatera Barat dalam satu genggaman.</p>
       <div class="search-box">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="searchInput" class="search-input" placeholder="Mau liburan kemana hari ini?" onkeypress="handleEnter(event)">
+        <input type="text" id="searchInput" class="search-input" placeholder="Mau liburan kemana hari ini?" onkeypress="handleEnter(event)" oninput="if(window.terapkanFilterDanUrutan) window.terapkanFilterDanUrutan()">
         <button class="search-btn" onclick="panggilDataServer()">Cari</button>
       </div>
     </div>
@@ -456,10 +457,57 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       }, 3500);
     }
 
+    const DAFTAR_KOTA = [
+      { nama: "Semua", label: "Semua Kota", img: "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=400&auto=format&fit=crop" },
+      { nama: "Bukittinggi", label: "Bukittinggi", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop" },
+      { nama: "Padang", label: "Kota Padang", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=400&auto=format&fit=crop" },
+      { nama: "Mandeh", label: "Pesisir Mandeh", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=400&auto=format&fit=crop" },
+      { nama: "Harau", label: "Lembah Harau", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop" },
+      { nama: "Mentawai", label: "Kep. Mentawai", img: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=400&auto=format&fit=crop" },
+      { nama: "Pariaman", label: "Pariaman", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=400&auto=format&fit=crop" }
+    ];
+
     function muatKoleksiTag() {
       let c = document.getElementById('tagScrollContainer');
-      if (c) c.innerHTML = '<div style="text-align:center; width:100%; color:var(--text-gray);">Koleksi akan segera hadir.</div>';
+      if (!c) return;
+      let html = DAFTAR_KOTA.map((k, idx) => `
+        <div class="city-card ${idx === 0 ? 'city-active' : ''}" onclick="filterKota('${k.nama}', this)" title="Lihat wisata di ${k.label}">
+          <img src="${k.img}" alt="${k.label}">
+          <div class="city-overlay">
+            <span class="city-name">${k.label}</span>
+          </div>
+        </div>
+      `).join('');
+      c.innerHTML = html;
     }
+
+    window.filterKota = function(namaKota, el) {
+      document.querySelectorAll('.city-card').forEach(c => {
+        c.style.outline = 'none';
+        c.classList.remove('city-active');
+      });
+      if (el) {
+        el.style.outline = '3px solid var(--primary)';
+        el.style.outlineOffset = '2px';
+        el.classList.add('city-active');
+      }
+
+      let searchInput = document.getElementById('searchInput');
+      if (namaKota === 'Semua' || !namaKota) {
+        if (searchInput) searchInput.value = '';
+      } else {
+        if (searchInput) searchInput.value = namaKota;
+      }
+
+      if (window.terapkanFilterDanUrutan) {
+        window.terapkanFilterDanUrutan();
+      }
+
+      let area = document.getElementById('areaKatalog') || document.querySelector('.controls-wrapper');
+      if (area) {
+        window.scrollTo({ top: area.offsetTop - 120, behavior: 'smooth' });
+      }
+    };
     window.panggilDataServer = function() {
       tampilkanSkeleton();
       muatIklanBanner();
@@ -676,7 +724,21 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       if(linkTarget && linkTarget !== "") { window.open(linkTarget, '_blank'); } 
       else { Swal.fire('Oops', 'Tautan belum tersedia.', 'info'); return; } 
     }
+
+    window.navAksiCari = function(event) {
+      if (event) event.preventDefault();
+      let searchInput = document.getElementById('searchInput');
+      let areaKatalog = document.getElementById('areaKatalog');
+      if (areaKatalog) {
+        window.scrollTo({ top: areaKatalog.offsetTop - 80, behavior: 'smooth' });
+      }
+      if (searchInput) {
+        setTimeout(() => { searchInput.focus(); }, 350);
+      }
+    };
 </script>
+
+<BottomNav current="home" />
 
 </body>
 </html>
