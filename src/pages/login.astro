@@ -147,18 +147,29 @@ import GASPolyfill from '../components/GASPolyfill.astro';
   <div class="auth-card" id="cardOTP" style="display:none;">
     <i class="fa-solid fa-envelope-open-text" style="font-size: 50px; color: var(--primary); margin-bottom: 15px;"></i>
     <h2 style="font-family: 'Poppins'; font-size: 22px; margin-bottom: 5px;">Cek Email Anda</h2>
-    <p>Kami telah mengirimkan 6 digit kode OTP ke email <br><b id="displayEmail"></b></p>
+    <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 15px;">Kami telah mengirimkan 6 digit kode OTP ke email <br><b id="displayEmail" style="color: var(--text-main);"></b></p>
 
     <div class="form-group">
-      <input type="text" id="inputOTP" class="form-control otp-input" placeholder="000000" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+      <input type="text" id="inputOTP" class="form-control otp-input" placeholder="000000" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')" onkeypress="if(event.key === 'Enter') prosesOTP()">
+    </div>
+
+    <div style="font-size: 12px; color: #718096; margin-bottom: 15px; line-height: 1.5; background: #fff8f0; padding: 10px 14px; border-radius: 8px; border: 1px solid #fed7aa; text-align: left;">
+      <i class="fa-solid fa-circle-question" style="color: #ea580c; margin-right: 5px;"></i> Tidak menemukan email di Kotak Masuk? Pastikan untuk memeriksa folder <b>Spam</b> atau <b>Promosi</b>.
     </div>
 
     <button class="btn-submit" id="btnVerifikasi" onclick="prosesOTP()">Verifikasi Akun</button>
     
+    <div style="margin-top: 15px; font-size: 13px; color: var(--text-muted);">
+      Belum menerima kode? 
+      <button id="btnKirimUlangOTP" onclick="kirimUlangOTP()" style="background: none; border: none; color: var(--primary); font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline;" disabled>
+        Kirim Ulang (<span id="otpTimer">60</span>s)
+      </button>
+    </div>
+
     <div id="loadingOTP" class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> Memvalidasi kode...</div>
     <div id="msgOTP" class="msg-box"><i class="fa-solid fa-circle-info"></i> <span id="txtOTP"></span></div>
     
-    <div class="footer-link">Salah memasukkan email? <a onclick="tukarMode('register')">Kembali</a></div>
+    <div class="footer-link" style="margin-top: 15px;">Salah memasukkan email? <a onclick="tukarMode('register')">Kembali</a></div>
   </div>
 
   <script>
@@ -297,18 +308,95 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 
       google.script.run.withFailureHandler(function(err) {
         loader.style.display = "none"; btn.style.display = "block";
-        txtBox.innerText = "Error koneksi pengiriman email: " + err.message; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+        txtBox.innerText = "Error koneksi pengiriman email: " + (err.message || err); msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
       }).withSuccessHandler(function(resString) {
         try {
-          let res = JSON.parse(resString); loader.style.display = "none"; btn.style.display = "block";
-          if (res.success) {
+          let res = typeof resString === 'string' ? JSON.parse(resString) : resString; 
+          loader.style.display = "none"; btn.style.display = "block";
+          if (res && (res.success || !res.error)) {
             document.getElementById('displayEmail').innerText = data.email;
             window.tukarMode('otp');
+            startOtpCountdown(60);
           } else {
-            txtBox.innerText = "Gagal mengirim OTP: " + res.error; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+            txtBox.innerText = "Gagal mengirim OTP: " + (res.error || res.message || "Layanan email sibuk."); 
+            msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
           }
-        } catch(e) { loader.style.display = "none"; btn.style.display = "block"; txtBox.innerText = "Terjadi kesalahan sistem pengiriman OTP."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; }
+        } catch(e) { 
+          loader.style.display = "none"; btn.style.display = "block"; 
+          txtBox.innerText = "Terjadi kesalahan sistem pengiriman OTP: " + e.message; 
+          msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; 
+        }
       }).kirimEmailOTP(data.email, data.nama, tempOTP);
+    };
+
+    // --- FITUR COUNTDOWN & KIRIM ULANG OTP ---
+    let otpTimerInterval = null;
+    function startOtpCountdown(seconds = 60) {
+      let btnKirimUlang = document.getElementById('btnKirimUlangOTP');
+      if (!btnKirimUlang) return;
+
+      clearInterval(otpTimerInterval);
+      let timeLeft = seconds;
+      btnKirimUlang.disabled = true;
+      btnKirimUlang.style.opacity = '0.6';
+      btnKirimUlang.style.cursor = 'not-allowed';
+      btnKirimUlang.innerHTML = `Kirim Ulang (<span id="otpTimer">${timeLeft}</span>s)`;
+
+      otpTimerInterval = setInterval(() => {
+        timeLeft--;
+        let span = document.getElementById('otpTimer');
+        if (span) span.innerText = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(otpTimerInterval);
+          btnKirimUlang.disabled = false;
+          btnKirimUlang.style.opacity = '1';
+          btnKirimUlang.style.cursor = 'pointer';
+          btnKirimUlang.innerHTML = 'Kirim Ulang OTP';
+        }
+      }, 1000);
+    }
+
+    window.kirimUlangOTP = function() {
+      if (!tempRegData || !tempRegData.email) {
+        Swal.fire('Perhatian', 'Sesi pendaftaran tidak ditemukan. Silakan daftar kembali.', 'warning').then(() => {
+          window.tukarMode('register');
+        });
+        return;
+      }
+      
+      let btnKirimUlang = document.getElementById('btnKirimUlangOTP');
+      btnKirimUlang.disabled = true;
+      btnKirimUlang.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim...';
+      
+      tempOTP = Math.floor(100000 + Math.random() * 900000).toString();
+
+      google.script.run.withFailureHandler(function(err) {
+        btnKirimUlang.disabled = false;
+        btnKirimUlang.innerHTML = 'Kirim Ulang OTP';
+        Swal.fire('Gagal Mengirim', 'Terjadi gangguan jaringan: ' + (err.message || err), 'error');
+      }).withSuccessHandler(function(resString) {
+        try {
+          let res = typeof resString === 'string' ? JSON.parse(resString) : resString;
+          if (res && (res.success || !res.error)) {
+            Swal.fire({
+              icon: 'success',
+              title: 'OTP Terkirim!',
+              text: 'Kode OTP baru telah dikirimkan ke email ' + tempRegData.email,
+              timer: 2500,
+              showConfirmButton: false
+            });
+            startOtpCountdown(60);
+          } else {
+            btnKirimUlang.disabled = false;
+            btnKirimUlang.innerHTML = 'Kirim Ulang OTP';
+            Swal.fire('Gagal Mengirim', (res && res.error) ? res.error : 'Layanan email sibuk.', 'error');
+          }
+        } catch(e) {
+          btnKirimUlang.disabled = false;
+          btnKirimUlang.innerHTML = 'Kirim Ulang OTP';
+          Swal.fire('Gagal Mengirim', 'Kesalahan respon: ' + e.message, 'error');
+        }
+      }).kirimEmailOTP(tempRegData.email, tempRegData.nama, tempOTP);
     };
 
     // --- 3. PROSES OTP ---
@@ -319,7 +407,14 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       if(otpInput.length < 6) { txtBox.innerText = "Masukkan 6 digit kode OTP."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; return; }
       btn.style.display = "none"; loader.style.display = "block"; msgBox.style.display = "none";
 
-      if (otpInput === tempOTP && tempRegData) {
+      if (!tempOTP || !tempRegData) {
+        loader.style.display = "none"; btn.style.display = "block";
+        txtBox.innerText = "Sesi verifikasi kadaluarsa. Silakan lakukan pendaftaran kembali."; 
+        msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+        return;
+      }
+
+      if (otpInput === tempOTP) {
         // Cek apakah akun sudah sempat tersimpan (misal double-click / refresh)
         const { data: cekUlang } = await supabase
           .from('users')
@@ -365,7 +460,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
         }
       } else {
         loader.style.display = "none"; btn.style.display = "block";
-        txtBox.innerText = "Kode OTP tidak valid atau salah."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+        txtBox.innerText = "Kode OTP tidak valid atau salah. Silakan periksa kembali."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
       }
     };
 </script>
