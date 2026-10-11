@@ -62,6 +62,182 @@ import BottomNav from '../components/BottomNav.astro';
     .btn-tiket { background: var(--primary); color: white; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; box-shadow: 0 2px 6px rgba(255, 94, 31, 0.25); }
     .btn-tiket:hover { background: #E04D14; transform: translateY(-1px); }
 
+    /* BOARDING PASS DIGITAL STYLING */
+    .boarding-card {
+      background: white;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+      position: relative;
+      animation: slideUp 0.3s ease;
+      border: 1px solid #E5E7EB;
+    }
+    .boarding-header {
+      background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+      color: white;
+      padding: 22px 24px;
+      position: relative;
+      border-bottom: 2px dashed #334155;
+    }
+    .boarding-brand {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .boarding-brand-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #FF8A50;
+    }
+    .boarding-status-pill {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid #10B981;
+      color: #34D399;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .boarding-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: white;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+    .boarding-route {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-size: 13px;
+    }
+    .boarding-route-badge {
+      background: rgba(255, 94, 31, 0.2);
+      color: #FF8A50;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    .boarding-body {
+      padding: 24px;
+      background: #FFFFFF;
+      position: relative;
+    }
+    /* Ticket notch cut-outs */
+    .boarding-notch-left, .boarding-notch-right {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 50%;
+      top: -12px;
+      z-index: 5;
+    }
+    .boarding-notch-left { left: -12px; }
+    .boarding-notch-right { right: -12px; }
+
+    .boarding-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .boarding-field-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #94A3B8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .boarding-field-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-dark);
+      word-break: break-word;
+    }
+    .boarding-qr-section {
+      background: #F8FAFC;
+      border: 2px dashed #CBD5E1;
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 18px;
+      position: relative;
+    }
+    .boarding-qr-img {
+      width: 170px;
+      height: 170px;
+      display: block;
+      margin: 0 auto 10px;
+      border-radius: 8px;
+      background: white;
+      padding: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .boarding-code-text {
+      font-family: monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: #1E293B;
+      letter-spacing: 2px;
+    }
+    .boarding-barcode-lines {
+      height: 30px;
+      width: 80%;
+      margin: 12px auto 0;
+      background: repeating-linear-gradient(to right, #1E293B 0, #1E293B 2px, transparent 2px, transparent 4px, #1E293B 4px, #1E293B 7px, transparent 7px, transparent 9px, #1E293B 9px, #1E293B 10px);
+      opacity: 0.85;
+    }
+
+    /* BERI ULASAN BUTTON & MODAL */
+    .btn-beri-ulasan {
+      background: #FFFBEB;
+      color: #D97706;
+      border: 1px solid #FCD34D;
+      padding: 6px 13px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: 0.2s;
+    }
+    .btn-beri-ulasan:hover {
+      background: #FEF3C7;
+      transform: translateY(-1px);
+    }
+    .star-picker {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 15px 0;
+      font-size: 32px;
+      cursor: pointer;
+    }
+    .star-picker i {
+      color: #D1D5DB;
+      transition: color 0.15s, transform 0.15s;
+    }
+    .star-picker i:hover, .star-picker i.selected {
+      color: #F59E0B;
+      transform: scale(1.15);
+    }
+
     @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
     @media print {
@@ -71,6 +247,8 @@ import BottomNav from '../components/BottomNav.astro';
       .no-print { display: none !important; }
     }
   </style>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <GASPolyfill />
 </head>
 <body>
@@ -96,65 +274,125 @@ import BottomNav from '../components/BottomNav.astro';
     </div>
   </div>
 
-  <!-- MODAL E-TIKET WISATA DIGITAL -->
-  <div id="modalETiket" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index:9999; justify-content:center; align-items:center; padding: 15px; overflow-y: auto;">
-    <div style="background: white; border-radius: 16px; width: 100%; max-width: 420px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); overflow: hidden; position: relative; animation: slideUp 0.3s ease;">
-      <!-- Header Tiket -->
-      <div style="background: linear-gradient(135deg, #FF5E1F, #FF8A50); color: white; padding: 22px 20px; text-align: center; position: relative;">
-        <button onclick="tutupETiket()" class="no-print" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.2); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">&times;</button>
-        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; opacity: 0.95;">E-TIKET WISATA RESMI</div>
-        <h2 style="font-family: 'Poppins', sans-serif; font-size: 19px; margin: 6px 0 2px; color: white; line-height: 1.3;" id="tikNamaProduk">Nama Produk</h2>
-        <div style="font-size: 12px; opacity: 0.95;" id="tikPlatform">Kamawak Tourism Platform</div>
+  <!-- MODAL E-TIKET WISATA DIGITAL (AIRLINE BOARDING PASS STYLE) -->
+  <div id="modalETiket" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.75); backdrop-filter: blur(6px); z-index:9999; justify-content:center; align-items:center; padding: 15px; overflow-y: auto;">
+    <div id="eTiketCard" class="boarding-card">
+      <!-- Header Tiket Boarding Pass -->
+      <div class="boarding-header">
+        <button onclick="tutupETiket()" class="no-print" style="position: absolute; top: 14px; right: 14px; background: rgba(255,255,255,0.15); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: 0.2s;">&times;</button>
+        <div class="boarding-brand">
+          <span class="boarding-brand-title"><i class="fa-solid fa-mountain-sun" style="color:#FF5E1F;"></i> KAMAWAK BOARDING PASS</span>
+          <span id="tikStatusBadge" class="boarding-status-pill">CONFIRMED</span>
+        </div>
+        <h2 class="boarding-title" id="tikNamaProduk">Nama Paket Wisata</h2>
+        <div class="boarding-route">
+          <span class="boarding-route-badge">SUMBAR TRIP</span>
+          <i class="fa-solid fa-arrow-right-long" style="color: #94A3B8; font-size: 12px;"></i>
+          <span id="tikRouteDest" style="font-weight: 600; color: #F1F5F9;">Destinasi Minang</span>
+        </div>
       </div>
 
-      <!-- Body Tiket -->
-      <div style="padding: 20px 24px; text-align: center;">
-        <!-- QR Code Box -->
-        <div style="background: #F9FAFB; padding: 14px; border-radius: 12px; border: 2px dashed #E5E7EB; display: inline-block; margin-bottom: 14px;">
-          <img id="tikQRImg" src="" alt="QR Code Tiket" style="width: 170px; height: 170px; display: block; margin: 0 auto; border-radius: 6px;">
-          <div style="font-family: monospace; font-size: 13px; font-weight: 700; margin-top: 8px; color: var(--text-dark); letter-spacing: 1px;" id="tikKode">TRX-0000000</div>
+      <!-- Body Boarding Pass -->
+      <div class="boarding-body">
+        <!-- Notches on side borders -->
+        <div class="boarding-notch-left no-print"></div>
+        <div class="boarding-notch-right no-print"></div>
+
+        <!-- Detail Grid -->
+        <div class="boarding-grid">
+          <div>
+            <div class="boarding-field-label">Wisatawan / Tamu</div>
+            <div class="boarding-field-value" id="tikUser">-</div>
+          </div>
+          <div>
+            <div class="boarding-field-label">Tgl Keberangkatan</div>
+            <div class="boarding-field-value" id="tikTgl">-</div>
+          </div>
+          <div>
+            <div class="boarding-field-label">Jumlah Pax</div>
+            <div class="boarding-field-value" id="tikPax">-</div>
+          </div>
+          <div>
+            <div class="boarding-field-label">Kelas / Paket</div>
+            <div class="boarding-field-value" id="tikPaket">-</div>
+          </div>
+          <div>
+            <div class="boarding-field-label">Total Pembayaran</div>
+            <div class="boarding-field-value" style="color: var(--primary);" id="tikTotal">-</div>
+          </div>
+          <div>
+            <div class="boarding-field-label">Status Reservasi</div>
+            <div class="boarding-field-value" style="color: #059669;" id="tikStatusText">Lunas & Terverifikasi</div>
+          </div>
         </div>
 
-        <!-- Status Badge Tiket -->
-        <div id="tikStatusBadge" style="margin-bottom: 16px;"></div>
-
-        <!-- Detail Tiket Table / Grid -->
-        <div style="background: #F3F4F6; border-radius: 10px; padding: 12px 14px; text-align: left; font-size: 13px; line-height: 1.6; margin-bottom: 16px;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-            <span style="color: var(--text-gray);">Nama Pemesan:</span>
-            <strong id="tikUser">-</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-            <span style="color: var(--text-gray);">Tgl Wisata:</span>
-            <strong id="tikTgl">-</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-            <span style="color: var(--text-gray);">Jumlah Peserta:</span>
-            <strong id="tikPax">-</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-            <span style="color: var(--text-gray);">Tipe Paket:</span>
-            <strong id="tikPaket">-</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between; border-top: 1px dashed #D1D5DB; padding-top: 6px; margin-top: 6px;">
-            <span style="color: var(--text-gray);">Total Pembayaran:</span>
-            <strong style="color: var(--primary); font-size: 15px;" id="tikTotal">-</strong>
-          </div>
+        <!-- QR Code Validation Stub -->
+        <div class="boarding-qr-section">
+          <div style="font-size: 10px; font-weight: 700; color: #64748B; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;">DIGITAL VERIFICATION QR</div>
+          <img id="tikQRImg" class="boarding-qr-img" src="" alt="QR Code Tiket" crossOrigin="anonymous">
+          <div class="boarding-code-text" id="tikKode">TRX-00000000</div>
+          <div class="boarding-barcode-lines"></div>
+          <div style="font-size: 9px; color: #94A3B8; margin-top: 6px; letter-spacing: 1px;">OFFICIAL SECURE TRAVEL PASS</div>
         </div>
 
-        <p class="no-print" style="font-size: 11px; color: var(--text-gray); margin-bottom: 18px; line-height: 1.4;">
-          <i class="fa-solid fa-circle-info" style="color: var(--primary);"></i> Tunjukkan QR Code ini kepada petugas mitra saat kedatangan di lokasi wisata untuk dipindai.
+        <!-- Info Instruksi -->
+        <p class="no-print" style="font-size: 11px; color: var(--text-gray); margin-bottom: 16px; text-align: center; line-height: 1.4;">
+          <i class="fa-solid fa-circle-check" style="color: #10B981;"></i> Tunjukkan QR Boarding Pass ini kepada pihak mitra/pemandu untuk dipindai saat kedatangan.
         </p>
 
-        <!-- Tombol Aksi -->
-        <div class="no-print" style="display: flex; gap: 10px;">
-          <button onclick="window.print()" style="flex: 1; padding: 10px; border: 1px solid #D1D5DB; background: white; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; color: var(--text-dark); display: flex; align-items: center; justify-content: center; gap: 6px;">
-            <i class="fa-solid fa-print"></i> Cetak Tiket
+        <!-- Tombol Aksi (Download PNG, Print, Tutup) -->
+        <div class="no-print" style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button id="btnDownloadTiket" onclick="unduhGambarTiket()" style="flex: 2; padding: 11px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(255, 94, 31, 0.3);">
+            <i class="fa-solid fa-download"></i> Unduh Gambar (PNG)
           </button>
-          <button onclick="tutupETiket()" style="flex: 1; padding: 10px; border: none; background: var(--text-dark); color: white; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">
+          <button onclick="window.print()" style="flex: 1; padding: 11px; border: 1px solid #D1D5DB; background: white; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; color: var(--text-dark); display: flex; align-items: center; justify-content: center; gap: 5px;">
+            <i class="fa-solid fa-print"></i> Cetak
+          </button>
+          <button onclick="tutupETiket()" style="padding: 11px 16px; border: none; background: #F3F4F6; color: var(--text-dark); border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">
             Tutup
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL FORM REVIEW & RATING WISATAWAN -->
+  <div id="modalUlasan" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.7); backdrop-filter: blur(5px); z-index:9999; justify-content:center; align-items:center; padding: 15px; overflow-y: auto;">
+    <div style="background: white; border-radius: 16px; width: 100%; max-width: 440px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); overflow: hidden; position: relative; animation: slideUp 0.3s ease; padding: 24px;">
+      <button onclick="tutupModalUlasan()" style="position: absolute; top: 16px; right: 16px; background: #F3F4F6; border: none; color: var(--text-gray); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;">&times;</button>
+      
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="width: 50px; height: 50px; background: #FFFBEB; color: #F59E0B; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 10px;">
+          <i class="fa-solid fa-star"></i>
+        </div>
+        <h3 style="font-family: 'Poppins', sans-serif; font-size: 18px; color: var(--text-dark); margin-bottom: 4px;">Beri Ulasan Perjalanan</h3>
+        <p style="font-size: 12px; color: var(--text-gray);" id="revProdukNama">Nama Paket Wisata</p>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 16px;">
+        <label style="font-size: 11px; font-weight: 700; color: #64748B; letter-spacing: 0.5px; text-transform: uppercase; display: block; margin-bottom: 6px;">PILIH BINTANG KEPUASAN</label>
+        <div class="star-picker" id="starPicker">
+          <i class="fa-solid fa-star selected" data-value="1" onclick="pilihBintang(1)"></i>
+          <i class="fa-solid fa-star selected" data-value="2" onclick="pilihBintang(2)"></i>
+          <i class="fa-solid fa-star selected" data-value="3" onclick="pilihBintang(3)"></i>
+          <i class="fa-solid fa-star selected" data-value="4" onclick="pilihBintang(4)"></i>
+          <i class="fa-solid fa-star selected" data-value="5" onclick="pilihBintang(5)"></i>
+        </div>
+        <div id="starLabel" style="font-weight: 700; color: #D97706; font-size: 13px;">5.0 - Sangat Memuaskan! ⭐</div>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label style="font-size: 12px; font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 6px;">Pengalaman atau Testimoni Anda</label>
+        <textarea id="revKomentar" rows="4" placeholder="Ceritakan keseruan liburan, keramahan pemandu, fasilitas tempat, atau tips bermanfaat bagi wisatawan lain..." style="width: 100%; padding: 12px; border: 1px solid #D1D5DB; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 13px; outline: none; resize: none; background: #F9FAFB; box-sizing: border-box;"></textarea>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button id="btnKirimUlasan" onclick="kirimkanUlasan()" style="flex: 1; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(255, 94, 31, 0.3);">
+          Kirim Ulasan Sekarang
+        </button>
+        <button onclick="tutupModalUlasan()" style="padding: 12px 16px; border: 1px solid #D1D5DB; background: white; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; color: var(--text-dark);">
+          Batal
+        </button>
       </div>
     </div>
   </div>
@@ -223,6 +461,16 @@ import BottomNav from '../components/BottomNav.astro';
             let tglPesan = item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-';
             let tglWisata = item.tanggal || '-';
             let encodedItem = encodeURIComponent(JSON.stringify(item));
+            let reviewedOrders = JSON.parse(localStorage.getItem('kamawak_reviewed_orders') || '[]');
+            let isReviewed = reviewedOrders.includes(String(item.id));
+            let tombolUlasan = '';
+            if (isTiketAktif) {
+              if (isReviewed) {
+                tombolUlasan = `<span style="font-size: 11px; color: #059669; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; background: #ECFDF5; border-radius: 6px;"><i class="fa-solid fa-circle-check"></i> Ulasan Terkirim</span>`;
+              } else {
+                tombolUlasan = `<button class="btn-beri-ulasan" onclick="bukaModalUlasan('${encodedItem}')"><i class="fa-solid fa-star"></i> Beri Ulasan</button>`;
+              }
+            }
             let tombolTiket = isTiketAktif 
               ? `<button class="btn-tiket" onclick="bukaETiket('${encodedItem}')"><i class="fa-solid fa-qrcode"></i> Lihat E-Tiket</button>`
               : '';
@@ -245,7 +493,10 @@ import BottomNav from '../components/BottomNav.astro';
                 </div>
                 <div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #E5E7EB; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                   <span style="font-size: 12px; color: var(--text-gray); font-family: monospace;">Kode: ${item.id}</span>
-                  ${tombolTiket}
+                  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    ${tombolUlasan}
+                    ${tombolTiket}
+                  </div>
                 </div>
               </div>
             `;
@@ -275,16 +526,30 @@ import BottomNav from '../components/BottomNav.astro';
         document.getElementById('tikPaket').innerText = item.paket || 'Reguler';
         document.getElementById('tikTotal').innerText = formatUang(item.totalBayar);
 
-        let statusText = (item.status || 'Berhasil').toLowerCase();
-        let badgeHtml = '';
-        if (statusText.includes('digunakan')) {
-          badgeHtml = '<span style="background: #E0E7FF; color: #3730A3; padding: 5px 12px; border-radius: 50px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;"><i class="fa-solid fa-circle-check"></i> TELAH DIGUNAKAN</span>';
-        } else {
-          badgeHtml = '<span style="background: #D1FAE5; color: #065F46; padding: 5px 12px; border-radius: 50px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;"><i class="fa-solid fa-ticket"></i> SIAP DIGUNAKAN</span>';
-        }
-        document.getElementById('tikStatusBadge').innerHTML = badgeHtml;
+        let destName = item.namaProduk || 'Sumatera Barat';
+        let routeDest = document.getElementById('tikRouteDest');
+        if (routeDest) routeDest.innerText = destName;
 
-        let qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + encodeURIComponent(item.id);
+        let statusText = (item.status || 'Berhasil').toLowerCase();
+        let badgeEl = document.getElementById('tikStatusBadge');
+        let textEl = document.getElementById('tikStatusText');
+        if (statusText.includes('digunakan')) {
+          if (badgeEl) {
+            badgeEl.innerText = 'USED';
+            badgeEl.style.color = '#818CF8';
+            badgeEl.style.borderColor = '#6366F1';
+          }
+          if (textEl) textEl.innerText = 'Sudah Digunakan';
+        } else {
+          if (badgeEl) {
+            badgeEl.innerText = 'CONFIRMED';
+            badgeEl.style.color = '#34D399';
+            badgeEl.style.borderColor = '#10B981';
+          }
+          if (textEl) textEl.innerText = 'Lunas & Siap Digunakan';
+        }
+
+        let qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(item.id);
         document.getElementById('tikQRImg').src = qrUrl;
 
         document.getElementById('modalETiket').style.display = 'flex';
@@ -295,6 +560,151 @@ import BottomNav from '../components/BottomNav.astro';
 
     window.tutupETiket = function() {
       document.getElementById('modalETiket').style.display = 'none';
+    };
+
+    // ==========================================
+    // UNDUH GAMBAR E-TIKET BOARDING PASS (PNG)
+    // ==========================================
+    window.unduhGambarTiket = async function() {
+      const card = document.getElementById('eTiketCard');
+      const btn = document.getElementById('btnDownloadTiket');
+      const kode = document.getElementById('tikKode').innerText || 'TIKET';
+      if (!card) return;
+
+      const teksAsli = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses PNG...';
+        btn.disabled = true;
+      }
+
+      try {
+        if (typeof html2canvas === 'undefined') {
+          throw new Error('Modul html2canvas belum siap.');
+        }
+        const canvas = await html2canvas(card, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff'
+        });
+        const link = document.createElement('a');
+        link.download = `ETiket_Kamawak_${kode}.png`;
+        link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Gambar E-Tiket berhasil disimpan!',
+          showConfirmButton: false,
+          timer: 2000
+        });
+      } catch (err) {
+        console.error("Gagal mengunduh gambar tiket:", err);
+        Swal.fire('Informasi', 'Silakan gunakan tombol Cetak Tiket untuk menyimpan sebagai PDF jika unduhan gambar dibatasi perangkat.', 'info');
+      } finally {
+        if (btn) {
+          btn.innerHTML = teksAsli;
+          btn.disabled = false;
+        }
+      }
+    };
+
+    // ==========================================
+    // FITUR: REVIEW & RATING WISATAWAN
+    // ==========================================
+    let orderAktifReview = null;
+    let ratingDipilih = 5;
+
+    window.bukaModalUlasan = function(itemEncoded) {
+      try {
+        orderAktifReview = JSON.parse(decodeURIComponent(itemEncoded));
+        document.getElementById('revProdukNama').innerText = orderAktifReview.namaProduk || 'Paket Wisata';
+        document.getElementById('revKomentar').value = '';
+        pilihBintang(5);
+        document.getElementById('modalUlasan').style.display = 'flex';
+      } catch(e) {
+        console.error("Gagal membuka modal ulasan:", e);
+      }
+    };
+
+    window.tutupModalUlasan = function() {
+      document.getElementById('modalUlasan').style.display = 'none';
+      orderAktifReview = null;
+    };
+
+    window.pilihBintang = function(nilai) {
+      ratingDipilih = nilai;
+      const stars = document.querySelectorAll('#starPicker i');
+      stars.forEach((s, idx) => {
+        if (idx < nilai) s.classList.add('selected');
+        else s.classList.remove('selected');
+      });
+
+      const labelEl = document.getElementById('starLabel');
+      if (nilai === 5) labelEl.innerText = '5.0 - Sangat Memuaskan! ⭐';
+      else if (nilai === 4) labelEl.innerText = '4.0 - Bagus & Rekomendasi 👍';
+      else if (nilai === 3) labelEl.innerText = '3.0 - Cukup Memuaskan 😊';
+      else if (nilai === 2) labelEl.innerText = '2.0 - Kurang Sesuai Harapan 😐';
+      else labelEl.innerText = '1.0 - Sangat Mengecewakan 😞';
+    };
+
+    window.kirimkanUlasan = function() {
+      if (!orderAktifReview) return;
+      const komentar = document.getElementById('revKomentar').value.trim();
+      if (!komentar) {
+        Swal.fire('Perhatian', 'Mohon tulis sedikit ulasan atau kesan liburan Anda.', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('btnKirimUlasan');
+      const teksAsli = btn ? btn.innerText : '';
+      if (btn) {
+        btn.innerText = 'Mengirimkan Ulasan...';
+        btn.disabled = true;
+      }
+
+      const payload = {
+        idProduk: orderAktifReview.idProduk || orderAktifReview.id,
+        namaUser: localStorage.getItem('kamawak_user') || 'Wisatawan',
+        rating: ratingDipilih,
+        komentar: komentar,
+        tanggal: new Date().toISOString()
+      };
+
+      // Simpan ke cache lokal agar langsung terlihat di PDP
+      const pKey = 'kamawak_ulasan_' + payload.idProduk;
+      let cached = JSON.parse(localStorage.getItem(pKey) || '[]');
+      cached.unshift({
+        nama: payload.namaUser,
+        rating: payload.rating,
+        komentar: payload.komentar,
+        tanggal: 'Baru saja'
+      });
+      localStorage.setItem(pKey, JSON.stringify(cached));
+
+      // Tandai pesanan ini sudah diulas
+      let reviewedOrders = JSON.parse(localStorage.getItem('kamawak_reviewed_orders') || '[]');
+      if (!reviewedOrders.includes(String(orderAktifReview.id))) {
+        reviewedOrders.push(String(orderAktifReview.id));
+        localStorage.setItem('kamawak_reviewed_orders', JSON.stringify(reviewedOrders));
+      }
+
+      // Kirim ke backend GAS jika tersedia
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        try {
+          google.script.run.tambahUlasan(payload);
+        } catch(e) {}
+      }
+
+      tutupModalUlasan();
+      Swal.fire('Terima Kasih! ⭐', 'Ulasan Anda telah berhasil disimpan dan diverifikasi.', 'success').then(() => {
+        let user = localStorage.getItem('kamawak_user');
+        if (user) loadHistoriPesanan(user);
+      });
     };
 
     window.kembaliKeHome = function() {
