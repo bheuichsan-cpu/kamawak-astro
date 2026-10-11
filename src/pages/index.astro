@@ -204,7 +204,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 
   <!-- NAVBAR DINAMIS (ID ditambahkan) -->
   <nav class="navbar" style="z-index: 100;">
-    <a href="" class="logo"><i class="fa-solid fa-mountain-sun" style="color: var(--primary);"></i> Kamawak.</a>
+    <a href="/" class="logo"><i class="fa-solid fa-mountain-sun" style="color: var(--primary);"></i> Kamawak.</a>
     <div id="navMenu">
       <a href="/login" class="btn-login-nav"><i class="fa-solid fa-user"></i> <span>Masuk / Daftar</span></a>
     </div>
@@ -316,6 +316,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
     let kategoriAktif = 'Semua';
 
     window.onload = function() {
+      if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
       cekStatusLogin(); // <--- Fungsi Pintar Navigasi Dipanggil Disini
       tampilkanSkeleton();
       muatIklanBanner();
@@ -394,6 +395,16 @@ import GASPolyfill from '../components/GASPolyfill.astro';
           if (config.HERO_BANNER_2 && slides[1]) { slides[1].src = config.HERO_BANNER_2; localStorage.setItem("kamawak_hero_2", config.HERO_BANNER_2); }
           if (config.HERO_BANNER_3 && slides[2]) { slides[2].src = config.HERO_BANNER_3; localStorage.setItem("kamawak_hero_3", config.HERO_BANNER_3); }
           
+          if (config.PROFIL_LOGO) {
+            localStorage.setItem("kamawak_prof_logo", config.PROFIL_LOGO);
+          }
+          if (config.PROFIL_NAMA_USAHA) {
+            localStorage.setItem("kamawak_prof_nama", config.PROFIL_NAMA_USAHA);
+          }
+          if (typeof window.updateNavbarLogo === 'function') {
+            window.updateNavbarLogo();
+          }
+
           if (config.PROFIL_NO_WA) {
             let cs = document.querySelector('.floating-cs');
             if(cs) cs.href = "https://wa.me/" + config.PROFIL_NO_WA + "?text=Halo%20Admin%20Kamawak,%20saya%20butuh%20bantuan.";

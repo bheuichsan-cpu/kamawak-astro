@@ -104,7 +104,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 <body>
 
   <nav class="navbar">
-    <a href="" class="logo">Kamawak.</a>
+    <a href="/" class="logo">Kamawak.</a>
     <button class="btn-back" onclick="kembaliKeHome()"><i class="fa-solid fa-arrow-left"></i> Kembali</button>
   </nav>
 
@@ -209,6 +209,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
     let jumlahPax = 1;
 
     window.onload = function() {
+      if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
       // Sinkronisasi Sesi dari URL
       let urlUser = new URLSearchParams(window.location.search).get("u") || localStorage.getItem("kamawak_user") || "";
       let urlRole = new URLSearchParams(window.location.search).get("r") || localStorage.getItem("kamawak_role") || "";

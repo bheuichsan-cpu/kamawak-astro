@@ -88,7 +88,7 @@ window.logout = logout;
 <body>
 
     <nav class="navbar">
-    <a href="" class="logo">Kamawak. <span style="font-size:14px; color:var(--text-dark);">| Dasbor Mitra</span></a>
+    <a href="/owner" class="logo">Kamawak. <span style="font-size:14px; color:var(--text-dark);">| Dasbor Mitra</span></a>
     <div>
       <button onclick="window.location.href='/'" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:600; margin-right: 10px; font-size:14px;"><i class="fa-solid fa-plane"></i> Halaman Utama</button>
       <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
@@ -204,6 +204,7 @@ window.logout = logout;
     function formatUang(angka) { return "Rp " + Number(angka || 0).toLocaleString('id-ID'); }
 
     window.onload = function() {
+      if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
       if (!namaUser || namaUser === "") { window.open("/login", '_top'); return; }
       
       let namaDecode = decodeURIComponent(namaUser);

@@ -63,7 +63,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 </head>
 <body>
   <nav class="navbar">
-    <a href="#" onclick="kembaliKeHome()" class="logo"><i class="fa-solid fa-umbrella-beach"></i> Kamawak</a>
+    <a href="/" onclick="kembaliKeHome()" class="logo"><i class="fa-solid fa-umbrella-beach"></i> Kamawak</a>
     <a href="#" onclick="kembaliKeHome()" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
   </nav>
 
@@ -91,6 +91,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
     function formatUang(angka) { return "Rp " + Number(angka || 0).toLocaleString('id-ID'); }
 
     window.onload = function() {
+      if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
       // Sinkronisasi Sesi
       let urlUser = new URLSearchParams(window.location.search).get("u") || localStorage.getItem("kamawak_user") || "";
       let urlRole = new URLSearchParams(window.location.search).get("r") || localStorage.getItem("kamawak_role") || "";

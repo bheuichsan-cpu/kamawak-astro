@@ -67,7 +67,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
   
   <!-- KARTU 1: LOGIN -->
   <div class="auth-card" id="cardLogin">
-    <a href="" class="logo">Kamawak.</a>
+    <a href="/" class="logo">Kamawak.</a>
     <p>Selamat Datang Kembali!<br>Masuk dengan aman ke portal Anda.</p>
 
     <div class="form-group">
@@ -99,7 +99,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 
   <!-- KARTU 2: REGISTER -->
   <div class="auth-card" id="cardRegister" style="display:none;">
-    <a href="" class="logo">Kamawak.</a>
+    <a href="/" class="logo">Kamawak.</a>
     <p>Bergabung Bersama Kami<br>Buat akun baru dalam hitungan detik.</p>
 
     <div class="form-group">
@@ -163,6 +163,10 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 
   <script>
     import { supabase } from '../lib/supabase.js';
+
+    window.onload = function() {
+      if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
+    };
 
     // --- Fungsi Hash Sandi ---
     async function hashPassword(password) {

@@ -99,7 +99,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 <body id="mainBody">
 
   <nav class="navbar">
-    <a href="" class="logo">Kamawak. <span style="font-size: 12px; background: #FF5E1F20; color: var(--primary); padding: 3px 8px; border-radius: 4px;">Admin Panel</span></a>
+    <a href="/admin" class="logo">Kamawak. <span style="font-size: 12px; background: #FF5E1F20; color: var(--primary); padding: 3px 8px; border-radius: 4px;">Admin Panel</span></a>
     <div>
       <button onclick="window.location.href='/'" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:600; margin-right: 10px; font-size:14px;"><i class="fa-solid fa-plane"></i> Halaman Utama</button>
       <span id="adminName" style="font-size: 14px; font-weight: 600; margin-right: 15px; color: var(--text-dark);"></span>
@@ -678,7 +678,38 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       <!-- FORM PROFIL USAHA -->
       <div class="card-section" style="border-left: 5px solid #FF5E1F; margin-bottom: 25px;">
         <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-building" style="color: #FF5E1F;"></i> Profil Usaha & Identitas Platform</h3>
-        <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 20px;">Isi profil usaha ini untuk disinkronkan ke seluruh sistem (kontak WhatsApp CS, email bantuan, alamat kantor, deskripsi tentang kami, dsb).</p>
+        <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 20px;">Isi profil usaha ini untuk disinkronkan ke seluruh sistem (logo platform di kiri atas navbar, kontak WhatsApp CS, email bantuan, alamat kantor, deskripsi tentang kami, dsb).</p>
+
+        <!-- LOGO RESMI USAHA / PLATFORM -->
+        <div style="background: white; border: 1px solid #FED7AA; border-radius: 8px; padding: 16px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+            <label style="font-size: 13px; font-weight: 700; color: #C2410C; margin:0;"><i class="fa-solid fa-image"></i> Logo Usaha / Platform (Tampil di Kiri Atas Navbar)</label>
+            <span id="profLogoBadge" style="font-size: 11px; padding: 2px 8px; border-radius: 12px; background: #F1F5F9; color: #64748B;">Logo Default</span>
+          </div>
+          <p style="color: var(--text-gray); font-size: 12px; margin-bottom: 12px;">Logo ini akan otomatis menggantikan teks/ikon Kamawak di sebelah kiri atas navbar di seluruh halaman website. Format direkomendasikan .PNG transparan atau .JPG.</p>
+          
+          <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <!-- Box Preview Logo -->
+            <div id="boxProfLogo" style="width: 140px; height: 60px; border-radius: 8px; background: #F8FAFC; border: 1px dashed #CBD5E1; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+              <img id="imgProfLogo" src="" style="max-height: 50px; max-width: 120px; object-fit: contain; display: none;">
+              <span id="txtProfLogo" style="font-size: 11px; color: #94A3B8; text-align: center;"><i class="fa-solid fa-umbrella-beach"></i> Default</span>
+              <button id="btnHapusProfLogo" onclick="hapusProfLogo()" type="button" style="display:none; position:absolute; top:3px; right:3px; background:rgba(239,68,68,0.85); color:white; border:none; border-radius:50%; width:20px; height:20px; font-size:10px; cursor:pointer; align-items:center; justify-content:center;" title="Hapus Logo"><i class="fa-solid fa-times"></i></button>
+            </div>
+
+            <!-- Upload File & URL Manual -->
+            <div style="flex: 1; min-width: 250px;">
+              <div style="margin-bottom: 8px;">
+                <label style="font-size: 11px; font-weight: 600; color: #475569; display:block; margin-bottom: 3px;"><i class="fa-solid fa-cloud-arrow-up" style="color:#FF5E1F;"></i> Upload File Logo (HP/Laptop ke Google Drive):</label>
+                <input type="file" id="profLogoFile" class="form-control" accept="image/*" onchange="uploadProfLogoFile(this)" style="font-size: 12px; padding: 6px 10px;">
+              </div>
+              <div>
+                <label style="font-size: 11px; font-weight: 600; color: #475569; display:block; margin-bottom: 3px;"><i class="fa-solid fa-link" style="color:#64748B;"></i> Atau Masukkan URL Logo (Google Drive / Web):</label>
+                <input type="text" id="profLogoUrl" class="form-control" placeholder="https://lh3.googleusercontent.com/..." oninput="previewProfLogoUrl(this.value)" style="font-size: 12px; padding: 6px 10px;">
+              </div>
+            </div>
+          </div>
+          <div id="profLogoMsg" style="font-size: 11px; margin-top: 6px; min-height: 16px;"></div>
+        </div>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px;">
           <div class="form-group">
@@ -1724,7 +1755,150 @@ window.simpanFotoBanner = function() {
     }
 };
 
+window.previewProfLogo = function(url) {
+  let img = document.getElementById('imgProfLogo');
+  let txt = document.getElementById('txtProfLogo');
+  let btn = document.getElementById('btnHapusProfLogo');
+  let badge = document.getElementById('profLogoBadge');
+  if (url && url.trim() !== '') {
+    img.src = url.trim();
+    img.style.display = 'block';
+    txt.style.display = 'none';
+    if(btn) btn.style.display = 'flex';
+    if(badge) {
+      if(url.indexOf('googleusercontent.com') !== -1 || url.indexOf('drive.google.com') !== -1) {
+        badge.innerText = "Google Drive";
+        badge.style.background = "#D1FAE5";
+        badge.style.color = "#065F46";
+      } else if(url.indexOf('data:image') === 0) {
+        badge.innerText = "Lokal";
+        badge.style.background = "#FEF3C7";
+        badge.style.color = "#92400E";
+      } else {
+        badge.innerText = "URL Web";
+        badge.style.background = "#E0E7FF";
+        badge.style.color = "#3730A3";
+      }
+    }
+    img.onerror = function() {
+      img.style.display = 'none';
+      txt.style.display = 'block';
+      txt.innerText = 'Gagal memuat URL';
+      if(btn) btn.style.display = 'none';
+      if(badge) { badge.innerText = "Error"; badge.style.background = "#FEE2E2"; badge.style.color = "#B91C1C"; }
+    };
+  } else {
+    img.style.display = 'none';
+    txt.style.display = 'block';
+    txt.innerHTML = '<i class="fa-solid fa-umbrella-beach"></i> Default';
+    if(btn) btn.style.display = 'none';
+    if(badge) { badge.innerText = "Logo Default"; badge.style.background = "#F1F5F9"; badge.style.color = "#64748B"; }
+  }
+};
+
+window.uploadProfLogoFile = function(input) {
+  let msg = document.getElementById('profLogoMsg');
+  let badge = document.getElementById('profLogoBadge');
+  if (!input || !input.files || input.files.length === 0) return;
+
+  let file = input.files[0];
+  if (file.size > 5 * 1024 * 1024) {
+    if(msg) { msg.style.color = "#EF4444"; msg.innerText = "Maksimal ukuran file 5MB!"; }
+    return;
+  }
+
+  if(badge) { badge.innerText = "Mengunggah..."; badge.style.background = "#FEF3C7"; badge.style.color = "#D97706"; }
+  if(msg) { msg.style.color = "#FF5E1F"; msg.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah logo ke Google Drive...'; }
+
+  let reader = new FileReader();
+  reader.onload = function(e) {
+    let base64Full = e.target.result;
+    let base64Data = base64Full.split(',')[1];
+
+    previewProfLogo(base64Full);
+
+    let dataObj = {
+      fotoBase64: base64Data,
+      fotoType: file.type || "image/png",
+      fotoName: "logo_" + Date.now() + "_" + (file.name || "logo.png")
+    };
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success && res.url) {
+            let driveUrl = res.url;
+            document.getElementById('profLogoUrl').value = driveUrl;
+            previewProfLogo(driveUrl);
+            localStorage.setItem("kamawak_prof_logo", driveUrl);
+            updateNavbarLogo();
+            if(msg) { msg.style.color = "#10B981"; msg.innerHTML = '<i class="fa-solid fa-check-circle"></i> Logo berhasil tersimpan di Google Drive!'; }
+          } else {
+            let fallbackUrl = base64Full;
+            document.getElementById('profLogoUrl').value = fallbackUrl;
+            localStorage.setItem("kamawak_prof_logo", fallbackUrl);
+            updateNavbarLogo();
+            if(msg) { msg.style.color = "#F59E0B"; msg.innerText = "Logo tersimpan lokal di browser."; }
+          }
+        })
+        .withFailureHandler(function(err) {
+          let fallbackUrl = base64Full;
+          document.getElementById('profLogoUrl').value = fallbackUrl;
+          localStorage.setItem("kamawak_prof_logo", fallbackUrl);
+          updateNavbarLogo();
+          if(msg) { msg.style.color = "#F59E0B"; msg.innerText = "Logo tersimpan lokal di browser."; }
+        })
+        .uploadFotoDrive(dataObj);
+    } else {
+      let fallbackUrl = base64Full;
+      document.getElementById('profLogoUrl').value = fallbackUrl;
+      localStorage.setItem("kamawak_prof_logo", fallbackUrl);
+      updateNavbarLogo();
+      if(msg) { msg.style.color = "#10B981"; msg.innerHTML = '<i class="fa-solid fa-check"></i> Logo dimuat secara lokal.'; }
+    }
+  };
+  reader.readAsDataURL(file);
+};
+
+window.previewProfLogoUrl = function(url) {
+  previewProfLogo(url);
+  let fileInput = document.getElementById('profLogoFile');
+  if(fileInput) fileInput.value = "";
+  if(url && url.trim() !== "") {
+    localStorage.setItem("kamawak_prof_logo", url.trim());
+    updateNavbarLogo();
+  }
+};
+
+window.hapusProfLogo = function() {
+  if(!confirm("Kembalikan ke logo default Kamawak?")) return;
+  document.getElementById('profLogoUrl').value = "";
+  let fileInput = document.getElementById('profLogoFile');
+  if(fileInput) fileInput.value = "";
+  previewProfLogo("");
+  localStorage.removeItem("kamawak_prof_logo");
+  updateNavbarLogo();
+  let msg = document.getElementById('profLogoMsg');
+  if(msg) msg.innerText = "";
+};
+
+window.updateNavbarLogo = function() {
+  let logoUrl = localStorage.getItem("kamawak_prof_logo") || "";
+  let namaUsaha = localStorage.getItem("kamawak_prof_nama") || "Kamawak";
+  let logoEls = document.querySelectorAll('.logo');
+  logoEls.forEach(logoEl => {
+    let badge = logoEl.querySelector('span') ? logoEl.querySelector('span').outerHTML : '';
+    if (logoUrl && logoUrl.trim() !== '') {
+      logoEl.innerHTML = `<img src="${logoUrl}" alt="${namaUsaha}" style="max-height: 32px; max-width: 140px; object-fit: contain; vertical-align: middle; border-radius: 4px; margin-right: 6px;" onerror="this.onerror=null; this.outerHTML='<i class=\\'fa-solid fa-mountain-sun\\' style=\\'color:var(--primary);\\'></i> '"> ${badge}`;
+    } else {
+      let icon = '<i class="fa-solid fa-mountain-sun" style="color:var(--primary); margin-right: 6px;"></i> ';
+      logoEl.innerHTML = `${icon} ${namaUsaha}. ${badge}`;
+    }
+  });
+};
+
 window.simpanProfilUsaha = function() {
+    let logoUrl = document.getElementById('profLogoUrl') ? document.getElementById('profLogoUrl').value.trim() : "";
     let nama = document.getElementById('profNamaUsaha').value.trim();
     let tagline = document.getElementById('profTagline').value.trim();
     let wa = document.getElementById('profNoWA').value.trim();
@@ -1740,6 +1914,7 @@ window.simpanProfilUsaha = function() {
     info.style.color = "var(--text-gray)";
 
     let data = [
+        { key: "PROFIL_LOGO", value: logoUrl, desc: "URL Logo Resmi Platform" },
         { key: "PROFIL_NAMA_USAHA", value: nama },
         { key: "PROFIL_TAGLINE", value: tagline },
         { key: "PROFIL_NO_WA", value: wa },
@@ -1751,6 +1926,7 @@ window.simpanProfilUsaha = function() {
         { key: "PROFIL_FB", value: fb }
     ];
 
+    localStorage.setItem("kamawak_prof_logo", logoUrl);
     localStorage.setItem("kamawak_prof_nama", nama);
     localStorage.setItem("kamawak_prof_tagline", tagline);
     localStorage.setItem("kamawak_prof_wa", wa);
@@ -1761,10 +1937,12 @@ window.simpanProfilUsaha = function() {
     localStorage.setItem("kamawak_prof_tiktok", tiktok);
     localStorage.setItem("kamawak_prof_fb", fb);
 
+    updateNavbarLogo();
+
     if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
             .withSuccessHandler(function(res) {
-                Swal.fire("Berhasil", "Profil usaha berhasil disinkronkan ke seluruh sistem!", "success");
+                Swal.fire("Berhasil", "Profil usaha & Logo berhasil disinkronkan ke seluruh sistem!", "success");
                 info.innerText = "";
             })
             .withFailureHandler(function(err) {
@@ -1773,7 +1951,7 @@ window.simpanProfilUsaha = function() {
             })
             .simpanPengaturanForm(data);
     } else {
-        Swal.fire("Berhasil", "Profil usaha berhasil disinkronkan ke seluruh sistem!", "success");
+        Swal.fire("Berhasil", "Profil usaha & Logo berhasil disinkronkan ke seluruh sistem!", "success");
         info.innerText = "";
     }
 };
@@ -1787,6 +1965,13 @@ window.muatPengaturan = function() {
         document.getElementById('heroBanner2').value = b2; previewHero(2, b2);
         document.getElementById('heroBanner3').value = b3; previewHero(3, b3);
     }
+
+    let profLogo = localStorage.getItem("kamawak_prof_logo") || "";
+    if(document.getElementById('profLogoUrl')) {
+        document.getElementById('profLogoUrl').value = profLogo;
+        previewProfLogo(profLogo);
+    }
+
     if(document.getElementById('profNamaUsaha')) {
         document.getElementById('profNamaUsaha').value = localStorage.getItem("kamawak_prof_nama") || "";
         document.getElementById('profTagline').value = localStorage.getItem("kamawak_prof_tagline") || "";
@@ -1799,6 +1984,8 @@ window.muatPengaturan = function() {
         document.getElementById('profFB').value = localStorage.getItem("kamawak_prof_fb") || "";
     }
 
+    updateNavbarLogo();
+
     if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
             .withSuccessHandler(function(config) {
@@ -1807,7 +1994,17 @@ window.muatPengaturan = function() {
                 if(config.HERO_BANNER_2 && document.getElementById('heroBanner2')) { document.getElementById('heroBanner2').value = config.HERO_BANNER_2; previewHero(2, config.HERO_BANNER_2); }
                 if(config.HERO_BANNER_3 && document.getElementById('heroBanner3')) { document.getElementById('heroBanner3').value = config.HERO_BANNER_3; previewHero(3, config.HERO_BANNER_3); }
 
-                if(config.PROFIL_NAMA_USAHA && document.getElementById('profNamaUsaha')) document.getElementById('profNamaUsaha').value = config.PROFIL_NAMA_USAHA;
+                if(config.PROFIL_LOGO) {
+                    if(document.getElementById('profLogoUrl')) {
+                        document.getElementById('profLogoUrl').value = config.PROFIL_LOGO;
+                        previewProfLogo(config.PROFIL_LOGO);
+                    }
+                    localStorage.setItem("kamawak_prof_logo", config.PROFIL_LOGO);
+                }
+                if(config.PROFIL_NAMA_USAHA && document.getElementById('profNamaUsaha')) {
+                    document.getElementById('profNamaUsaha').value = config.PROFIL_NAMA_USAHA;
+                    localStorage.setItem("kamawak_prof_nama", config.PROFIL_NAMA_USAHA);
+                }
                 if(config.PROFIL_TAGLINE && document.getElementById('profTagline')) document.getElementById('profTagline').value = config.PROFIL_TAGLINE;
                 if(config.PROFIL_NO_WA && document.getElementById('profNoWA')) document.getElementById('profNoWA').value = config.PROFIL_NO_WA;
                 if(config.PROFIL_EMAIL && document.getElementById('profEmail')) document.getElementById('profEmail').value = config.PROFIL_EMAIL;
@@ -1816,6 +2013,8 @@ window.muatPengaturan = function() {
                 if(config.PROFIL_IG && document.getElementById('profIG')) document.getElementById('profIG').value = config.PROFIL_IG;
                 if(config.PROFIL_TIKTOK && document.getElementById('profTikTok')) document.getElementById('profTikTok').value = config.PROFIL_TIKTOK;
                 if(config.PROFIL_FB && document.getElementById('profFB')) document.getElementById('profFB').value = config.PROFIL_FB;
+
+                updateNavbarLogo();
             })
             .getPengaturan();
     }

@@ -43,4 +43,51 @@
       }
     }
   };
+
+  // --- Sinkronisasi Logo Global Platform Kamawak ---
+  window.updateNavbarLogo = function() {
+    try {
+      let logoUrl = localStorage.getItem("kamawak_prof_logo") || "";
+      let namaUsaha = localStorage.getItem("kamawak_prof_nama") || "Kamawak";
+      let logoEls = document.querySelectorAll('.logo');
+      logoEls.forEach(logoEl => {
+        let badge = logoEl.querySelector('span') ? logoEl.querySelector('span').outerHTML : '';
+        let isAuthCard = logoEl.closest && logoEl.closest('.auth-card');
+        if (logoUrl && logoUrl.trim() !== '') {
+          let imgStyle = isAuthCard 
+            ? "max-height: 48px; max-width: 180px; object-fit: contain; vertical-align: middle; border-radius: 6px; margin-bottom: 6px; display: inline-block;"
+            : "max-height: 34px; max-width: 150px; object-fit: contain; vertical-align: middle; border-radius: 4px; margin-right: 6px; display: inline-block;";
+          logoEl.innerHTML = `<img src="${logoUrl}" alt="${namaUsaha}" style="${imgStyle}" onerror="this.onerror=null; this.outerHTML='<i class=\\'fa-solid fa-mountain-sun\\' style=\\'color:var(--primary);\\'></i> '"> ${badge}`;
+        } else {
+          let icon = '<i class="fa-solid fa-mountain-sun" style="color:var(--primary); margin-right:6px;"></i> ';
+          logoEl.innerHTML = `${icon} ${namaUsaha}. ${badge}`;
+        }
+      });
+    } catch(e) {
+      console.warn("Update navbar logo error:", e);
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.updateNavbarLogo);
+  } else {
+    window.updateNavbarLogo();
+  }
+
+  // Jika logo belum ada di cache browser lokal, tarik otomatis dari backend
+  if (!localStorage.getItem("kamawak_prof_logo")) {
+    setTimeout(function() {
+      if (window.google && window.google.script && window.google.script.run) {
+        window.google.script.run.withSuccessHandler(function(config) {
+          if (config && config.PROFIL_LOGO) {
+            localStorage.setItem("kamawak_prof_logo", config.PROFIL_LOGO);
+            if (config.PROFIL_NAMA_USAHA) {
+              localStorage.setItem("kamawak_prof_nama", config.PROFIL_NAMA_USAHA);
+            }
+            window.updateNavbarLogo();
+          }
+        }).getPengaturan();
+      }
+    }, 200);
+  }
 </script>
