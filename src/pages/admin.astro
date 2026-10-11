@@ -396,44 +396,81 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 
 
     <div id="tabAds" style="display:none;">
-      <div class="card-section">
-        <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-rectangle-ad" style="color: #F59E0B;"></i> Manajemen Spanduk Iklan (Ad Space)</h3>
-        <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 20px;">Unggah spanduk promo yang akan tampil di halaman utama. Anda bisa melacak berapa kali iklan dilihat (Impresi) dan diklik (CTR).</p>
+      <div class="card-section" style="border-left: 5px solid #F59E0B;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom: 15px;">
+          <div>
+            <h3 style="font-family: 'Poppins'; font-size: 18px; margin: 0 0 5px 0;"><i class="fa-solid fa-rectangle-ad" style="color: #F59E0B;"></i> Manajemen Spanduk Iklan (Ad Space)</h3>
+            <p style="color: var(--text-gray); font-size: 14px; margin: 0;">Unggah spanduk promo di carousel halaman utama. Anda bisa melacak berapa kali iklan dilihat (Impresi), diklik (CTR), serta mengaktifkan/menonaktifkan spanduk kapan saja.</p>
+          </div>
+          <span style="background:#FEF3C7; color:#92400E; font-size:12px; font-weight:600; padding:4px 10px; border-radius:20px; display:inline-flex; align-items:center; gap:5px;"><i class="fa-brands fa-google-drive"></i> Terhubung Google Drive</span>
+        </div>
         
-        <div style="background: #FFFBEB; padding: 20px; border-radius: 8px; border-left: 5px solid #F59E0B; margin-bottom: 20px;">
-          <h4 style="margin-top:0; font-family: 'Poppins';">Tambah Spanduk Baru</h4>
-          <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-            <div class="form-group" style="flex: 1; min-width: 250px;">
-              <label>Judul / Nama Promo</label>
-              <input type="text" id="adName" class="form-control" placeholder="Contoh: Diskon 50% Tiket Masuk">
+        <div style="background: #FFFBEB; padding: 20px; border-radius: 8px; border-left: 5px solid #F59E0B; margin-bottom: 25px;">
+          <h4 style="margin-top:0; margin-bottom: 15px; font-family: 'Poppins'; color: #92400E;"><i class="fa-solid fa-plus-circle"></i> Tambah Spanduk Promo Baru</h4>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px;">
+            <div class="form-group">
+              <label style="font-size: 12px; font-weight: 600; color: #475569;">Judul / Nama Promo <span style="color:red;">*</span></label>
+              <input type="text" id="adName" class="form-control" placeholder="Contoh: Diskon 50% Tur Pulau Mandeh" style="font-size: 13px;">
             </div>
-            <div class="form-group" style="flex: 1; min-width: 250px;">
-              <label>Link Tujuan / URL (Opsional)</label>
-              <input type="text" id="adTargetId" class="form-control" placeholder="https://... (Bebas dari web luar / bank)">
-            </div>
-            <div class="form-group" style="flex: 2; min-width: 300px;">
-              <label>File Spanduk (.JPG / .PNG) - Rasio 21:9</label>
-              <input type="file" id="adFoto" class="form-control" accept="image/*">
+            
+            <div class="form-group">
+              <label style="font-size: 12px; font-weight: 600; color: #475569;">Link / URL Tujuan (Opsional)</label>
+              <input type="text" id="adTargetId" class="form-control" placeholder="https://... atau nomor WA / nama paket" style="font-size: 13px;">
             </div>
           </div>
-          <button class="btn-admin" style="background: #F59E0B; width: 100%;" onclick="uploadAd()"><i class="fa-solid fa-cloud-arrow-up"></i> Unggah & Tayangkan Iklan</button>
-          <div id="adUploadInfo" style="margin-top: 10px; font-weight:600; text-align:center; font-size:14px;"></div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; margin-top: 10px;">
+            <!-- Upload File (Google Drive) -->
+            <div class="form-group">
+              <label style="font-size: 12px; font-weight: 600; color: #475569;"><i class="fa-solid fa-cloud-arrow-up" style="color:#F59E0B;"></i> Upload Foto dari HP/Laptop (Google Drive):</label>
+              <input type="file" id="adFoto" class="form-control" accept="image/*" onchange="previewAdFile(this)" style="font-size: 12px; padding: 6px 10px;">
+            </div>
+
+            <!-- Manual URL -->
+            <div class="form-group">
+              <label style="font-size: 12px; font-weight: 600; color: #475569;"><i class="fa-solid fa-link" style="color:#64748B;"></i> Atau Masukkan URL Gambar Spanduk:</label>
+              <input type="text" id="adUrlManual" class="form-control" placeholder="https://lh3.googleusercontent.com/..." oninput="previewAdUrl(this.value)" style="font-size: 12px; padding: 6px 10px;">
+            </div>
+          </div>
+
+          <!-- Live Preview Spanduk Banner (Rasio 21:9) -->
+          <div style="margin-top: 15px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 5px;">
+              <span style="font-size: 12px; font-weight: 600; color: #475569;">Preview Tampilan Spanduk (Rasio Horizontal 21:9):</span>
+              <span id="adBadge" style="font-size: 11px; padding: 2px 8px; border-radius: 12px; background: #F1F5F9; color: #64748B;">Belum ada gambar</span>
+            </div>
+            <div id="boxAdPreview" style="height: 120px; border-radius: 8px; overflow: hidden; background: #F8FAFC; border: 1px dashed #CBD5E1; display: flex; align-items: center; justify-content: center; position: relative;">
+              <img id="imgAdPreview" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+              <span id="txtAdPreview" style="font-size: 12px; color: #94A3B8; text-align: center;"><i class="fa-solid fa-panorama" style="font-size: 24px; display: block; margin-bottom: 4px;"></i>Pilih file atau masukkan link untuk melihat preview</span>
+              <button id="btnResetAd" onclick="resetAdForm()" type="button" style="display:none; position:absolute; top:8px; right:8px; background:rgba(239,68,68,0.85); color:white; border:none; border-radius:50%; width:26px; height:26px; font-size:12px; cursor:pointer; align-items:center; justify-content:center;" title="Reset foto"><i class="fa-solid fa-times"></i></button>
+            </div>
+          </div>
+
+          <button class="btn-admin" style="background: #F59E0B; width: 100%; margin-top: 18px; padding: 12px; font-size: 14px;" onclick="uploadAd()"><i class="fa-solid fa-cloud-arrow-up"></i> Unggah & Tayangkan Spanduk Iklan</button>
+          <div id="adUploadInfo" style="margin-top: 10px; font-weight:600; text-align:center; font-size:13px;"></div>
         </div>
 
-        <div style="overflow-x: auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+          <h4 style="margin: 0; font-family: 'Poppins'; color: var(--text-dark);"><i class="fa-solid fa-list-check"></i> Daftar Spanduk Iklan Aktif</h4>
+          <button onclick="muatDaftarIklan()" style="background: #F3F4F6; border: 1px solid #E5E7EB; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 5px;"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        </div>
+
+        <div style="overflow-x: auto; background: white; border-radius: 8px; border: 1px solid #E5E7EB;">
           <table>
             <thead>
-              <tr>
-                <th>Preview</th>
-                <th>Nama Promo</th>
-                <th>Impresi (Dilihat)</th>
-                <th>Klik</th>
-                <th>Status</th>
-                <th>Aksi</th>
+              <tr style="background: #F9FAFB;">
+                <th style="width: 140px;">Spanduk</th>
+                <th>Nama Promo & Target</th>
+                <th style="text-align: center; width: 100px;">Impresi (Dilihat)</th>
+                <th style="text-align: center; width: 100px;">Klik</th>
+                <th style="text-align: center; width: 80px;">CTR</th>
+                <th style="text-align: center; width: 100px;">Status</th>
+                <th style="text-align: center; width: 130px;">Aksi</th>
               </tr>
             </thead>
             <tbody id="tableAdsBody">
-              <tr><td colspan="6" style="text-align: center; color: var(--text-gray);">Memuat daftar iklan...</td></tr>
+              <tr><td colspan="7" style="text-align: center; color: var(--text-gray); padding: 25px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat daftar iklan...</td></tr>
             </tbody>
           </table>
         </div>
@@ -870,6 +907,11 @@ window.switchTab = function(tabId) {
   document.getElementById(tabId).style.display = 'block';
   document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).style.background = 'var(--primary)';
   document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).style.color = 'white';
+
+  if (tabId === 'tabAds' && typeof muatDaftarIklan === 'function') muatDaftarIklan();
+  if ((tabId === 'tabPengaturan' || tabId === 'tabComposer') && typeof muatPengaturan === 'function') muatPengaturan();
+  if (tabId === 'tabKeuangan' && typeof muatKas === 'function') muatKas();
+  if (tabId === 'tabDashboard' && typeof muatDataMitra === 'function') muatDataMitra();
 };
 
 window.logout = function() {
@@ -1121,7 +1163,287 @@ window.prosesPurging = async function() {
     });
 };
 
-window.uploadAd = function() { Swal.fire('Info', 'Migrasi Ads Storage', 'info'); };
+window.previewAdFile = function(input) {
+  let img = document.getElementById('imgAdPreview');
+  let txt = document.getElementById('txtAdPreview');
+  let btn = document.getElementById('btnResetAd');
+  let badge = document.getElementById('adBadge');
+  if (input.files && input.files[0]) {
+    let file = input.files[0];
+    if (file.size > 5 * 1024 * 1024) {
+      Swal.fire("Ukuran Terlalu Besar", "Maksimal ukuran file spanduk adalah 5MB", "warning");
+      input.value = "";
+      return;
+    }
+    let reader = new FileReader();
+    reader.onload = function(e) {
+      img.src = e.target.result;
+      img.style.display = 'block';
+      txt.style.display = 'none';
+      if(btn) btn.style.display = 'flex';
+      if(badge) {
+        badge.innerText = "File Dipilih (Google Drive)";
+        badge.style.background = "#FEF3C7";
+        badge.style.color = "#92400E";
+      }
+      let urlInput = document.getElementById('adUrlManual');
+      if (urlInput) urlInput.value = "";
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+window.previewAdUrl = function(url) {
+  let img = document.getElementById('imgAdPreview');
+  let txt = document.getElementById('txtAdPreview');
+  let btn = document.getElementById('btnResetAd');
+  let badge = document.getElementById('adBadge');
+  let fileInput = document.getElementById('adFoto');
+  if(fileInput) fileInput.value = "";
+
+  if (url && url.trim() !== '') {
+    img.src = url.trim();
+    img.style.display = 'block';
+    txt.style.display = 'none';
+    if(btn) btn.style.display = 'flex';
+    if(badge) {
+      if(url.indexOf('googleusercontent.com') !== -1 || url.indexOf('drive.google.com') !== -1) {
+        badge.innerText = "Google Drive";
+        badge.style.background = "#D1FAE5";
+        badge.style.color = "#065F46";
+      } else {
+        badge.innerText = "URL Web";
+        badge.style.background = "#E0E7FF";
+        badge.style.color = "#3730A3";
+      }
+    }
+    img.onerror = function() {
+      img.style.display = 'none';
+      txt.style.display = 'block';
+      txt.innerText = 'Gagal memuat URL gambar';
+      if(badge) { badge.innerText = "Error"; badge.style.background = "#FEE2E2"; badge.style.color = "#B91C1C"; }
+    };
+  } else {
+    resetAdPreview();
+  }
+};
+
+window.resetAdForm = function() {
+  document.getElementById('adName').value = "";
+  if(document.getElementById('adTargetId')) document.getElementById('adTargetId').value = "";
+  if(document.getElementById('adFoto')) document.getElementById('adFoto').value = "";
+  if(document.getElementById('adUrlManual')) document.getElementById('adUrlManual').value = "";
+  resetAdPreview();
+  let info = document.getElementById('adUploadInfo');
+  if(info) info.innerText = "";
+};
+
+function resetAdPreview() {
+  let img = document.getElementById('imgAdPreview');
+  let txt = document.getElementById('txtAdPreview');
+  let btn = document.getElementById('btnResetAd');
+  let badge = document.getElementById('adBadge');
+  if(img) { img.src = ""; img.style.display = 'none'; }
+  if(txt) { txt.style.display = 'block'; txt.innerHTML = '<i class="fa-solid fa-panorama" style="font-size: 24px; display: block; margin-bottom: 4px;"></i>Pilih file atau masukkan link untuk melihat preview'; }
+  if(btn) btn.style.display = 'none';
+  if(badge) { badge.innerText = "Belum ada gambar"; badge.style.background = "#F1F5F9"; badge.style.color = "#64748B"; }
+}
+
+window.uploadAd = function() {
+  let nama = document.getElementById('adName').value.trim();
+  let target = document.getElementById('adTargetId') ? document.getElementById('adTargetId').value.trim() : "";
+  let fileInput = document.getElementById('adFoto');
+  let urlManual = document.getElementById('adUrlManual') ? document.getElementById('adUrlManual').value.trim() : "";
+  let info = document.getElementById('adUploadInfo');
+
+  if (!nama) {
+    Swal.fire("Data Belum Lengkap", "Mohon isi Judul / Nama Promo!", "warning");
+    return;
+  }
+  let hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+  if (!hasFile && !urlManual) {
+    Swal.fire("Foto Belum Dipilih", "Mohon pilih file spanduk atau masukkan link URL gambar!", "warning");
+    return;
+  }
+
+  if (info) {
+    info.style.color = "var(--primary)";
+    info.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengunggah spanduk ke Google Drive... Mohon tunggu.';
+  }
+
+  function kirimBackend(dataObj) {
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (typeof res === 'string') {
+            try { res = JSON.parse(res); } catch(e) {}
+          }
+          if (res && res.success) {
+            Swal.fire("Berhasil", "Spanduk iklan berhasil ditayangkan!", "success");
+            resetAdForm();
+            muatDaftarIklan();
+          } else {
+            Swal.fire("Gagal", "Gagal menyimpan iklan: " + (res && res.error ? res.error : "Unknown error"), "error");
+            if (info) { info.style.color = "#EF4444"; info.innerText = "Gagal: " + (res && res.error || "Gagal menyimpan"); }
+          }
+        })
+        .withFailureHandler(function(err) {
+          Swal.fire("Error", "Gagal mengunggah: " + err, "error");
+          if (info) { info.style.color = "#EF4444"; info.innerText = "Error: " + err; }
+        })
+        .tambahIklanBaru(dataObj);
+    } else {
+      let localAds = JSON.parse(localStorage.getItem('kamawak_ads') || '[]');
+      localAds.push({
+        baris: localAds.length + 1,
+        nama: dataObj.nama,
+        target_id: dataObj.target_id,
+        foto: dataObj.fotoUrl || (dataObj.fotoBase64 ? "data:" + dataObj.fotoType + ";base64," + dataObj.fotoBase64 : ""),
+        impresi: 0,
+        klik: 0,
+        status: "Aktif"
+      });
+      localStorage.setItem('kamawak_ads', JSON.stringify(localAds));
+      Swal.fire("Berhasil", "Spanduk iklan berhasil disimpan!", "success");
+      resetAdForm();
+      muatDaftarIklan();
+    }
+  }
+
+  if (hasFile) {
+    let file = fileInput.files[0];
+    let reader = new FileReader();
+    reader.onload = function(e) {
+      let dataObj = {
+        nama: nama,
+        target_id: target,
+        fotoBase64: e.target.result.split(",")[1],
+        fotoType: file.type || "image/jpeg",
+        fotoName: file.name || ("ad_" + Date.now() + ".jpg")
+      };
+      kirimBackend(dataObj);
+    };
+    reader.readAsDataURL(file);
+  } else {
+    let dataObj = {
+      nama: nama,
+      target_id: target,
+      fotoUrl: urlManual
+    };
+    kirimBackend(dataObj);
+  }
+};
+
+window.muatDaftarIklan = function() {
+  let tbody = document.getElementById('tableAdsBody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 25px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data spanduk iklan...</td></tr>';
+
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run
+      .withSuccessHandler(function(resString) {
+        try {
+          let res = typeof resString === 'string' ? JSON.parse(resString) : resString;
+          if (!res.success) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#EF4444; padding:20px;">Gagal memuat iklan: ${res.error}</td></tr>`;
+            return;
+          }
+          renderTabelIklan(res.data);
+        } catch(e) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#EF4444; padding:20px;">Error parsing: ${e.message}</td></tr>`;
+        }
+      })
+      .withFailureHandler(function(err) {
+        let local = JSON.parse(localStorage.getItem('kamawak_ads') || '[]');
+        renderTabelIklan(local);
+      })
+      .getAllAdsAdmin();
+  } else {
+    let local = JSON.parse(localStorage.getItem('kamawak_ads') || '[]');
+    renderTabelIklan(local);
+  }
+};
+
+function renderTabelIklan(data) {
+  let tbody = document.getElementById('tableAdsBody');
+  if (!tbody) return;
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-gray); padding: 30px;"><i class="fa-solid fa-info-circle" style="font-size: 20px; display:block; margin-bottom:8px;"></i>Belum ada spanduk iklan. Tambahkan spanduk baru di atas.</td></tr>';
+    return;
+  }
+
+  let htmlStr = "";
+  data.forEach(item => {
+    let isAktif = String(item.status).toLowerCase() === 'aktif';
+    let badgeStatus = isAktif 
+      ? '<span style="background:#D1FAE5; color:#065F46; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:600;"><i class="fa-solid fa-check"></i> Aktif</span>' 
+      : '<span style="background:#FEE2E2; color:#991B1B; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:600;"><i class="fa-solid fa-pause"></i> Non-Aktif</span>';
+    
+    let impresi = item.impresi || 0;
+    let klik = item.klik || 0;
+    let ctr = impresi > 0 ? ((klik / impresi) * 100).toFixed(1) + '%' : '0%';
+
+    htmlStr += `
+      <tr>
+        <td>
+          <img src="${item.foto}" style="width:120px; height:50px; object-fit:cover; border-radius:6px; border:1px solid #E2E8F0;" onerror="this.src='https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=300'">
+        </td>
+        <td>
+          <strong style="color:var(--text-dark); font-size:13px;">${item.nama}</strong><br>
+          <small style="color:var(--text-gray);"><i class="fa-solid fa-link"></i> ${item.target_id || '-'}</small>
+        </td>
+        <td style="text-align: center; font-weight:700; font-size:15px; color:#475569;">${impresi.toLocaleString('id-ID')}</td>
+        <td style="text-align: center; font-weight:700; font-size:15px; color:#3B82F6;">${klik.toLocaleString('id-ID')}</td>
+        <td style="text-align: center; font-weight:600; font-size:12px; color:#059669;">${ctr}</td>
+        <td style="text-align: center;">${badgeStatus}</td>
+        <td style="text-align: center;">
+          <div style="display:flex; gap:6px; justify-content:center;">
+            <button onclick="toggleStatusIklan(${item.baris}, '${item.status}')" style="background:#F3F4F6; border:1px solid #E5E7EB; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:600;" title="Ubah Status">
+              ${isAktif ? '<i class="fa-solid fa-pause" style="color:#D97706;"></i> Matikan' : '<i class="fa-solid fa-play" style="color:#10B981;"></i> Aktifkan'}
+            </button>
+            <button onclick="hapusIklan(${item.baris})" style="background:#FEE2E2; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; color:#EF4444; font-size:11px;" title="Hapus Spanduk">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+  tbody.innerHTML = htmlStr;
+}
+
+window.toggleStatusIklan = function(baris, statusLama) {
+  let newStatus = String(statusLama).toLowerCase() === 'aktif' ? 'Non-Aktif' : 'Aktif';
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run
+      .withSuccessHandler(function() { muatDaftarIklan(); })
+      .updateStatusIklan(baris, newStatus);
+  } else {
+    let local = JSON.parse(localStorage.getItem('kamawak_ads') || '[]');
+    let target = local.find(x => x.baris === baris);
+    if(target) target.status = newStatus;
+    localStorage.setItem('kamawak_ads', JSON.stringify(local));
+    muatDaftarIklan();
+  }
+};
+
+window.hapusIklan = function(baris) {
+  if (!confirm("Hapus spanduk iklan ini?")) return;
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run
+      .withSuccessHandler(function() { 
+        Swal.fire("Terhapus", "Spanduk iklan berhasil dihapus.", "success");
+        muatDaftarIklan(); 
+      })
+      .hapusIklanAdmin(baris);
+  } else {
+    let local = JSON.parse(localStorage.getItem('kamawak_ads') || '[]');
+    local = local.filter(x => x.baris !== baris);
+    localStorage.setItem('kamawak_ads', JSON.stringify(local));
+    Swal.fire("Terhapus", "Spanduk iklan berhasil dihapus.", "success");
+    muatDaftarIklan();
+  }
+};
 window.uploadTag = function() { Swal.fire('Info', 'Migrasi Tags Storage', 'info'); };
 window.tambahLayout = function() {};
 window.simpanSemuaLayout = function() { Swal.fire('Info', 'Migrasi Layout DB', 'info'); };

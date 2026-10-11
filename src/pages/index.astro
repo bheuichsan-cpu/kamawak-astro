@@ -410,6 +410,41 @@ import GASPolyfill from '../components/GASPolyfill.astro';
         }, 4000);
       }
     }
+
+    window.klikIklanServer = function(baris, linkTujuan) {
+      if (typeof google !== 'undefined' && google.script && google.script.run && baris) {
+        google.script.run.catatMetrikIklan(baris, 'klik');
+      }
+      if (linkTujuan && (linkTujuan.startsWith('http') || linkTujuan.startsWith('www'))) {
+          if(!linkTujuan.startsWith('http')) linkTujuan = 'https://' + linkTujuan;
+          window.open(linkTujuan, '_blank');
+      } else if (linkTujuan) {
+          document.getElementById('searchInput').value = linkTujuan; 
+          panggilDataServer();
+          window.scrollTo({ top: document.getElementById('areaKatalog').offsetTop - 20, behavior: 'smooth' });
+      }
+    };
+
+    function jalankanCarouselIklan(totalAds) {
+      if (totalAds <= 3) return;
+      let track = document.getElementById('adCarouselTrack');
+      if (!track || !track.children || track.children.length === 0) return;
+      let currentShift = 0;
+      
+      setInterval(() => {
+         currentShift++;
+         let itemWidth = (track.children[0] ? track.children[0].offsetWidth : 280) + 15;
+         if (currentShift > totalAds - (window.innerWidth < 768 ? 2 : 3)) {
+            currentShift = 0;
+            track.style.transition = 'none';
+            track.style.transform = `translateX(0px)`;
+            setTimeout(() => { track.style.transition = 'transform 0.5s ease'; }, 50);
+         } else {
+            track.style.transform = `translateX(-${currentShift * itemWidth}px)`;
+         }
+      }, 3500);
+    }
+
     function muatKoleksiTag() {
       let c = document.getElementById('tagScrollContainer');
       if (c) c.innerHTML = '<div style="text-align:center; width:100%; color:var(--text-gray);">Koleksi akan segera hadir.</div>';
@@ -425,7 +460,51 @@ import GASPolyfill from '../components/GASPolyfill.astro';
     function muatIklanBanner() {
       jalankanSliderHero(); // Jalankan hero banner statis
 
-      
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(resString) {
+            try {
+              let res = typeof resString === 'string' ? JSON.parse(resString) : resString;
+              if (res && res.success && res.data && res.data.length > 0) {
+                let track = document.getElementById('adCarouselTrack');
+                let container = document.getElementById('adCarouselContainer');
+                let realAds = res.data.filter(ad => ad.nama !== 'Promo Default').slice(0, 6);
+                let adsToShow = realAds.length > 0 ? realAds : res.data;
+                let sliderHtml = "";
+                adsToShow.forEach((ad) => {
+                  let link = ad.id_iklan || ad.target_id || "";
+                  if (typeof google !== 'undefined' && google.script && google.script.run && ad.baris) {
+                    google.script.run.catatMetrikIklan(ad.baris, 'impresi');
+                  }
+                  sliderHtml += `<div class="ad-card" onclick="klikIklanServer(${ad.baris || 0}, '${link}')"><img src="${ad.foto}" alt="${ad.nama}"></div>`;
+                });
+                if (sliderHtml !== "" && track && container) {
+                    container.style.display = "block";
+                    track.innerHTML = sliderHtml;
+                    jalankanCarouselIklan(adsToShow.length);
+                }
+              }
+            } catch(e) {}
+          }).getAdsData();
+      } else {
+        let local = JSON.parse(localStorage.getItem('kamawak_ads') || '[]');
+        let aktifAds = local.filter(x => String(x.status).toLowerCase() === 'aktif');
+        if (aktifAds.length > 0) {
+          let track = document.getElementById('adCarouselTrack');
+          let container = document.getElementById('adCarouselContainer');
+          let sliderHtml = "";
+          aktifAds.forEach(ad => {
+            let link = ad.target_id || "";
+            sliderHtml += `<div class="ad-card" onclick="klikIklanServer(${ad.baris || 0}, '${link}')"><img src="${ad.foto}" alt="${ad.nama}"></div>`;
+          });
+          if (sliderHtml !== "" && track && container) {
+            container.style.display = "block";
+            track.innerHTML = sliderHtml;
+            jalankanCarouselIklan(aktifAds.length);
+          }
+        }
+      }
+
       (async () => {
         try {
           // Fetch wisata data
