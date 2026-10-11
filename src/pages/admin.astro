@@ -578,42 +578,85 @@ import BottomNav from '../components/BottomNav.astro';
           <div id="heroBannerInfo" style="margin-top: 10px; font-weight:600; text-align:center; font-size:14px;"></div>
         </div>
 
-        <!-- BAGIAN 1 -->
-        <h4 style="font-family: 'Poppins'; color: #EC4899; margin-top: 10px; border-bottom: 2px solid #FDF2F8; padding-bottom: 10px; margin-bottom: 15px;"><i class="fa-solid fa-tags"></i> Bagian 1: Pintasan Pencarian Cepat (Jelajahi Koleksi)</h4>
-        
-        <div style="background: #FDF2F8; padding: 20px; border-radius: 8px; border-left: 5px solid #EC4899; margin-bottom: 20px;">
-          <h4 style="margin-top:0; font-family: 'Poppins';">Tambah Pintasan Baru</h4>
-          <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-            <div class="form-group" style="flex: 1; min-width: 200px;">
-              <label>Nama Kota (Judul & Filter Utama)</label>
-              <input type="text" id="tagName" class="form-control" placeholder="Contoh: Bukittinggi, Mentawai">
+        <!-- BAGIAN 1: PINTASAN KOTA (JELAJAHI KOTA) -->
+        <h4 style="font-family: 'Poppins'; color: #EC4899; margin-top: 10px; border-bottom: 2px solid #FDF2F8; padding-bottom: 10px; margin-bottom: 8px;">
+          <i class="fa-solid fa-map-location-dot"></i> Bagian 1: Kartu Pintasan Kota (Jelajahi Kota)
+        </h4>
+        <p style="font-size: 13px; color: var(--text-gray); margin-bottom: 18px; line-height: 1.5;">
+          Kelola kartu kota visual yang tampil di halaman utama. Pengunjung yang mengetuk kartu ini akan langsung disaring paket wisatanya sesuai kota tersebut. Anda dapat mengganti foto, mengubah nama kota/label, menambah kota baru, atau mereset ke 7 kota standar.
+        </p>
+
+        <div style="background: #FDF2F8; padding: 22px; border-radius: 10px; border-left: 5px solid #EC4899; margin-bottom: 25px; box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h4 style="margin:0; font-family: 'Poppins'; font-size: 16px; color: #831843;" id="judulFormTag">
+              <i class="fa-solid fa-pen-to-square"></i> Tambah / Edit Kartu Kota
+            </h4>
+            <span id="badgeModeTag" style="font-size: 11px; background: #FCE7F3; color: #BE185D; padding: 3px 10px; border-radius: 12px; font-weight: 600;">Mode: Tambah Baru</span>
+          </div>
+
+          <input type="hidden" id="tagEditIndex" value="-1">
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 15px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 13px; font-weight: 600; color: #374151;">Kata Kunci Filter (Nama Kota)</label>
+              <input type="text" id="tagName" class="form-control" placeholder="Contoh: Bukittinggi, Mandeh, Semua" style="font-size: 13px;">
+              <small style="font-size: 11px; color: #6B7280;">Digunakan untuk menyaring destinasi di katalog.</small>
             </div>
-            <div class="form-group" style="flex: 1; min-width: 200px;">
-              <label>Sub-tag (Bisa Banyak, Pisahkan Koma)</label>
-              <input type="text" id="tagSub" class="form-control" placeholder="Contoh: Pantai, Sejarah, Kuliner">
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 13px; font-weight: 600; color: #374151;">Label Tampilan (Teks di Kartu)</label>
+              <input type="text" id="tagLabel" class="form-control" placeholder="Contoh: Bukittinggi, Pesisir Mandeh" style="font-size: 13px;">
+              <small style="font-size: 11px; color: #6B7280;">Teks nama yang dilihat oleh pengunjung.</small>
             </div>
-            <div class="form-group" style="flex: 1; min-width: 250px;">
-              <label>Foto Sampul (.JPG / .PNG) - Rasio 1:1</label>
-              <input type="file" id="tagFoto" class="form-control" accept="image/*">
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 13px; font-weight: 600; color: #374151;">Upload Foto (HP / Laptop)</label>
+              <input type="file" id="tagFotoFile" class="form-control" accept="image/*" onchange="uploadTagFotoFile(this)" style="font-size: 12px; padding: 7px 10px;">
+              <small id="tagFotoFileMsg" style="font-size: 11px; color: #6B7280;">Disimpan otomatis ke Google Drive.</small>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 13px; font-weight: 600; color: #374151;">Atau Link URL Foto Langsung</label>
+              <input type="text" id="tagFotoUrl" class="form-control" placeholder="https://images.unsplash.com/... atau Drive" oninput="previewTagUrl(this.value)" style="font-size: 13px;">
+              <small style="font-size: 11px; color: #6B7280;">Bisa dari Unsplash, Google Drive CDN, dll.</small>
             </div>
           </div>
-          <button class="btn-admin" style="background: #EC4899; width: 100%;" onclick="uploadTag()"><i class="fa-solid fa-cloud-arrow-up"></i> Simpan & Tayangkan Pintasan</button>
-          <div id="tagUploadInfo" style="margin-top: 10px; font-weight:600; text-align:center; font-size:14px;"></div>
+
+          <!-- Preview & Tombol Baris -->
+          <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #FBCFE8;">
+            <div style="width: 70px; height: 50px; border-radius: 8px; overflow: hidden; background: #FDF2F8; border: 1px solid #F472B6; display: flex; align-items: center; justify-content: center; position: relative;">
+              <img id="imgTagPreview" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+              <span id="txtTagPreview" style="font-size: 10px; color: #9CA3AF; text-align: center;"><i class="fa-solid fa-image"></i></span>
+            </div>
+            
+            <div style="flex: 1; display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn-admin" style="background: #EC4899; flex: 2; min-width: 180px;" onclick="simpanPintasanTag()">
+                <i class="fa-solid fa-floppy-disk"></i> <span id="btnTextTag">Simpan & Tayangkan Kartu</span>
+              </button>
+              <button id="btnBatalEditTag" onclick="batalEditTag()" type="button" style="display:none; background: #6B7280; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                <i class="fa-solid fa-xmark"></i> Batal
+              </button>
+              <button type="button" onclick="resetTagKotaDefault()" style="background: #FFF; color: #EC4899; border: 1px solid #EC4899; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;" title="Kembalikan ke susunan 7 kota standar Sumbar">
+                <i class="fa-solid fa-rotate-left"></i> Reset ke 7 Kota Standar
+              </button>
+            </div>
+          </div>
+          <div id="tagUploadInfo" style="margin-top: 10px; font-weight:600; text-align:center; font-size:13px;"></div>
         </div>
 
-        <div style="overflow-x: auto; margin-bottom: 40px;">
+        <div style="overflow-x: auto; margin-bottom: 40px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #E5E7EB;">
           <table>
             <thead>
-              <tr>
-                <th>Foto Sampul</th>
-                <th>Nama Kota</th>
-                <th>Sub-tag</th>
+              <tr style="background: #F9FAFB;">
+                <th style="width: 70px;">Foto</th>
+                <th>Kata Kunci (Filter)</th>
+                <th>Label di Kartu</th>
                 <th>Status</th>
-                <th>Aksi</th>
+                <th style="width: 140px; text-align: center;">Aksi</th>
               </tr>
             </thead>
             <tbody id="tableTagsBody">
-              <tr><td colspan="5" style="text-align: center; color: var(--text-gray);">Memuat daftar pintasan...</td></tr>
+              <tr><td colspan="5" style="text-align: center; color: var(--text-gray); padding: 25px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat daftar kartu kota...</td></tr>
             </tbody>
           </table>
         </div>
@@ -942,6 +985,7 @@ window.switchTab = function(tabId) {
 
   if (tabId === 'tabAds' && typeof muatDaftarIklan === 'function') muatDaftarIklan();
   if ((tabId === 'tabPengaturan' || tabId === 'tabComposer') && typeof muatPengaturan === 'function') muatPengaturan();
+  if (tabId === 'tabComposer' && typeof muatDaftarPintasanKota === 'function') muatDaftarPintasanKota();
   if (tabId === 'tabKeuangan' && typeof muatKas === 'function') muatKas();
   if (tabId === 'tabDashboard' && typeof muatDataMitra === 'function') muatDataMitra();
 };
@@ -973,6 +1017,7 @@ window.onload = function() {
   muatDaftarPengguna();
   muatKas();
   muatPengaturan();
+  if (typeof muatDaftarPintasanKota === 'function') muatDaftarPintasanKota();
 };
 
 async function muatStatistikGlobal() {
@@ -1476,7 +1521,290 @@ window.hapusIklan = function(baris) {
     muatDaftarIklan();
   }
 };
-window.uploadTag = function() { Swal.fire('Info', 'Migrasi Tags Storage', 'info'); };
+// ==========================================
+// PINTASAN KOTA / JELAJAHI KOTA (FASE 2)
+// ==========================================
+const KARTU_KOTA_DEFAULT = [
+  { nama: "Semua", label: "Semua Kota", img: "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+  { nama: "Bukittinggi", label: "Bukittinggi", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+  { nama: "Padang", label: "Kota Padang", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+  { nama: "Mandeh", label: "Pesisir Mandeh", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+  { nama: "Harau", label: "Lembah Harau", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+  { nama: "Mentawai", label: "Kep. Mentawai", img: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+  { nama: "Pariaman", label: "Pariaman", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=400&auto=format&fit=crop", status: "Aktif" }
+];
+
+window.previewTagUrl = function(url) {
+  let img = document.getElementById('imgTagPreview');
+  let txt = document.getElementById('txtTagPreview');
+  if (url && url.trim() !== '') {
+    img.src = url.trim();
+    img.style.display = 'block';
+    txt.style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    txt.style.display = 'block';
+  }
+};
+
+window.uploadTagFotoFile = function(input) {
+  let file = input.files && input.files[0];
+  if (!file) return;
+  let msg = document.getElementById('tagFotoFileMsg');
+  if (msg) { msg.style.color = "#3B82F6"; msg.innerText = "Mengunggah ke Google Drive..."; }
+
+  let reader = new FileReader();
+  reader.onload = function(e) {
+    let base64Full = e.target.result;
+    let base64Pure = base64Full.split(',')[1];
+    window.previewTagUrl(base64Full);
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      let dataObj = {
+        fotoBase64: base64Pure,
+        fotoType: file.type || "image/jpeg",
+        fotoName: "kota_" + file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+      };
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success && res.url) {
+            document.getElementById('tagFotoUrl').value = res.url;
+            window.previewTagUrl(res.url);
+            if (msg) { msg.style.color = "#10B981"; msg.innerHTML = '<i class="fa-solid fa-check"></i> Foto berhasil diunggah ke Google Drive.'; }
+          } else {
+            document.getElementById('tagFotoUrl').value = base64Full;
+            if (msg) { msg.style.color = "#F59E0B"; msg.innerText = "Tersimpan lokal di browser."; }
+          }
+        })
+        .withFailureHandler(function() {
+          document.getElementById('tagFotoUrl').value = base64Full;
+          if (msg) { msg.style.color = "#F59E0B"; msg.innerText = "Tersimpan lokal di browser."; }
+        })
+        .uploadFotoDrive(dataObj);
+    } else {
+      document.getElementById('tagFotoUrl').value = base64Full;
+      if (msg) { msg.style.color = "#10B981"; msg.innerHTML = '<i class="fa-solid fa-check"></i> Foto dimuat lokal.'; }
+    }
+  };
+  reader.readAsDataURL(file);
+};
+
+window.muatDaftarPintasanKota = function() {
+  let list = [];
+  try {
+    let saved = localStorage.getItem("kamawak_kartu_kota");
+    if (saved) list = JSON.parse(saved);
+  } catch(e) {}
+
+  if (!list || list.length === 0) {
+    list = [...KARTU_KOTA_DEFAULT];
+    localStorage.setItem("kamawak_kartu_kota", JSON.stringify(list));
+  }
+
+  renderTabelPintasanKota(list);
+
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run.withSuccessHandler(function(config) {
+      if (config && config.KARTU_KOTA) {
+        try {
+          let serverList = typeof config.KARTU_KOTA === 'string' ? JSON.parse(config.KARTU_KOTA) : config.KARTU_KOTA;
+          if (serverList && serverList.length > 0) {
+            localStorage.setItem("kamawak_kartu_kota", JSON.stringify(serverList));
+            renderTabelPintasanKota(serverList);
+          }
+        } catch(e) {}
+      }
+    }).getPengaturan();
+  }
+};
+
+function renderTabelPintasanKota(list) {
+  let tbody = document.getElementById('tableTagsBody');
+  if (!tbody) return;
+  if (!list || list.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-gray); padding: 25px;">Belum ada kartu kota. Tambahkan melalui form di atas.</td></tr>';
+    return;
+  }
+
+  let html = list.map((item, idx) => {
+    let isAktif = item.status !== 'Nonaktif';
+    let badge = isAktif 
+      ? `<span onclick="toggleStatusPintasanTag(${idx})" style="background:#D1FAE5; color:#065F46; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:700; cursor:pointer; user-select:none;" title="Klik untuk nonaktifkan"><i class="fa-solid fa-check"></i> Aktif</span>`
+      : `<span onclick="toggleStatusPintasanTag(${idx})" style="background:#FEE2E2; color:#991B1B; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:700; cursor:pointer; user-select:none;" title="Klik untuk aktifkan"><i class="fa-solid fa-pause"></i> Nonaktif</span>`;
+    
+    let imgFoto = item.img || item.foto || 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=400';
+
+    return `
+      <tr>
+        <td style="text-align: center; padding: 8px;">
+          <img src="${imgFoto}" alt="${item.label || item.nama}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 8px; border: 1px solid #E5E7EB;" onerror="this.src='https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=400';">
+        </td>
+        <td style="font-weight: 600; color: var(--text-dark);">${item.nama}</td>
+        <td>${item.label || item.nama}</td>
+        <td>${badge}</td>
+        <td style="text-align: center; white-space: nowrap;">
+          <button onclick="editPintasanTag(${idx})" style="background:#EFF6FF; color:#2563EB; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; margin-right:6px;" title="Ubah Nama/Foto">
+            <i class="fa-solid fa-pen"></i> Edit
+          </button>
+          <button onclick="hapusPintasanTag(${idx})" style="background:#FEE2E2; color:#DC2626; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;" title="Hapus Kartu">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+  tbody.innerHTML = html;
+}
+
+window.simpanPintasanTag = function() {
+  let nama = document.getElementById('tagName').value.trim();
+  let label = document.getElementById('tagLabel').value.trim();
+  let url = document.getElementById('tagFotoUrl').value.trim();
+  let editIdx = parseInt(document.getElementById('tagEditIndex').value, 10);
+
+  if (!nama) {
+    Swal.fire('Perhatian', 'Nama kota / kata kunci filter wajib diisi.', 'warning');
+    return;
+  }
+  if (!label) label = nama;
+  if (!url) {
+    url = "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=400&auto=format&fit=crop";
+  }
+
+  let list = [];
+  try {
+    let saved = localStorage.getItem("kamawak_kartu_kota");
+    if (saved) list = JSON.parse(saved);
+  } catch(e) {}
+  if (!list || list.length === 0) list = [...KARTU_KOTA_DEFAULT];
+
+  if (editIdx >= 0 && editIdx < list.length) {
+    list[editIdx].nama = nama;
+    list[editIdx].label = label;
+    list[editIdx].img = url;
+  } else {
+    list.push({ nama: nama, label: label, img: url, status: "Aktif" });
+  }
+
+  simpanDaftarPintasanServer(list, editIdx >= 0 ? "Kartu kota berhasil diperbarui!" : "Kartu kota baru berhasil ditambahkan!");
+  window.batalEditTag();
+};
+
+window.editPintasanTag = function(idx) {
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem("kamawak_kartu_kota") || "[]"); } catch(e) {}
+  if (!list[idx]) return;
+  let item = list[idx];
+
+  document.getElementById('tagEditIndex').value = idx;
+  document.getElementById('tagName').value = item.nama;
+  document.getElementById('tagLabel').value = item.label || item.nama;
+  document.getElementById('tagFotoUrl').value = item.img || item.foto || '';
+  window.previewTagUrl(item.img || item.foto || '');
+
+  document.getElementById('judulFormTag').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Kartu: ${item.label || item.nama}`;
+  document.getElementById('badgeModeTag').innerText = "Mode: Edit Kartu";
+  document.getElementById('badgeModeTag').style.background = "#DBEAFE";
+  document.getElementById('badgeModeTag').style.color = "#1D4ED8";
+  document.getElementById('btnTextTag').innerText = "Simpan Perubahan";
+  document.getElementById('btnBatalEditTag').style.display = "inline-block";
+
+  let el = document.getElementById('judulFormTag');
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+};
+
+window.batalEditTag = function() {
+  document.getElementById('tagEditIndex').value = "-1";
+  document.getElementById('tagName').value = "";
+  document.getElementById('tagLabel').value = "";
+  document.getElementById('tagFotoUrl').value = "";
+  let fileIpt = document.getElementById('tagFotoFile');
+  if (fileIpt) fileIpt.value = "";
+  let msg = document.getElementById('tagFotoFileMsg');
+  if (msg) { msg.style.color = "#6B7280"; msg.innerText = "Disimpan otomatis ke Google Drive."; }
+  window.previewTagUrl("");
+
+  document.getElementById('judulFormTag').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Tambah / Edit Kartu Kota`;
+  document.getElementById('badgeModeTag').innerText = "Mode: Tambah Baru";
+  document.getElementById('badgeModeTag').style.background = "#FCE7F3";
+  document.getElementById('badgeModeTag').style.color = "#BE185D";
+  document.getElementById('btnTextTag').innerText = "Simpan & Tayangkan Kartu";
+  document.getElementById('btnBatalEditTag').style.display = "none";
+};
+
+window.hapusPintasanTag = function(idx) {
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem("kamawak_kartu_kota") || "[]"); } catch(e) {}
+  if (!list[idx]) return;
+
+  Swal.fire({
+    title: 'Hapus Kartu Kota?',
+    text: `Kartu "${list[idx].label || list[idx].nama}" akan dihapus dari halaman utama.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#EF4444',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Ya, Hapus',
+    cancelButtonText: 'Batal'
+  }).then((res) => {
+    if (res.isConfirmed) {
+      list.splice(idx, 1);
+      simpanDaftarPintasanServer(list, "Kartu kota berhasil dihapus!");
+      window.batalEditTag();
+    }
+  });
+};
+
+window.toggleStatusPintasanTag = function(idx) {
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem("kamawak_kartu_kota") || "[]"); } catch(e) {}
+  if (!list[idx]) return;
+
+  list[idx].status = (list[idx].status === 'Nonaktif') ? 'Aktif' : 'Nonaktif';
+  simpanDaftarPintasanServer(list, `Status kartu "${list[idx].label || list[idx].nama}" diubah menjadi ${list[idx].status}.`);
+};
+
+window.resetTagKotaDefault = function() {
+  Swal.fire({
+    title: 'Reset ke 7 Kota Standar?',
+    text: 'Seluruh kartu kota akan dikembalikan ke daftar bawaan Sumatera Barat.',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#EC4899',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Ya, Reset',
+    cancelButtonText: 'Batal'
+  }).then((res) => {
+    if (res.isConfirmed) {
+      let list = [...KARTU_KOTA_DEFAULT];
+      simpanDaftarPintasanServer(list, "Berhasil direset ke 7 kota standar Sumbar!");
+      window.batalEditTag();
+    }
+  });
+};
+
+function simpanDaftarPintasanServer(list, suksesMsg) {
+  localStorage.setItem("kamawak_kartu_kota", JSON.stringify(list));
+  renderTabelPintasanKota(list);
+
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    let payload = [
+      { key: "KARTU_KOTA", value: JSON.stringify(list), desc: "Daftar Kartu Kota (Jelajahi Kota) di Beranda" }
+    ];
+    google.script.run
+      .withSuccessHandler(function() {
+        Swal.fire('Berhasil', suksesMsg + ' Tersinkronisasi ke sistem!', 'success');
+      })
+      .withFailureHandler(function() {
+        Swal.fire('Tersimpan Lokal', suksesMsg + ' Disimpan di memori browser lokal.', 'info');
+      })
+      .simpanPengaturanForm(payload);
+  } else {
+    Swal.fire('Berhasil', suksesMsg, 'success');
+  }
+}
+
+window.uploadTag = window.simpanPintasanTag;
 window.tambahLayout = function() {};
 window.simpanSemuaLayout = function() { Swal.fire('Info', 'Migrasi Layout DB', 'info'); };
 window.simpanPengaturan = function() { Swal.fire('Info', 'Pengaturan disimpan', 'success'); };

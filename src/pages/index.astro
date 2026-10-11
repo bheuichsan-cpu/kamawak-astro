@@ -406,6 +406,12 @@ import BottomNav from '../components/BottomNav.astro';
             window.updateNavbarLogo();
           }
 
+          if (config.KARTU_KOTA) {
+            let strVal = typeof config.KARTU_KOTA === 'string' ? config.KARTU_KOTA : JSON.stringify(config.KARTU_KOTA);
+            localStorage.setItem("kamawak_kartu_kota", strVal);
+            muatKoleksiTag();
+          }
+
           if (config.PROFIL_NO_WA) {
             let cs = document.querySelector('.floating-cs');
             if(cs) cs.href = "https://wa.me/" + config.PROFIL_NO_WA + "?text=Halo%20Admin%20Kamawak,%20saya%20butuh%20bantuan.";
@@ -457,24 +463,32 @@ import BottomNav from '../components/BottomNav.astro';
       }, 3500);
     }
 
-    const DAFTAR_KOTA = [
-      { nama: "Semua", label: "Semua Kota", img: "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=400&auto=format&fit=crop" },
-      { nama: "Bukittinggi", label: "Bukittinggi", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop" },
-      { nama: "Padang", label: "Kota Padang", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=400&auto=format&fit=crop" },
-      { nama: "Mandeh", label: "Pesisir Mandeh", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=400&auto=format&fit=crop" },
-      { nama: "Harau", label: "Lembah Harau", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop" },
-      { nama: "Mentawai", label: "Kep. Mentawai", img: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=400&auto=format&fit=crop" },
-      { nama: "Pariaman", label: "Pariaman", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=400&auto=format&fit=crop" }
+    const DAFTAR_KOTA_DEFAULT = [
+      { nama: "Semua", label: "Semua Kota", img: "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+      { nama: "Bukittinggi", label: "Bukittinggi", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+      { nama: "Padang", label: "Kota Padang", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+      { nama: "Mandeh", label: "Pesisir Mandeh", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+      { nama: "Harau", label: "Lembah Harau", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+      { nama: "Mentawai", label: "Kep. Mentawai", img: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+      { nama: "Pariaman", label: "Pariaman", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=400&auto=format&fit=crop", status: "Aktif" }
     ];
 
     function muatKoleksiTag() {
       let c = document.getElementById('tagScrollContainer');
       if (!c) return;
-      let html = DAFTAR_KOTA.map((k, idx) => `
-        <div class="city-card ${idx === 0 ? 'city-active' : ''}" onclick="filterKota('${k.nama}', this)" title="Lihat wisata di ${k.label}">
-          <img src="${k.img}" alt="${k.label}">
+      let list = [];
+      try {
+        let saved = localStorage.getItem("kamawak_kartu_kota");
+        if (saved) list = JSON.parse(saved);
+      } catch(e) {}
+      if (!list || list.length === 0) list = DAFTAR_KOTA_DEFAULT;
+      list = list.filter(k => k.status !== 'Nonaktif');
+
+      let html = list.map((k, idx) => `
+        <div class="city-card ${idx === 0 ? 'city-active' : ''}" onclick="filterKota('${k.nama}', this)" title="Lihat wisata di ${k.label || k.nama}">
+          <img src="${k.img || k.foto || 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=400'}" alt="${k.label || k.nama}">
           <div class="city-overlay">
-            <span class="city-name">${k.label}</span>
+            <span class="city-name">${k.label || k.nama}</span>
           </div>
         </div>
       `).join('');
