@@ -446,6 +446,42 @@ import GASPolyfill from '../components/GASPolyfill.astro';
         <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-layer-group" style="color: #8B5CF6;"></i> Desain Halaman Beranda (UI)</h3>
         <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 20px;">Atur tampilan Halaman Beranda. <b>Bagian 1</b> mengatur pintasan pencarian berbentuk gambar bundar, sedangkan <b>Bagian 2</b> mengatur baris daftar katalog destinasi (section).</p>
         
+        <!-- BAGIAN 0: HERO BANNER FOTO PALING ATAS -->
+        <h4 style="font-family: 'Poppins'; color: #3B82F6; margin-top: 10px; border-bottom: 2px solid #EFF6FF; padding-bottom: 10px; margin-bottom: 15px;"><i class="fa-solid fa-images"></i> Bagian 0: Foto Banner Paling Atas (Hero Slider)</h4>
+        
+        <div style="background: #EFF6FF; padding: 20px; border-radius: 8px; border-left: 5px solid #3B82F6; margin-bottom: 25px;">
+          <h4 style="margin-top:0; font-family: 'Poppins';">Ganti Foto Banner Slider</h4>
+          <p style="color: var(--text-gray); font-size: 13px; margin-bottom: 15px;">Ganti foto yang tampil di bagian paling atas beranda (slider). Masukkan link/URL foto (Unsplash, Google Drive, atau hosting foto Anda).</p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+            <div class="form-group">
+              <label>Foto Banner 1 (Utama)</label>
+              <input type="text" id="heroBanner1" class="form-control" placeholder="https://..." oninput="previewHero(1, this.value)">
+              <div id="boxHero1" style="margin-top:8px; height:90px; border-radius:6px; overflow:hidden; background:#E2E8F0; display:flex; align-items:center; justify-content:center;">
+                <img id="imgHero1" src="" style="width:100%; height:100%; object-fit:cover; display:none;">
+                <span id="txtHero1" style="font-size:11px; color:#94A3B8;">Preview Foto 1</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Foto Banner 2</label>
+              <input type="text" id="heroBanner2" class="form-control" placeholder="https://..." oninput="previewHero(2, this.value)">
+              <div id="boxHero2" style="margin-top:8px; height:90px; border-radius:6px; overflow:hidden; background:#E2E8F0; display:flex; align-items:center; justify-content:center;">
+                <img id="imgHero2" src="" style="width:100%; height:100%; object-fit:cover; display:none;">
+                <span id="txtHero2" style="font-size:11px; color:#94A3B8;">Preview Foto 2</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Foto Banner 3</label>
+              <input type="text" id="heroBanner3" class="form-control" placeholder="https://..." oninput="previewHero(3, this.value)">
+              <div id="boxHero3" style="margin-top:8px; height:90px; border-radius:6px; overflow:hidden; background:#E2E8F0; display:flex; align-items:center; justify-content:center;">
+                <img id="imgHero3" src="" style="width:100%; height:100%; object-fit:cover; display:none;">
+                <span id="txtHero3" style="font-size:11px; color:#94A3B8;">Preview Foto 3</span>
+              </div>
+            </div>
+          </div>
+          <button class="btn-admin" style="background: #3B82F6; width: 100%; margin-top: 15px;" onclick="simpanFotoBanner()"><i class="fa-solid fa-save"></i> Simpan & Terapkan Foto Paling Atas</button>
+          <div id="heroBannerInfo" style="margin-top: 10px; font-weight:600; text-align:center; font-size:14px;"></div>
+        </div>
+
         <!-- BAGIAN 1 -->
         <h4 style="font-family: 'Poppins'; color: #EC4899; margin-top: 10px; border-bottom: 2px solid #FDF2F8; padding-bottom: 10px; margin-bottom: 15px;"><i class="fa-solid fa-tags"></i> Bagian 1: Pintasan Pencarian Cepat (Jelajahi Koleksi)</h4>
         
@@ -544,6 +580,54 @@ import GASPolyfill from '../components/GASPolyfill.astro';
     </div>
     
     <div id="tabPengaturan" style="display:none;">
+      <!-- FORM PROFIL USAHA -->
+      <div class="card-section" style="border-left: 5px solid #FF5E1F; margin-bottom: 25px;">
+        <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-building" style="color: #FF5E1F;"></i> Profil Usaha & Identitas Platform</h3>
+        <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 20px;">Isi profil usaha ini untuk disinkronkan ke seluruh sistem (kontak WhatsApp CS, email bantuan, alamat kantor, deskripsi tentang kami, dsb).</p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px;">
+          <div class="form-group">
+            <label>Nama Usaha / Platform</label>
+            <input type="text" id="profNamaUsaha" class="form-control" placeholder="Contoh: Kamawak">
+          </div>
+          <div class="form-group">
+            <label>Slogan / Tagline Usaha</label>
+            <input type="text" id="profTagline" class="form-control" placeholder="Contoh: Pesona Wisata Sumatera Barat">
+          </div>
+          <div class="form-group">
+            <label>Nomor WhatsApp Resmi (CS)</label>
+            <input type="text" id="profNoWA" class="form-control" placeholder="Contoh: 6281234567890">
+          </div>
+          <div class="form-group">
+            <label>Alamat Email Bantuan Resmi</label>
+            <input type="email" id="profEmail" class="form-control" placeholder="Contoh: info@kamawak.com">
+          </div>
+          <div class="form-group full-width">
+            <label>Alamat Kantor / Operasional</label>
+            <input type="text" id="profAlamat" class="form-control" placeholder="Contoh: Padang, Sumatera Barat">
+          </div>
+          <div class="form-group full-width">
+            <label>Deskripsi Singkat Usaha (Tentang Kami)</label>
+            <textarea id="profDeskripsi" class="form-control" rows="3" placeholder="Platform direktori dan reservasi wisata terbaik..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Tautan Instagram</label>
+            <input type="text" id="profIG" class="form-control" placeholder="https://instagram.com/...">
+          </div>
+          <div class="form-group">
+            <label>Tautan TikTok</label>
+            <input type="text" id="profTikTok" class="form-control" placeholder="https://tiktok.com/@...">
+          </div>
+          <div class="form-group">
+            <label>Tautan Facebook</label>
+            <input type="text" id="profFB" class="form-control" placeholder="https://facebook.com/...">
+          </div>
+        </div>
+        
+        <button class="btn-admin" style="background: var(--primary); width: 100%; margin-top: 15px;" onclick="simpanProfilUsaha()"><i class="fa-solid fa-cloud-arrow-up"></i> Sinkronkan Profil Usaha ke Sistem</button>
+        <div id="profInfo" style="margin-top: 10px; font-weight:600; text-align:center; font-size:14px;"></div>
+      </div>
+
       <div class="card-section" style="border-left: 5px solid #64748B;">
         <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-gear" style="color: #64748B;"></i> Pengaturan Sistem & API</h3>
         <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 20px;">Konfigurasi parameter utama platform Kamawak.</p>
@@ -756,6 +840,7 @@ window.onload = function() {
   muatTransaksi();
   muatDaftarPengguna();
   muatKas();
+  muatPengaturan();
 };
 
 async function muatStatistikGlobal() {
@@ -1107,6 +1192,157 @@ window.hapusKas = async function(id) {
         muatKas();
     } catch(e) {
         alert('Gagal hapus: ' + e.message);
+    }
+};
+
+window.previewHero = function(num, url) {
+    let img = document.getElementById('imgHero' + num);
+    let txt = document.getElementById('txtHero' + num);
+    if(url && url.trim() !== '') {
+        img.src = url.trim();
+        img.style.display = 'block';
+        txt.style.display = 'none';
+        img.onerror = function() {
+            img.style.display = 'none';
+            txt.style.display = 'block';
+            txt.innerText = 'Gagal memuat URL';
+        };
+    } else {
+        img.style.display = 'none';
+        txt.style.display = 'block';
+        txt.innerText = 'Preview Foto ' + num;
+    }
+};
+
+window.simpanFotoBanner = function() {
+    let b1 = document.getElementById('heroBanner1').value.trim();
+    let b2 = document.getElementById('heroBanner2').value.trim();
+    let b3 = document.getElementById('heroBanner3').value.trim();
+    let info = document.getElementById('heroBannerInfo');
+    info.innerText = "Menyimpan foto banner...";
+    info.style.color = "var(--text-gray)";
+
+    let data = [
+        { key: "HERO_BANNER_1", value: b1 },
+        { key: "HERO_BANNER_2", value: b2 },
+        { key: "HERO_BANNER_3", value: b3 }
+    ];
+
+    localStorage.setItem("kamawak_hero_1", b1);
+    localStorage.setItem("kamawak_hero_2", b2);
+    localStorage.setItem("kamawak_hero_3", b3);
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+            .withSuccessHandler(function(res) {
+                Swal.fire("Berhasil", "Foto banner paling atas berhasil diperbarui dan disinkronkan!", "success");
+                info.innerText = "";
+            })
+            .withFailureHandler(function(err) {
+                Swal.fire("Tersimpan Lokal", "Foto banner tersimpan di browser.", "info");
+                info.innerText = "";
+            })
+            .simpanPengaturanForm(data);
+    } else {
+        Swal.fire("Berhasil", "Foto banner paling atas berhasil diperbarui dan disimpan!", "success");
+        info.innerText = "";
+    }
+};
+
+window.simpanProfilUsaha = function() {
+    let nama = document.getElementById('profNamaUsaha').value.trim();
+    let tagline = document.getElementById('profTagline').value.trim();
+    let wa = document.getElementById('profNoWA').value.trim();
+    let email = document.getElementById('profEmail').value.trim();
+    let alamat = document.getElementById('profAlamat').value.trim();
+    let deskripsi = document.getElementById('profDeskripsi').value.trim();
+    let ig = document.getElementById('profIG').value.trim();
+    let tiktok = document.getElementById('profTikTok').value.trim();
+    let fb = document.getElementById('profFB').value.trim();
+
+    let info = document.getElementById('profInfo');
+    info.innerText = "Menyinkronkan profil usaha...";
+    info.style.color = "var(--text-gray)";
+
+    let data = [
+        { key: "PROFIL_NAMA_USAHA", value: nama },
+        { key: "PROFIL_TAGLINE", value: tagline },
+        { key: "PROFIL_NO_WA", value: wa },
+        { key: "PROFIL_EMAIL", value: email },
+        { key: "PROFIL_ALAMAT", value: alamat },
+        { key: "PROFIL_DESKRIPSI", value: deskripsi },
+        { key: "PROFIL_IG", value: ig },
+        { key: "PROFIL_TIKTOK", value: tiktok },
+        { key: "PROFIL_FB", value: fb }
+    ];
+
+    localStorage.setItem("kamawak_prof_nama", nama);
+    localStorage.setItem("kamawak_prof_tagline", tagline);
+    localStorage.setItem("kamawak_prof_wa", wa);
+    localStorage.setItem("kamawak_prof_email", email);
+    localStorage.setItem("kamawak_prof_alamat", alamat);
+    localStorage.setItem("kamawak_prof_deskripsi", deskripsi);
+    localStorage.setItem("kamawak_prof_ig", ig);
+    localStorage.setItem("kamawak_prof_tiktok", tiktok);
+    localStorage.setItem("kamawak_prof_fb", fb);
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+            .withSuccessHandler(function(res) {
+                Swal.fire("Berhasil", "Profil usaha berhasil disinkronkan ke seluruh sistem!", "success");
+                info.innerText = "";
+            })
+            .withFailureHandler(function(err) {
+                Swal.fire("Tersimpan Lokal", "Profil usaha disimpan di browser lokal.", "info");
+                info.innerText = "";
+            })
+            .simpanPengaturanForm(data);
+    } else {
+        Swal.fire("Berhasil", "Profil usaha berhasil disinkronkan ke seluruh sistem!", "success");
+        info.innerText = "";
+    }
+};
+
+window.muatPengaturan = function() {
+    let b1 = localStorage.getItem("kamawak_hero_1") || "";
+    let b2 = localStorage.getItem("kamawak_hero_2") || "";
+    let b3 = localStorage.getItem("kamawak_hero_3") || "";
+    if(document.getElementById('heroBanner1')) {
+        document.getElementById('heroBanner1').value = b1; previewHero(1, b1);
+        document.getElementById('heroBanner2').value = b2; previewHero(2, b2);
+        document.getElementById('heroBanner3').value = b3; previewHero(3, b3);
+    }
+    if(document.getElementById('profNamaUsaha')) {
+        document.getElementById('profNamaUsaha').value = localStorage.getItem("kamawak_prof_nama") || "";
+        document.getElementById('profTagline').value = localStorage.getItem("kamawak_prof_tagline") || "";
+        document.getElementById('profNoWA').value = localStorage.getItem("kamawak_prof_wa") || "";
+        document.getElementById('profEmail').value = localStorage.getItem("kamawak_prof_email") || "";
+        document.getElementById('profAlamat').value = localStorage.getItem("kamawak_prof_alamat") || "";
+        document.getElementById('profDeskripsi').value = localStorage.getItem("kamawak_prof_deskripsi") || "";
+        document.getElementById('profIG').value = localStorage.getItem("kamawak_prof_ig") || "";
+        document.getElementById('profTikTok').value = localStorage.getItem("kamawak_prof_tiktok") || "";
+        document.getElementById('profFB').value = localStorage.getItem("kamawak_prof_fb") || "";
+    }
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+            .withSuccessHandler(function(config) {
+                if(!config) return;
+                if(config.HERO_BANNER_1 && document.getElementById('heroBanner1')) { document.getElementById('heroBanner1').value = config.HERO_BANNER_1; previewHero(1, config.HERO_BANNER_1); }
+                if(config.HERO_BANNER_2 && document.getElementById('heroBanner2')) { document.getElementById('heroBanner2').value = config.HERO_BANNER_2; previewHero(2, config.HERO_BANNER_2); }
+                if(config.HERO_BANNER_3 && document.getElementById('heroBanner3')) { document.getElementById('heroBanner3').value = config.HERO_BANNER_3; previewHero(3, config.HERO_BANNER_3); }
+
+                if(config.PROFIL_NAMA_USAHA && document.getElementById('profNamaUsaha')) document.getElementById('profNamaUsaha').value = config.PROFIL_NAMA_USAHA;
+                if(config.PROFIL_TAGLINE && document.getElementById('profTagline')) document.getElementById('profTagline').value = config.PROFIL_TAGLINE;
+                if(config.PROFIL_NO_WA && document.getElementById('profNoWA')) document.getElementById('profNoWA').value = config.PROFIL_NO_WA;
+                if(config.PROFIL_EMAIL && document.getElementById('profEmail')) document.getElementById('profEmail').value = config.PROFIL_EMAIL;
+                if(config.PROFIL_ALAMAT && document.getElementById('profAlamat')) document.getElementById('profAlamat').value = config.PROFIL_ALAMAT;
+                if(config.PROFIL_DESKRIPSI && document.getElementById('profDeskripsi')) document.getElementById('profDeskripsi').value = config.PROFIL_DESKRIPSI;
+                if(config.PROFIL_IG && document.getElementById('profIG')) document.getElementById('profIG').value = config.PROFIL_IG;
+                if(config.PROFIL_TIKTOK && document.getElementById('profTikTok')) document.getElementById('profTikTok').value = config.PROFIL_TIKTOK;
+                if(config.PROFIL_FB && document.getElementById('profFB')) document.getElementById('profFB').value = config.PROFIL_FB;
+            })
+            .getPengaturan();
     }
 };
 

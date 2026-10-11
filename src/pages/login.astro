@@ -272,18 +272,19 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       // CEK SUPABASE
       const { data: existingUser, error: errCek } = await supabase
         .from('users')
-        .select('id, email, username, wa')
-        .or(`email.eq."${data.email}",username.eq."${data.username}",wa.eq."${data.wa}"`);
+        .select('id, nama, email, username, wa')
+        .or(`nama.eq."${data.nama}",email.eq."${data.email}",username.eq."${data.username}",wa.eq."${data.wa}"`);
         
       if (existingUser && existingUser.length > 0) {
          let conflict = existingUser[0];
          let msg = "Identitas sudah terdaftar: ";
-         if(conflict.email === data.email) msg += "Email ";
+         if(conflict.nama === data.nama) msg += "Nama Lengkap ";
+         else if(conflict.email === data.email) msg += "Email ";
          else if(conflict.username === data.username) msg += "Username ";
          else if(conflict.wa === data.wa) msg += "WhatsApp ";
          
          loader.style.display = "none"; btn.style.display = "block";
-         txtBox.innerText = msg + "sudah digunakan. Silakan gunakan yang lain."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+         txtBox.innerText = msg + "sudah digunakan. Silakan gunakan yang lain atau langsung masuk."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
          return;
       }
 
@@ -315,6 +316,20 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       btn.style.display = "none"; loader.style.display = "block"; msgBox.style.display = "none";
 
       if (otpInput === tempOTP && tempRegData) {
+        // Cek apakah akun sudah sempat tersimpan (misal double-click / refresh)
+        const { data: cekUlang } = await supabase
+          .from('users')
+          .select('id, nama')
+          .or(`nama.eq."${tempRegData.nama}",email.eq."${tempRegData.email}"`);
+
+        if (cekUlang && cekUlang.length > 0) {
+          loader.style.display = "none"; btn.style.display = "block";
+          localStorage.setItem("kamawak_user", tempRegData.nama);
+          localStorage.setItem("kamawak_role", "Wisatawan");
+          Swal.fire('Berhasil', 'Akun Anda berhasil diverifikasi!', 'success').then(() => { window.location.href = "/"; });
+          return;
+        }
+
         // OTP Valid, Simpan data permanen ke Supabase
         const { data: newUser, error: errInsert } = await supabase
           .from('users')
@@ -330,7 +345,14 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 
         loader.style.display = "none"; btn.style.display = "block";
         if (errInsert) {
-           txtBox.innerText = "Gagal menyimpan pendaftaran: " + errInsert.message; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+           if (errInsert.code === '23505' || errInsert.message.includes('unique')) {
+              // Jika sudah tersimpan di database
+              localStorage.setItem("kamawak_user", tempRegData.nama);
+              localStorage.setItem("kamawak_role", "Wisatawan");
+              Swal.fire('Berhasil', 'Akun Anda berhasil diverifikasi!', 'success').then(() => { window.location.href = "/"; });
+           } else {
+              txtBox.innerText = "Gagal menyimpan pendaftaran: " + errInsert.message; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+           }
         } else {
            // Auto-login setelah register
            localStorage.setItem("kamawak_user", tempRegData.nama);

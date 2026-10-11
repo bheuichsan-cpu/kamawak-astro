@@ -378,7 +378,24 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       grid.innerHTML = skeletonHtml;
     }
 
-    function jalankanSliderHero() {}
+    function jalankanSliderHero() {
+      let b1 = localStorage.getItem("kamawak_hero_1");
+      let b2 = localStorage.getItem("kamawak_hero_2");
+      let b3 = localStorage.getItem("kamawak_hero_3");
+      const slides = document.querySelectorAll('#heroSlider .slide');
+      if (b1 && slides[0]) slides[0].src = b1;
+      if (b2 && slides[1]) slides[1].src = b2;
+      if (b3 && slides[2]) slides[2].src = b3;
+
+      let currentSlide = 0;
+      if (slides.length > 1) {
+        setInterval(() => {
+          slides[currentSlide].classList.remove('active');
+          currentSlide = (currentSlide + 1) % slides.length;
+          slides[currentSlide].classList.add('active');
+        }, 4000);
+      }
+    }
     function muatKoleksiTag() {
       let c = document.getElementById('tagScrollContainer');
       if (c) c.innerHTML = '<div style="text-align:center; width:100%; color:var(--text-gray);">Koleksi akan segera hadir.</div>';
