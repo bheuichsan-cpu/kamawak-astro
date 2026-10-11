@@ -60,6 +60,131 @@ import BottomNav from '../components/BottomNav.astro';
     .weather-meta { text-align: right; font-size: 12px; opacity: 0.95; z-index: 1; }
     .weather-tag { background: rgba(255,255,255,0.22); padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; margin-bottom: 4px; }
 
+    /* VISUAL ITINERARY TIMELINE */
+    .itinerary-section {
+      margin-top: 30px;
+      padding-top: 25px;
+      border-top: 1px solid #E5E7EB;
+    }
+    .itinerary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .itinerary-timeline {
+      position: relative;
+      padding-left: 28px;
+    }
+    .itinerary-timeline::before {
+      content: '';
+      position: absolute;
+      left: 10px;
+      top: 8px;
+      bottom: 20px;
+      width: 2px;
+      background: linear-gradient(180deg, var(--primary) 0%, #3B82F6 100%);
+    }
+    .itinerary-step {
+      position: relative;
+      margin-bottom: 22px;
+    }
+    .itinerary-step:last-child {
+      margin-bottom: 0;
+    }
+    .itinerary-dot {
+      position: absolute;
+      left: -28px;
+      top: 2px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: var(--primary);
+      box-shadow: 0 2px 6px rgba(255, 94, 31, 0.25);
+    }
+    .itinerary-time {
+      display: inline-block;
+      background: #FFF0EB;
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-bottom: 4px;
+    }
+    .itinerary-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 3px;
+    }
+    .itinerary-desc {
+      font-size: 13px;
+      color: var(--text-gray);
+      line-height: 1.5;
+    }
+
+    /* PROMO CODE INPUT STYLING */
+    .promo-box {
+      margin-top: 15px;
+      padding: 14px;
+      background: #F8FAFC;
+      border: 1px dashed #CBD5E1;
+      border-radius: 10px;
+    }
+    .promo-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .promo-input {
+      flex: 1;
+      padding: 9px 12px;
+      border: 1px solid #D1D5DB;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      outline: none;
+      background: white;
+    }
+    .promo-input:focus {
+      border-color: var(--primary);
+    }
+    .btn-apply-promo {
+      background: var(--text-dark);
+      color: white;
+      border: none;
+      padding: 9px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s;
+      white-space: nowrap;
+    }
+    .btn-apply-promo:hover {
+      background: var(--primary);
+    }
+    .btn-remove-promo {
+      background: #FEE2E2;
+      color: #DC2626;
+      border: none;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: none;
+    }
+
     /* REVIEWS SECTION */
     .reviews-section {
       margin-top: 30px;
@@ -353,6 +478,21 @@ import BottomNav from '../components/BottomNav.astro';
         </ul>
       </div>
 
+      <!-- SEKSI ITINERARY / RUNDOWN PERJALANAN -->
+      <div class="itinerary-section" id="itinerarySection">
+        <div class="itinerary-header">
+          <h3 style="font-family: 'Poppins', sans-serif; font-size: 18px; margin: 0;">
+            <i class="fa-solid fa-map-location-dot" style="color: var(--primary);"></i> Rencana Perjalanan (Itinerary)
+          </h3>
+          <span style="font-size: 11px; background: #EFF6FF; color: #2563EB; padding: 4px 10px; border-radius: 20px; font-weight: 700;">
+            <i class="fa-solid fa-clock"></i> Terjadwal
+          </span>
+        </div>
+        <div class="itinerary-timeline" id="itineraryTimeline">
+          <!-- Diisi otomatis oleh JS -->
+        </div>
+      </div>
+
       <!-- SEKSI ULASAN & RATING WISATAWAN TERVERIFIKASI -->
       <div class="reviews-section" id="reviewsSection">
         <div class="reviews-header">
@@ -424,10 +564,40 @@ import BottomNav from '../components/BottomNav.astro';
         </div>
       </div>
 
+      <!-- 4. Kode Promo / Kupon Diskon -->
+      <div class="promo-box">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-dark);">
+            <i class="fa-solid fa-tags" style="color: var(--primary);"></i> Kode Promo / Voucher
+          </span>
+          <span id="promoBadgeActive" style="display: none; color: #059669; font-size: 11px; font-weight: 700;">
+            <i class="fa-solid fa-circle-check"></i> Kupon Terpasang
+          </span>
+        </div>
+        <div class="promo-row">
+          <input type="text" id="inputKodePromo" class="promo-input" placeholder="Misal: MINANGSERU">
+          <button type="button" id="btnApplyPromo" class="btn-apply-promo" onclick="terapkanKodePromo()">Gunakan</button>
+          <button type="button" id="btnRemovePromo" class="btn-remove-promo" onclick="hapusKodePromo()"><i class="fa-solid fa-xmark"></i> Batal</button>
+        </div>
+        <div id="promoAlert" style="font-size: 11px; margin-top: 6px; display: none;"></div>
+      </div>
+
       <!-- Total Harga Dinamis -->
       <div class="total-box">
-        <div class="total-label">Total Pembayaran</div>
-        <div class="total-amount" id="uiTotalBayar">Rp 0</div>
+        <div style="width: 100%;">
+          <div id="rowSubtotal" style="display: none; justify-content: space-between; font-size: 13px; color: var(--text-gray); margin-bottom: 5px;">
+            <span>Subtotal:</span>
+            <span id="uiSubtotal">Rp 0</span>
+          </div>
+          <div id="rowDiskon" style="display: none; justify-content: space-between; font-size: 13px; color: #059669; font-weight: 700; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #E5E7EB;">
+            <span>Potongan Promo (<span id="uiKodePromoNama"></span>):</span>
+            <span id="uiNominalDiskon">- Rp 0</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <div class="total-label">Total Pembayaran</div>
+            <div class="total-amount" id="uiTotalBayar">Rp 0</div>
+          </div>
+        </div>
       </div>
 
       <button class="btn-checkout" onclick="prosesCheckout()">Lanjutkan Pemesanan</button>
@@ -503,7 +673,7 @@ import BottomNav from '../components/BottomNav.astro';
     // TANGKAP ID LANGSUNG DARI SERVER (Anti macet)
     let idProduk = new URLSearchParams(window.location.search).get("id") || ""; 
     
-    // Variabel state kalkulator
+    // Variabel state kalkulator & promo
     let dataProduk = {};
     let hargaDasar = 0;
     let tambahanVIP = 250000;
@@ -511,6 +681,8 @@ import BottomNav from '../components/BottomNav.astro';
     let paketRawData = '';
     let hargaTambahanPaket = 0; 
     let jumlahPax = 1;
+    let promoAktif = null;
+    let nominalDiskonPromo = 0;
 
     window.onload = function() {
       if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
@@ -683,14 +855,14 @@ import BottomNav from '../components/BottomNav.astro';
       // Hitung awal
       hitungTotal();
 
-      // Inisialisasi Fitur Modern (Wishlist, Live Weather, Ulasan Terverifikasi)
+      // Inisialisasi Fitur Modern (Wishlist, Live Weather, Itinerary, Ulasan)
       initWishlistPdp(data.id || idProduk);
       muatCuacaDestinasi((data.destinasi || '') + ' ' + (data.lokasi || '') + ' ' + (data.nama || ''));
+      muatItineraryDestinasi(data);
       muatUlasanWisatawan(data.id || idProduk, data.rating, data.ulasan);
     }
 
     // --- LOGIKA KALKULATOR CERDAS ---
-    
     
     function pilihPaket(jenis) {
       paketAktif = jenis;
@@ -719,7 +891,6 @@ import BottomNav from '../components/BottomNav.astro';
         hitungTotal();
       }
     }
-
     
     function hitungTotal() {
       let hargaPerOrang = hargaDasar;
@@ -728,9 +899,36 @@ import BottomNav from '../components/BottomNav.astro';
       }
       hargaPerOrang += hargaTambahanPaket;
       
-      let grandTotal = hargaPerOrang * jumlahPax;
+      let subtotal = hargaPerOrang * jumlahPax;
       
-      // Animasi pergantian angka
+      // Kalkulasi Diskon Promo (jika ada kupon aktif)
+      nominalDiskonPromo = 0;
+      if (promoAktif) {
+        if (subtotal < (promoAktif.min || 0)) {
+          hapusKodePromo(true);
+        } else {
+          if (promoAktif.tipe === 'persen') {
+            nominalDiskonPromo = Math.round((subtotal * Number(promoAktif.nilai)) / 100);
+          } else {
+            nominalDiskonPromo = Number(promoAktif.nilai);
+          }
+        }
+      }
+
+      let grandTotal = Math.max(0, subtotal - nominalDiskonPromo);
+
+      // Tampilkan / Sembunyikan rincian subtotal & diskon
+      let rowSub = document.getElementById('rowSubtotal');
+      let rowDisk = document.getElementById('rowDiskon');
+      if (promoAktif && nominalDiskonPromo > 0) {
+        if (rowSub) { rowSub.style.display = 'flex'; document.getElementById('uiSubtotal').innerText = formatUang(subtotal); }
+        if (rowDisk) { rowDisk.style.display = 'flex'; document.getElementById('uiNominalDiskon').innerText = '- ' + formatUang(nominalDiskonPromo); }
+      } else {
+        if (rowSub) rowSub.style.display = 'none';
+        if (rowDisk) rowDisk.style.display = 'none';
+      }
+      
+      // Animasi pergantian angka total
       let elTotal = document.getElementById('uiTotalBayar');
       elTotal.style.opacity = 0.5;
       setTimeout(() => {
@@ -765,6 +963,9 @@ import BottomNav from '../components/BottomNav.astro';
       btn.innerText = "Memproses Pesanan...";
       btn.disabled = true;
 
+      let subtotal = (hargaDasar + (paketAktif === 'vip' ? tambahanVIP : 0) + hargaTambahanPaket) * jumlahPax;
+      let totalAkhir = Math.max(0, subtotal - nominalDiskonPromo);
+
       let payload = {
         idProduk: dataProduk.id,
         namaProduk: dataProduk.nama,
@@ -772,7 +973,9 @@ import BottomNav from '../components/BottomNav.astro';
         pax: jumlahPax,
         paket: paketAktif,
         rawVarian: paketRawData || "",
-        totalBayar: (hargaDasar + hargaTambahanPaket) * jumlahPax,
+        promoKode: promoAktif ? promoAktif.kode : "",
+        diskon: nominalDiskonPromo,
+        totalBayar: totalAkhir,
         user: activeUser
       };
       
@@ -1183,6 +1386,236 @@ import BottomNav from '../components/BottomNav.astro';
       // Segera render ulang daftar ulasan dengan ulasan baru
       muatUlasanWisatawan(idProduk, dataProduk.rating, dataProduk.ulasan);
     };
+
+    // ==========================================
+    // FITUR: VISUAL ITINERARY TIMELINE
+    // ==========================================
+    function muatItineraryDestinasi(data) {
+      const container = document.getElementById('itineraryTimeline');
+      const section = document.getElementById('itinerarySection');
+      if (!container) return;
+
+      let listItinerary = [];
+
+      // Cek apakah ada itinerary khusus dari data produk
+      if (data && data.itinerary) {
+        if (Array.isArray(data.itinerary)) {
+          listItinerary = data.itinerary;
+        } else if (typeof data.itinerary === 'string') {
+          try {
+            listItinerary = JSON.parse(data.itinerary);
+          } catch(e) {
+            listItinerary = data.itinerary.split('\n').filter(l => l.trim()).map((line, idx) => {
+              const parts = line.split('-');
+              if (parts.length > 1) {
+                return { jam: parts[0].trim(), judul: parts.slice(1).join('-').trim(), desc: 'Aktivitas eksplorasi destinasi.' };
+              }
+              return { jam: `Pemberhentian ${idx + 1}`, judul: line.trim(), desc: 'Aktivitas rangkaian perjalanan.' };
+            });
+          }
+        }
+      }
+
+      // Template cerdas berbasis destinasi jika belum ada custom itinerary
+      if (!listItinerary || listItinerary.length === 0) {
+        const teks = ((data.nama || '') + ' ' + (data.destinasi || '') + ' ' + (data.lokasi || '') + ' ' + (data.deskripsi || '')).toLowerCase();
+
+        if (teks.includes('mandeh') || teks.includes('pesisir') || teks.includes('pulau') || teks.includes('pantai') || teks.includes('bahari')) {
+          listItinerary = [
+            { jam: '08:00 - 08:30 WIB', judul: 'Meeting Point Dermaga Wisata', desc: 'Registrasi peserta, safety briefing, dan fitting pelampung (life jacket) serta perlengkapan snorkeling.' },
+            { jam: '08:30 - 11:30 WIB', judul: 'Island Hopping & Cliff Jumping Spot', desc: 'Menjelajahi pulau tropis eksotis, cliff jumping di Sironjong Ketek, dan snorkeling terumbu karang alami.' },
+            { jam: '12:00 - 13:30 WIB', judul: 'Makan Siang Ikan Bakar Khas Pesisir', desc: 'Santap siang lezat di gazebo pulau kelapa dengan hidangan laut segar khas Minangkabau.' },
+            { jam: '14:00 - 15:30 WIB', judul: 'Jelajah Hutan Mangrove & Air Terjun', desc: 'Menembus ketenangan rimbun mangrove dan mandi segar di air terjun alami tepi teluk.' },
+            { jam: '16:00 - 17:00 WIB', judul: 'Kembali ke Dermaga & Sunset View', desc: 'Perjalanan kembali dengan perahu sambil menikmati panorama matahari terbenam nan memesona.' }
+          ];
+        } else if (teks.includes('bukittinggi') || teks.includes('ngarai') || teks.includes('jam gadang') || teks.includes('sianok') || teks.includes('jepang')) {
+          listItinerary = [
+            { jam: '08:30 - 09:15 WIB', judul: 'Titik Kumpul & Welcome Drink Minang', desc: 'Briefing bersama tour guide lokal bersertifikat dan menikmati welcome drink kopi kawa / teh talua.' },
+            { jam: '09:15 - 11:30 WIB', judul: 'Eksplorasi Ngarai Sianok & Lobang Jepang', desc: 'Menyusuri keelokan lembah grand canyon Minang serta napak tilas sejarah lorong militer Lobang Jepang.' },
+            { jam: '12:00 - 13:30 WIB', judul: 'Santap Siang Otentik Nasi Kapau', desc: 'Menikmati kuliner Minangkabau legendaris langsung di Los Lambuang Bukittinggi dengan lauk komplit.' },
+            { jam: '13:45 - 15:30 WIB', judul: 'Landmark Jam Gadang & Pasar Atas', desc: 'Sesi dokumentasi foto di Jam Gadang dan berburu cinderamata kain songket atau kerajinan khas.' },
+            { jam: '16:00 - 17:00 WIB', judul: 'Sore Santai di Panorama Puncak Agam', desc: 'Menghirup sejuknya udara pegunungan sebelum rombongan kembali dengan kenangan indah.' }
+          ];
+        } else if (teks.includes('harau') || teks.includes('payakumbuh') || teks.includes('kelok') || teks.includes('limapuluh')) {
+          listItinerary = [
+            { jam: '08:00 - 08:45 WIB', judul: 'Tiba di Gerbang Lembah Harau', desc: 'Registrasi peserta, pembagian jadwal acara, dan sambutan hangat pemandu wisata lokal.' },
+            { jam: '08:45 - 11:30 WIB', judul: 'Trekking Tebing Granit Sarasah & Air Terjun', desc: 'Menyusuri lembah hijau diapit tebing batu cadas raksasa dan merasakan kesegaran air terjun Sarasah.' },
+            { jam: '12:00 - 13:30 WIB', judul: 'Makan Bajamba di Saung Tengah Sawah', desc: 'Makan siang tradisional di saung beratap jerami dengan panorama tebing granit megah.' },
+            { jam: '14:00 - 15:30 WIB', judul: 'Hunting Foto Megah Jembatan Kelok 9', desc: 'Mengabadikan mahakarya jembatan flyover megah di tengah rimbun cagar alam Sumatra Barat.' },
+            { jam: '16:00 - 17:00 WIB', judul: 'Sentra Keripik Sanjai & Kopi Kawa', desc: 'Mampir membeli keripik sanjai balado renyah serta oleh-oleh khas Luak 50 Kota.' }
+          ];
+        } else {
+          listItinerary = [
+            { jam: '08:30 - 09:00 WIB', judul: 'Registrasi & Briefing Keberangkatan', desc: 'Penjemputan di titik kumpul, perkenalan pemandu, serta arahan keselamatan dan kenyamanan trip.' },
+            { jam: '09:00 - 12:00 WIB', judul: 'Eksplorasi Destinasi Utama & Spot Foto', desc: 'Menikmati pesona daya tarik utama dengan panduan cerita sejarah dan keunikan budaya lokal.' },
+            { jam: '12:00 - 13:30 WIB', judul: 'Istirahat & Makan Siang Khas Minang', desc: 'Waktu istirahat ibadah dan makan siang bersama mencicipi hidangan otentik kaya rempah.' },
+            { jam: '13:30 - 15:30 WIB', judul: 'Aktivitas Seru, Budaya, & Spot Estetik', desc: 'Menjelajahi keindahan alam sekitar, berinteraksi dengan warga lokal, dan hunting foto terbaik.' },
+            { jam: '16:00 - 17:00 WIB', judul: 'Pusat Suvenir & Penutupan Tour', desc: 'Mampir ke sentra oleh-oleh lokal sebelum mengakhiri perjalanan wisata dengan pengalaman berkesan.' }
+          ];
+        }
+      }
+
+      let html = '';
+      listItinerary.forEach((item, index) => {
+        html += `
+          <div class="itinerary-step">
+            <div class="itinerary-dot"><i class="fa-solid fa-location-dot"></i></div>
+            <span class="itinerary-time"><i class="fa-regular fa-clock"></i> ${item.jam || ('Aktivitas ' + (index + 1))}</span>
+            <div class="itinerary-title">${item.judul || 'Aktivitas Wisata'}</div>
+            <div class="itinerary-desc">${item.desc || ''}</div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+      if (section) section.style.display = 'block';
+    }
+    window.muatItineraryDestinasi = muatItineraryDestinasi;
+
+    // ==========================================
+    // FITUR: SISTEM KODE PROMO & VOUCHER ENGINE
+    // ==========================================
+    const DEFAULT_PROMO_CODES = [
+      { kode: 'MINANGSERU', tipe: 'persen', nilai: 10, min: 100000, deskripsi: 'Diskon 10% Spesial Jelajah Minangkabau', aktif: true },
+      { kode: 'HEMAT50K', tipe: 'nominal', nilai: 50000, min: 200000, deskripsi: 'Potongan Langsung Rp 50.000', aktif: true },
+      { kode: 'PROMOAWAL', tipe: 'persen', nilai: 15, min: 150000, deskripsi: 'Diskon 15% Eksklusif Wisatawan Baru', aktif: true }
+    ];
+
+    function getDaftarPromoTersedia() {
+      let raw = localStorage.getItem('kamawak_promo_codes');
+      if (!raw) {
+        localStorage.setItem('kamawak_promo_codes', JSON.stringify(DEFAULT_PROMO_CODES));
+        return DEFAULT_PROMO_CODES;
+      }
+      try {
+        let list = JSON.parse(raw);
+        if (!Array.isArray(list) || list.length === 0) {
+          localStorage.setItem('kamawak_promo_codes', JSON.stringify(DEFAULT_PROMO_CODES));
+          return DEFAULT_PROMO_CODES;
+        }
+        return list;
+      } catch(e) {
+        return DEFAULT_PROMO_CODES;
+      }
+    }
+
+    function terapkanKodePromo() {
+      const inputEl = document.getElementById('inputKodePromo');
+      const alertEl = document.getElementById('promoAlert');
+      const badgeActive = document.getElementById('promoBadgeActive');
+      const btnApply = document.getElementById('btnApplyPromo');
+      const btnRemove = document.getElementById('btnRemovePromo');
+
+      if (!inputEl) return;
+      const kodeInput = inputEl.value.trim().toUpperCase();
+
+      if (!kodeInput) {
+        if (alertEl) {
+          alertEl.style.display = 'block';
+          alertEl.style.color = '#DC2626';
+          alertEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Silakan ketik kode promo terlebih dahulu.';
+        }
+        return;
+      }
+
+      let hargaPerOrang = hargaDasar + (paketAktif === 'vip' ? tambahanVIP : 0) + hargaTambahanPaket;
+      let subtotal = hargaPerOrang * jumlahPax;
+
+      const daftarPromo = getDaftarPromoTersedia();
+      const promoDitemukan = daftarPromo.find(p => p.kode.toUpperCase() === kodeInput && p.aktif !== false);
+
+      if (!promoDitemukan) {
+        if (alertEl) {
+          alertEl.style.display = 'block';
+          alertEl.style.color = '#DC2626';
+          alertEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> Kode voucher <strong>"${kodeInput}"</strong> tidak valid atau sudah kedaluwarsa.`;
+        }
+        return;
+      }
+
+      if (subtotal < (promoDitemukan.min || 0)) {
+        if (alertEl) {
+          alertEl.style.display = 'block';
+          alertEl.style.color = '#D97706';
+          alertEl.innerHTML = `<i class="fa-solid fa-circle-info"></i> Kupon ini memerlukan minimal transaksi ${formatUang(promoDitemukan.min)}. (Subtotal Anda: ${formatUang(subtotal)})`;
+        }
+        return;
+      }
+
+      promoAktif = promoDitemukan;
+      inputEl.disabled = true;
+      inputEl.value = promoDitemukan.kode;
+
+      if (btnApply) btnApply.style.display = 'none';
+      if (btnRemove) btnRemove.style.display = 'inline-block';
+      if (badgeActive) badgeActive.style.display = 'inline-block';
+
+      const kodeNamaEl = document.getElementById('uiKodePromoNama');
+      if (kodeNamaEl) kodeNamaEl.innerText = promoDitemukan.kode;
+
+      hitungTotal();
+
+      const hematStr = promoDitemukan.tipe === 'persen' ? `${promoDitemukan.nilai}%` : formatUang(promoDitemukan.nilai);
+      if (alertEl) {
+        alertEl.style.display = 'block';
+        alertEl.style.color = '#059669';
+        alertEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> Kupon <strong>${promoDitemukan.kode}</strong> berhasil dipasang! Hemat ${hematStr}.`;
+      }
+
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: `Kupon ${promoDitemukan.kode} Terpasang! Hemat ${hematStr}`,
+        showConfirmButton: false,
+        timer: 2000
+      });
+    }
+
+    function hapusKodePromo(silent = false) {
+      promoAktif = null;
+      nominalDiskonPromo = 0;
+
+      const inputEl = document.getElementById('inputKodePromo');
+      const alertEl = document.getElementById('promoAlert');
+      const badgeActive = document.getElementById('promoBadgeActive');
+      const btnApply = document.getElementById('btnApplyPromo');
+      const btnRemove = document.getElementById('btnRemovePromo');
+
+      if (inputEl) {
+        inputEl.disabled = false;
+        if (!silent) inputEl.value = '';
+      }
+      if (btnApply) btnApply.style.display = 'inline-block';
+      if (btnRemove) btnRemove.style.display = 'none';
+      if (badgeActive) badgeActive.style.display = 'none';
+
+      if (alertEl) {
+        if (silent) {
+          alertEl.style.display = 'block';
+          alertEl.style.color = '#D97706';
+          alertEl.innerHTML = '<i class="fa-solid fa-circle-info"></i> Kupon promo dilepas karena subtotal tidak lagi mencukupi batas minimum.';
+        } else {
+          alertEl.style.display = 'none';
+        }
+      }
+
+      hitungTotal();
+
+      if (!silent) {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'info',
+          title: 'Kupon promo dibatalkan',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      }
+    }
+
+    window.terapkanKodePromo = terapkanKodePromo;
+    window.hapusKodePromo = hapusKodePromo;
   </script>
 </body>
 </html>

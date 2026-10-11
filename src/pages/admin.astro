@@ -118,6 +118,7 @@ import BottomNav from '../components/BottomNav.astro';
     <div class="tabs-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
       <button id="btnTabDashboard" onclick="switchTab('tabDashboard')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:var(--primary); color:white; transition: 0.3s;"><i class="fa-solid fa-chart-line"></i> Dasbor & Mitra</button>
       <button id="btnTabCMS" onclick="switchTab('tabCMS')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-pen-to-square"></i> Konten (CMS PDP)</button>
+      <button id="btnTabPromo" onclick="switchTab('tabPromo')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-tags"></i> Voucher Promo</button>
       <button id="btnTabTransaksi" onclick="switchTab('tabTransaksi')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-file-invoice-dollar"></i> Payout OTA</button>
       <button id="btnTabKeuangan" onclick="switchTab('tabKeuangan')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-book-open"></i> Buku Kas & Laporan</button>
       <button id="btnTabUsers" onclick="switchTab('tabUsers')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-users-gear"></i> Hak Akses Pengguna</button>
@@ -968,6 +969,110 @@ import BottomNav from '../components/BottomNav.astro';
 
   </div>
 
+  <!-- TAB MANAJEMEN VOUCHER & KODE PROMO -->
+  <div id="tabPromo" class="tab-content" style="display:none;">
+    <div class="admin-header" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+      <div>
+        <h2 style="margin:0;"><i class="fa-solid fa-tags" style="color: var(--primary);"></i> Manajemen Voucher & Kode Promo</h2>
+        <p style="color:var(--text-gray); font-size:14px; margin: 4px 0 0 0;">Kelola kupon diskon untuk wisatawan pada saat checkout pemesanan paket wisata.</p>
+      </div>
+      <button class="btn-admin" onclick="bukaModalTambahPromo()" style="background: var(--primary); display: inline-flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-plus"></i> Tambah Kupon Baru
+      </button>
+    </div>
+
+    <!-- Ringkasan Statistik Voucher -->
+    <div class="stats-grid">
+      <div class="stat-card" style="border-left-color: #F59E0B;">
+        <div class="stat-title"><i class="fa-solid fa-ticket"></i> Total Kupon Tersedia</div>
+        <div class="stat-value" id="valTotalPromo">0</div>
+      </div>
+      <div class="stat-card" style="border-left-color: #10B981;">
+        <div class="stat-title"><i class="fa-solid fa-circle-check"></i> Kupon Berstatus Aktif</div>
+        <div class="stat-value" id="valPromoAktif">0</div>
+      </div>
+      <div class="stat-card" style="border-left-color: #3B82F6;">
+        <div class="stat-title"><i class="fa-solid fa-percent"></i> Kupon Persen / Potongan</div>
+        <div class="stat-value" id="valPromoTipe">0 / 0</div>
+      </div>
+    </div>
+
+    <!-- Tabel Daftar Kode Promo -->
+    <div class="card-section">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+        <h3 style="font-family: 'Poppins'; font-size: 16px; margin: 0;"><i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Daftar Kupon Diskon Aktif & Riwayat</h3>
+        <span style="font-size: 12px; color: var(--text-gray);">Kupon tersinkronisasi otomatis dengan halaman PDP.</span>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Kode Kupon</th>
+              <th>Tipe & Nilai Diskon</th>
+              <th>Minimal Transaksi</th>
+              <th>Deskripsi Promo</th>
+              <th>Status</th>
+              <th style="text-align: center;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tablePromoBody">
+            <tr><td colspan="6" style="text-align: center; color: var(--text-gray); padding: 25px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat daftar voucher promo...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Modal Form Tambah/Edit Promo -->
+    <div id="modalTambahPromo" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 15px;">
+      <div style="background: white; border-radius: 16px; max-width: 500px; width: 100%; padding: 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: fadeIn 0.2s ease;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3 style="margin: 0; font-family: 'Poppins'; font-size: 18px; color: var(--text-dark);">
+            <i class="fa-solid fa-tag" style="color: var(--primary);"></i> Tambah Kupon Promo Baru
+          </h3>
+          <button onclick="tutupModalTambahPromo()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #9CA3AF;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <form id="formPromoBaru" onsubmit="event.preventDefault(); simpanPromoBaru();">
+          <div class="form-group">
+            <label style="font-weight: 600; font-size: 13px;">Kode Voucher (Huruf Kapital, Tanpa Spasi) <span style="color:red;">*</span></label>
+            <input type="text" id="promoKodeInput" class="form-control" placeholder="Contoh: LIBURAN20" required style="text-transform: uppercase;">
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-bottom: 15px;">
+            <div style="flex: 1;">
+              <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 6px;">Tipe Potongan <span style="color:red;">*</span></label>
+              <select id="promoTipeInput" class="form-control" onchange="updateLabelNilaiPromo()">
+                <option value="persen">Persentase (%)</option>
+                <option value="nominal">Nominal Tunai (Rp)</option>
+              </select>
+            </div>
+            <div style="flex: 1;">
+              <label id="lblNilaiPromo" style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 6px;">Nilai Diskon (%) <span style="color:red;">*</span></label>
+              <input type="number" id="promoNilaiInput" class="form-control" placeholder="Contoh: 10" required min="1">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label style="font-weight: 600; font-size: 13px;">Minimal Pembelian (Rp)</label>
+            <input type="number" id="promoMinInput" class="form-control" placeholder="Contoh: 100000" min="0" value="0">
+            <span style="font-size: 11px; color: var(--text-gray);">Isi 0 jika tanpa syarat minimal belanja.</span>
+          </div>
+
+          <div class="form-group">
+            <label style="font-weight: 600; font-size: 13px;">Keterangan / Banner Promo</label>
+            <input type="text" id="promoDeskripsiInput" class="form-control" placeholder="Contoh: Diskon 10% Spesial Festival Mandeh" required>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 25px;">
+            <button type="button" onclick="tutupModalTambahPromo()" style="flex: 1; padding: 12px; border: 1px solid #D1D5DB; background: white; border-radius: 8px; font-weight: 600; cursor: pointer;">Batal</button>
+            <button type="submit" class="btn-admin" style="flex: 1; background: var(--primary);">Simpan Kupon</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script>
 import { supabase } from '../lib/supabase.js';
 const BASE_URL = "";
@@ -977,6 +1082,7 @@ window.switchTab = function(tabId) {
   
   document.getElementById('tabDashboard').style.display = 'none';
   document.getElementById('tabCMS').style.display = 'none';
+  if (document.getElementById('tabPromo')) document.getElementById('tabPromo').style.display = 'none';
   document.getElementById('tabTransaksi').style.display = 'none';
   document.getElementById('tabKeuangan').style.display = 'none';
   document.getElementById('tabUsers').style.display = 'none';
@@ -990,6 +1096,7 @@ window.switchTab = function(tabId) {
   document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).style.background = 'var(--primary)';
   document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).style.color = 'white';
 
+  if (tabId === 'tabPromo' && typeof muatDaftarPromo === 'function') muatDaftarPromo();
   if (tabId === 'tabAds' && typeof muatDaftarIklan === 'function') muatDaftarIklan();
   if ((tabId === 'tabPengaturan' || tabId === 'tabComposer') && typeof muatPengaturan === 'function') muatPengaturan();
   if (tabId === 'tabComposer' && typeof muatDaftarPintasanKota === 'function') muatDaftarPintasanKota();
@@ -1025,6 +1132,7 @@ window.onload = function() {
   muatKas();
   muatPengaturan();
   if (typeof muatDaftarPintasanKota === 'function') muatDaftarPintasanKota();
+  if (typeof muatDaftarPromo === 'function') muatDaftarPromo();
 };
 
 async function muatStatistikGlobal() {
@@ -2360,6 +2468,225 @@ window.muatPengaturan = function() {
             })
             .getPengaturan();
     }
+};
+
+// ==========================================
+// FITUR: MANAJEMEN VOUCHER PROMO ADMIN
+// ==========================================
+const DEFAULT_ADMIN_PROMOS = [
+  { kode: 'MINANGSERU', tipe: 'persen', nilai: 10, min: 100000, deskripsi: 'Diskon 10% Spesial Jelajah Minangkabau', aktif: true },
+  { kode: 'HEMAT50K', tipe: 'nominal', nilai: 50000, min: 200000, deskripsi: 'Potongan Langsung Rp 50.000', aktif: true },
+  { kode: 'PROMOAWAL', tipe: 'persen', nilai: 15, min: 150000, deskripsi: 'Diskon 15% Eksklusif Wisatawan Baru', aktif: true }
+];
+
+function getPromosFromStorage() {
+  let raw = localStorage.getItem('kamawak_promo_codes');
+  if (!raw) {
+    localStorage.setItem('kamawak_promo_codes', JSON.stringify(DEFAULT_ADMIN_PROMOS));
+    return DEFAULT_ADMIN_PROMOS;
+  }
+  try {
+    let parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem('kamawak_promo_codes', JSON.stringify(DEFAULT_ADMIN_PROMOS));
+      return DEFAULT_ADMIN_PROMOS;
+    }
+    return parsed;
+  } catch(e) {
+    return DEFAULT_ADMIN_PROMOS;
+  }
+}
+
+window.muatDaftarPromo = function() {
+  const tbody = document.getElementById('tablePromoBody');
+  if (!tbody) return;
+
+  const promos = getPromosFromStorage();
+  
+  let totalAktif = 0;
+  let totalPersen = 0;
+  let totalNominal = 0;
+
+  promos.forEach(p => {
+    if (p.aktif !== false) totalAktif++;
+    if (p.tipe === 'persen') totalPersen++;
+    else totalNominal++;
+  });
+
+  const elTotal = document.getElementById('valTotalPromo');
+  const elAktif = document.getElementById('valPromoAktif');
+  const elTipe = document.getElementById('valPromoTipe');
+  if (elTotal) elTotal.innerText = promos.length;
+  if (elAktif) elAktif.innerText = totalAktif;
+  if (elTipe) elTipe.innerText = `${totalPersen} % / ${totalNominal} Rp`;
+
+  if (promos.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-gray); padding: 25px;">Belum ada voucher promo. Klik "Tambah Kupon Baru" untuk membuat kupon diskon.</td></tr>';
+    return;
+  }
+
+  let html = '';
+  promos.forEach((p, idx) => {
+    const isAktif = p.aktif !== false;
+    const badgeStatus = isAktif
+      ? '<span style="background: #ECFDF5; color: #059669; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> Aktif</span>'
+      : '<span style="background: #FEE2E2; color: #DC2626; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700;"><i class="fa-solid fa-circle-xmark"></i> Nonaktif</span>';
+
+    const diskonStr = p.tipe === 'persen'
+      ? `<span style="background: #EFF6FF; color: #2563EB; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px;"><i class="fa-solid fa-percent"></i> ${p.nilai}%</span>`
+      : `<span style="background: #FEF3C7; color: #D97706; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 12px;"><i class="fa-solid fa-money-bill-wave"></i> Rp ${Number(p.nilai).toLocaleString('id-ID')}</span>`;
+
+    const minStr = p.min && p.min > 0 ? `Rp ${Number(p.min).toLocaleString('id-ID')}` : '<span style="color: #9CA3AF;">Tanpa Min.</span>';
+
+    html += `
+      <tr>
+        <td>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <code style="background: #F3F4F6; color: var(--primary); font-weight: 800; padding: 4px 8px; border-radius: 6px; font-size: 13px; letter-spacing: 0.5px;">${p.kode}</code>
+            <button onclick="salinKodePromo('${p.kode}')" title="Salin kode" style="border: none; background: transparent; cursor: pointer; color: #9CA3AF; padding: 2px;"><i class="fa-regular fa-copy"></i></button>
+          </div>
+        </td>
+        <td>${diskonStr}</td>
+        <td style="font-weight: 600; font-size: 13px;">${minStr}</td>
+        <td style="font-size: 13px; color: #4B5563;">${p.deskripsi || '-'}</td>
+        <td>${badgeStatus}</td>
+        <td style="text-align: center;">
+          <div style="display: inline-flex; gap: 6px;">
+            <button onclick="toggleStatusPromo(${idx})" class="btn-action" style="background: ${isAktif ? '#FEF3C7' : '#D1FAE5'}; color: ${isAktif ? '#B45309' : '#047857'};" title="${isAktif ? 'Nonaktifkan' : 'Aktifkan'}">
+              <i class="fa-solid ${isAktif ? 'fa-ban' : 'fa-check'}"></i>
+            </button>
+            <button onclick="hapusPromoAdmin(${idx})" class="btn-action" style="background: #FEE2E2; color: #DC2626;" title="Hapus Voucher">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+};
+
+window.salinKodePromo = function(kode) {
+  navigator.clipboard.writeText(kode).then(() => {
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: `Kode "${kode}" disalin ke clipboard!`,
+      showConfirmButton: false,
+      timer: 1500
+    });
+  });
+};
+
+window.bukaModalTambahPromo = function() {
+  const modal = document.getElementById('modalTambahPromo');
+  if (modal) modal.style.display = 'flex';
+  const inp = document.getElementById('promoKodeInput');
+  if (inp) inp.focus();
+};
+
+window.tutupModalTambahPromo = function() {
+  const modal = document.getElementById('modalTambahPromo');
+  if (modal) modal.style.display = 'none';
+  const form = document.getElementById('formPromoBaru');
+  if (form) form.reset();
+};
+
+window.updateLabelNilaiPromo = function() {
+  const tipe = document.getElementById('promoTipeInput').value;
+  const lbl = document.getElementById('lblNilaiPromo');
+  const inp = document.getElementById('promoNilaiInput');
+  if (tipe === 'persen') {
+    lbl.innerHTML = 'Nilai Diskon (%) <span style="color:red;">*</span>';
+    inp.placeholder = 'Contoh: 10';
+  } else {
+    lbl.innerHTML = 'Potongan Nominal (Rp) <span style="color:red;">*</span>';
+    inp.placeholder = 'Contoh: 50000';
+  }
+};
+
+window.simpanPromoBaru = function() {
+  const kode = (document.getElementById('promoKodeInput').value || '').trim().toUpperCase();
+  const tipe = document.getElementById('promoTipeInput').value;
+  const nilai = Number(document.getElementById('promoNilaiInput').value || 0);
+  const min = Number(document.getElementById('promoMinInput').value || 0);
+  const deskripsi = (document.getElementById('promoDeskripsiInput').value || '').trim();
+
+  if (!kode) {
+    Swal.fire('Perhatian', 'Kode promo wajib diisi.', 'warning');
+    return;
+  }
+  if (nilai <= 0) {
+    Swal.fire('Perhatian', 'Nilai diskon harus lebih besar dari 0.', 'warning');
+    return;
+  }
+  if (tipe === 'persen' && nilai > 100) {
+    Swal.fire('Perhatian', 'Diskon persen tidak boleh melebihi 100%.', 'warning');
+    return;
+  }
+
+  const list = getPromosFromStorage();
+  const indexAda = list.findIndex(p => p.kode.toUpperCase() === kode);
+  if (indexAda > -1) {
+    Swal.fire('Kupon Sudah Ada', `Kode voucher "${kode}" sudah terdaftar sebelumnya. Gunakan kode lain.`, 'error');
+    return;
+  }
+
+  list.unshift({
+    kode: kode,
+    tipe: tipe,
+    nilai: nilai,
+    min: min,
+    deskripsi: deskripsi || `Diskon ${tipe === 'persen' ? nilai + '%' : 'Rp ' + nilai.toLocaleString('id-ID')}`,
+    aktif: true
+  });
+
+  localStorage.setItem('kamawak_promo_codes', JSON.stringify(list));
+  tutupModalTambahPromo();
+  muatDaftarPromo();
+  Swal.fire('Kupon Dibuat! 🎉', `Voucher diskon <strong>${kode}</strong> berhasil disimpan dan langsung aktif di checkout PDP.`, 'success');
+};
+
+window.toggleStatusPromo = function(index) {
+  const list = getPromosFromStorage();
+  if (!list[index]) return;
+  list[index].aktif = !list[index].aktif;
+  localStorage.setItem('kamawak_promo_codes', JSON.stringify(list));
+  muatDaftarPromo();
+  Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: 'info',
+    title: `Status Kupon ${list[index].kode} diubah jadi ${list[index].aktif ? 'Aktif' : 'Nonaktif'}`,
+    showConfirmButton: false,
+    timer: 1500
+  });
+};
+
+window.hapusPromoAdmin = function(index) {
+  const list = getPromosFromStorage();
+  if (!list[index]) return;
+  const promo = list[index];
+
+  Swal.fire({
+    title: 'Hapus Kupon Promo?',
+    html: `Apakah Anda yakin ingin menghapus kupon <strong>${promo.kode}</strong>? Kupon tidak dapat digunakan wisatawan lagi.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#EF4444',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Ya, Hapus',
+    cancelButtonText: 'Batal'
+  }).then((res) => {
+    if (res.isConfirmed) {
+      list.splice(index, 1);
+      localStorage.setItem('kamawak_promo_codes', JSON.stringify(list));
+      muatDaftarPromo();
+      Swal.fire('Terhapus', `Kupon ${promo.kode} telah dihapus.`, 'success');
+    }
+  });
 };
 
 </script>
