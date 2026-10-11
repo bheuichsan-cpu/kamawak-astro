@@ -450,33 +450,91 @@ import GASPolyfill from '../components/GASPolyfill.astro';
         <h4 style="font-family: 'Poppins'; color: #3B82F6; margin-top: 10px; border-bottom: 2px solid #EFF6FF; padding-bottom: 10px; margin-bottom: 15px;"><i class="fa-solid fa-images"></i> Bagian 0: Foto Banner Paling Atas (Hero Slider)</h4>
         
         <div style="background: #EFF6FF; padding: 20px; border-radius: 8px; border-left: 5px solid #3B82F6; margin-bottom: 25px;">
-          <h4 style="margin-top:0; font-family: 'Poppins';">Ganti Foto Banner Slider</h4>
-          <p style="color: var(--text-gray); font-size: 13px; margin-bottom: 15px;">Ganti foto yang tampil di bagian paling atas beranda (slider). Masukkan link/URL foto (Unsplash, Google Drive, atau hosting foto Anda).</p>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-            <div class="form-group">
-              <label>Foto Banner 1 (Utama)</label>
-              <input type="text" id="heroBanner1" class="form-control" placeholder="https://..." oninput="previewHero(1, this.value)">
-              <div id="boxHero1" style="margin-top:8px; height:90px; border-radius:6px; overflow:hidden; background:#E2E8F0; display:flex; align-items:center; justify-content:center;">
-                <img id="imgHero1" src="" style="width:100%; height:100%; object-fit:cover; display:none;">
-                <span id="txtHero1" style="font-size:11px; color:#94A3B8;">Preview Foto 1</span>
-              </div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+            <div>
+              <h4 style="margin-top:0; margin-bottom:4px; font-family: 'Poppins'; color:#1E3A8A;">Ganti Foto Banner Slider</h4>
+              <p style="color: var(--text-gray); font-size: 13px; margin-bottom: 15px;">Ganti foto yang tampil di bagian paling atas beranda (slider). Anda bisa <b>Upload file foto langsung dari HP/Laptop</b> (tersimpan otomatis ke Google Drive) atau <b>masukkan link/URL foto</b> secara manual.</p>
             </div>
-            <div class="form-group">
-              <label>Foto Banner 2</label>
-              <input type="text" id="heroBanner2" class="form-control" placeholder="https://..." oninput="previewHero(2, this.value)">
-              <div id="boxHero2" style="margin-top:8px; height:90px; border-radius:6px; overflow:hidden; background:#E2E8F0; display:flex; align-items:center; justify-content:center;">
-                <img id="imgHero2" src="" style="width:100%; height:100%; object-fit:cover; display:none;">
-                <span id="txtHero2" style="font-size:11px; color:#94A3B8;">Preview Foto 2</span>
+            <span style="background:#DBEAFE; color:#1E40AF; font-size:12px; font-weight:600; padding:4px 10px; border-radius:20px; display:inline-flex; align-items:center; gap:5px;"><i class="fa-brands fa-google-drive"></i> Terhubung Google Drive</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
+            
+            <!-- Banner 1 -->
+            <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #DBEAFE; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                <label style="font-size: 13px; font-weight: 700; color: #1E3A8A; margin:0;"><i class="fa-solid fa-image"></i> Banner 1 (Utama)</label>
+                <span id="heroBadge1" style="font-size: 11px; padding: 2px 8px; border-radius: 12px; background: #E0E7FF; color: #3730A3; font-weight: 500;">Siap</span>
               </div>
-            </div>
-            <div class="form-group">
-              <label>Foto Banner 3</label>
-              <input type="text" id="heroBanner3" class="form-control" placeholder="https://..." oninput="previewHero(3, this.value)">
-              <div id="boxHero3" style="margin-top:8px; height:90px; border-radius:6px; overflow:hidden; background:#E2E8F0; display:flex; align-items:center; justify-content:center;">
-                <img id="imgHero3" src="" style="width:100%; height:100%; object-fit:cover; display:none;">
-                <span id="txtHero3" style="font-size:11px; color:#94A3B8;">Preview Foto 3</span>
+              
+              <div style="margin-bottom: 8px;">
+                <label style="font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 3px; display: block;"><i class="fa-solid fa-cloud-arrow-up" style="color:#3B82F6;"></i> Upload Foto dari HP/Laptop:</label>
+                <input type="file" id="heroFile1" class="form-control" accept="image/*" onchange="uploadHeroFile(1)" style="font-size: 12px; padding: 6px 10px;">
               </div>
+
+              <div style="margin-bottom: 8px;">
+                <label style="font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 3px; display: block;"><i class="fa-solid fa-link" style="color:#64748B;"></i> Atau URL Foto Google Drive / Web:</label>
+                <input type="text" id="heroBanner1" class="form-control" placeholder="https://lh3.googleusercontent.com/..." oninput="previewHero(1, this.value)" style="font-size: 12px; padding: 6px 10px;">
+              </div>
+
+              <div id="boxHero1" style="margin-top: 8px; height: 110px; border-radius: 6px; overflow: hidden; background: #F1F5F9; display: flex; align-items: center; justify-content: center; border: 1px dashed #CBD5E1; position: relative;">
+                <img id="imgHero1" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                <span id="txtHero1" style="font-size: 11px; color: #94A3B8; text-align: center;"><i class="fa-solid fa-image" style="font-size: 20px; display: block; margin-bottom: 4px;"></i>Preview Banner 1</span>
+                <button id="btnHapusHero1" onclick="hapusHeroBanner(1)" type="button" style="display:none; position:absolute; top:6px; right:6px; background:rgba(239,68,68,0.85); color:white; border:none; border-radius:50%; width:24px; height:24px; font-size:11px; cursor:pointer; align-items:center; justify-content:center;" title="Hapus foto"><i class="fa-solid fa-times"></i></button>
+              </div>
+              <div id="heroMsg1" style="font-size: 11px; margin-top: 6px; min-height: 16px;"></div>
             </div>
+
+            <!-- Banner 2 -->
+            <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #DBEAFE; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                <label style="font-size: 13px; font-weight: 700; color: #1E3A8A; margin:0;"><i class="fa-solid fa-image"></i> Banner 2</label>
+                <span id="heroBadge2" style="font-size: 11px; padding: 2px 8px; border-radius: 12px; background: #E0E7FF; color: #3730A3; font-weight: 500;">Siap</span>
+              </div>
+              
+              <div style="margin-bottom: 8px;">
+                <label style="font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 3px; display: block;"><i class="fa-solid fa-cloud-arrow-up" style="color:#3B82F6;"></i> Upload Foto dari HP/Laptop:</label>
+                <input type="file" id="heroFile2" class="form-control" accept="image/*" onchange="uploadHeroFile(2)" style="font-size: 12px; padding: 6px 10px;">
+              </div>
+
+              <div style="margin-bottom: 8px;">
+                <label style="font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 3px; display: block;"><i class="fa-solid fa-link" style="color:#64748B;"></i> Atau URL Foto Google Drive / Web:</label>
+                <input type="text" id="heroBanner2" class="form-control" placeholder="https://lh3.googleusercontent.com/..." oninput="previewHero(2, this.value)" style="font-size: 12px; padding: 6px 10px;">
+              </div>
+
+              <div id="boxHero2" style="margin-top: 8px; height: 110px; border-radius: 6px; overflow: hidden; background: #F1F5F9; display: flex; align-items: center; justify-content: center; border: 1px dashed #CBD5E1; position: relative;">
+                <img id="imgHero2" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                <span id="txtHero2" style="font-size: 11px; color: #94A3B8; text-align: center;"><i class="fa-solid fa-image" style="font-size: 20px; display: block; margin-bottom: 4px;"></i>Preview Banner 2</span>
+                <button id="btnHapusHero2" onclick="hapusHeroBanner(2)" type="button" style="display:none; position:absolute; top:6px; right:6px; background:rgba(239,68,68,0.85); color:white; border:none; border-radius:50%; width:24px; height:24px; font-size:11px; cursor:pointer; align-items:center; justify-content:center;" title="Hapus foto"><i class="fa-solid fa-times"></i></button>
+              </div>
+              <div id="heroMsg2" style="font-size: 11px; margin-top: 6px; min-height: 16px;"></div>
+            </div>
+
+            <!-- Banner 3 -->
+            <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #DBEAFE; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                <label style="font-size: 13px; font-weight: 700; color: #1E3A8A; margin:0;"><i class="fa-solid fa-image"></i> Banner 3</label>
+                <span id="heroBadge3" style="font-size: 11px; padding: 2px 8px; border-radius: 12px; background: #E0E7FF; color: #3730A3; font-weight: 500;">Siap</span>
+              </div>
+              
+              <div style="margin-bottom: 8px;">
+                <label style="font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 3px; display: block;"><i class="fa-solid fa-cloud-arrow-up" style="color:#3B82F6;"></i> Upload Foto dari HP/Laptop:</label>
+                <input type="file" id="heroFile3" class="form-control" accept="image/*" onchange="uploadHeroFile(3)" style="font-size: 12px; padding: 6px 10px;">
+              </div>
+
+              <div style="margin-bottom: 8px;">
+                <label style="font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 3px; display: block;"><i class="fa-solid fa-link" style="color:#64748B;"></i> Atau URL Foto Google Drive / Web:</label>
+                <input type="text" id="heroBanner3" class="form-control" placeholder="https://lh3.googleusercontent.com/..." oninput="previewHero(3, this.value)" style="font-size: 12px; padding: 6px 10px;">
+              </div>
+
+              <div id="boxHero3" style="margin-top: 8px; height: 110px; border-radius: 6px; overflow: hidden; background: #F1F5F9; display: flex; align-items: center; justify-content: center; border: 1px dashed #CBD5E1; position: relative;">
+                <img id="imgHero3" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                <span id="txtHero3" style="font-size: 11px; color: #94A3B8; text-align: center;"><i class="fa-solid fa-image" style="font-size: 20px; display: block; margin-bottom: 4px;"></i>Preview Banner 3</span>
+                <button id="btnHapusHero3" onclick="hapusHeroBanner(3)" type="button" style="display:none; position:absolute; top:6px; right:6px; background:rgba(239,68,68,0.85); color:white; border:none; border-radius:50%; width:24px; height:24px; font-size:11px; cursor:pointer; align-items:center; justify-content:center;" title="Hapus foto"><i class="fa-solid fa-times"></i></button>
+              </div>
+              <div id="heroMsg3" style="font-size: 11px; margin-top: 6px; min-height: 16px;"></div>
+            </div>
+
           </div>
           <button class="btn-admin" style="background: #3B82F6; width: 100%; margin-top: 15px;" onclick="simpanFotoBanner()"><i class="fa-solid fa-save"></i> Simpan & Terapkan Foto Paling Atas</button>
           <div id="heroBannerInfo" style="margin-top: 10px; font-weight:600; text-align:center; font-size:14px;"></div>
@@ -1198,20 +1256,115 @@ window.hapusKas = async function(id) {
 window.previewHero = function(num, url) {
     let img = document.getElementById('imgHero' + num);
     let txt = document.getElementById('txtHero' + num);
+    let btnHapus = document.getElementById('btnHapusHero' + num);
+    let badge = document.getElementById('heroBadge' + num);
     if(url && url.trim() !== '') {
         img.src = url.trim();
         img.style.display = 'block';
         txt.style.display = 'none';
+        if(btnHapus) btnHapus.style.display = 'flex';
+        if(badge) {
+            if(url.indexOf('googleusercontent.com') !== -1 || url.indexOf('drive.google.com') !== -1) {
+                badge.innerText = "Google Drive";
+                badge.style.background = "#D1FAE5";
+                badge.style.color = "#065F46";
+            } else if(url.indexOf('data:image') === 0) {
+                badge.innerText = "Lokal";
+                badge.style.background = "#FEF3C7";
+                badge.style.color = "#92400E";
+            } else {
+                badge.innerText = "URL Web";
+                badge.style.background = "#E0E7FF";
+                badge.style.color = "#3730A3";
+            }
+        }
         img.onerror = function() {
             img.style.display = 'none';
             txt.style.display = 'block';
             txt.innerText = 'Gagal memuat URL';
+            if(btnHapus) btnHapus.style.display = 'none';
+            if(badge) { badge.innerText = "Error"; badge.style.background = "#FEE2E2"; badge.style.color = "#B91C1C"; }
         };
     } else {
         img.style.display = 'none';
         txt.style.display = 'block';
-        txt.innerText = 'Preview Foto ' + num;
+        txt.innerHTML = '<i class="fa-solid fa-image" style="font-size: 20px; display: block; margin-bottom: 4px;"></i>Preview Banner ' + num;
+        if(btnHapus) btnHapus.style.display = 'none';
+        if(badge) { badge.innerText = "Kosong"; badge.style.background = "#F1F5F9"; badge.style.color = "#64748B"; }
     }
+};
+
+window.uploadHeroFile = function(num) {
+    let fileInput = document.getElementById('heroFile' + num);
+    let msg = document.getElementById('heroMsg' + num);
+    let badge = document.getElementById('heroBadge' + num);
+    if (!fileInput || fileInput.files.length === 0) return;
+
+    let file = fileInput.files[0];
+    if (file.size > 5 * 1024 * 1024) {
+        if(msg) { msg.style.color = "#EF4444"; msg.innerText = "Maksimal ukuran file 5MB!"; }
+        return;
+    }
+
+    if(badge) { badge.innerText = "Mengunggah..."; badge.style.background = "#FEF3C7"; badge.style.color = "#D97706"; }
+    if(msg) { msg.style.color = "#3B82F6"; msg.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengupload ke Google Drive...'; }
+
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        let base64Full = e.target.result;
+        let base64Data = base64Full.split(',')[1];
+        
+        previewHero(num, base64Full);
+
+        let dataObj = {
+            bannerIndex: num,
+            fotoBase64: base64Data,
+            fotoType: file.type || "image/jpeg",
+            fotoName: file.name || ("hero_banner_" + num + ".jpg")
+        };
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    if (res && res.success && res.url) {
+                        let driveUrl = res.url;
+                        document.getElementById('heroBanner' + num).value = driveUrl;
+                        previewHero(num, driveUrl);
+                        localStorage.setItem("kamawak_hero_" + num, driveUrl);
+                        if(msg) { msg.style.color = "#10B981"; msg.innerHTML = '<i class="fa-solid fa-check-circle"></i> Berhasil disimpan di Google Drive!'; }
+                    } else {
+                        let fallbackUrl = base64Full;
+                        document.getElementById('heroBanner' + num).value = fallbackUrl;
+                        localStorage.setItem("kamawak_hero_" + num, fallbackUrl);
+                        if(msg) { msg.style.color = "#F59E0B"; msg.innerText = "Tersimpan lokal di browser."; }
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    let fallbackUrl = base64Full;
+                    document.getElementById('heroBanner' + num).value = fallbackUrl;
+                    localStorage.setItem("kamawak_hero_" + num, fallbackUrl);
+                    if(msg) { msg.style.color = "#F59E0B"; msg.innerText = "Tersimpan lokal di browser."; }
+                })
+                .uploadHeroBanner(dataObj);
+        } else {
+            let fallbackUrl = base64Full;
+            document.getElementById('heroBanner' + num).value = fallbackUrl;
+            localStorage.setItem("kamawak_hero_" + num, fallbackUrl);
+            if(msg) { msg.style.color = "#10B981"; msg.innerHTML = '<i class="fa-solid fa-check"></i> Foto berhasil dimuat lokal.'; }
+        }
+    };
+    reader.readAsDataURL(file);
+};
+
+window.hapusHeroBanner = function(num) {
+    if(!confirm("Hapus foto banner " + num + "?")) return;
+    document.getElementById('heroBanner' + num).value = "";
+    let fileInput = document.getElementById('heroFile' + num);
+    if(fileInput) fileInput.value = "";
+    previewHero(num, "");
+    localStorage.removeItem("kamawak_hero_" + num);
+    let msg = document.getElementById('heroMsg' + num);
+    if(msg) msg.innerText = "";
 };
 
 window.simpanFotoBanner = function() {

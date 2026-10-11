@@ -387,6 +387,20 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       if (b2 && slides[1]) slides[1].src = b2;
       if (b3 && slides[2]) slides[2].src = b3;
 
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function(config) {
+          if (!config) return;
+          if (config.HERO_BANNER_1 && slides[0]) { slides[0].src = config.HERO_BANNER_1; localStorage.setItem("kamawak_hero_1", config.HERO_BANNER_1); }
+          if (config.HERO_BANNER_2 && slides[1]) { slides[1].src = config.HERO_BANNER_2; localStorage.setItem("kamawak_hero_2", config.HERO_BANNER_2); }
+          if (config.HERO_BANNER_3 && slides[2]) { slides[2].src = config.HERO_BANNER_3; localStorage.setItem("kamawak_hero_3", config.HERO_BANNER_3); }
+          
+          if (config.PROFIL_NO_WA) {
+            let cs = document.querySelector('.floating-cs');
+            if(cs) cs.href = "https://wa.me/" + config.PROFIL_NO_WA + "?text=Halo%20Admin%20Kamawak,%20saya%20butuh%20bantuan.";
+          }
+        }).getPengaturan();
+      }
+
       let currentSlide = 0;
       if (slides.length > 1) {
         setInterval(() => {
