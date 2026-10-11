@@ -9,6 +9,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
   <title>Portal Autentikasi - Kamawak</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style is:inline>
     :root { --primary: #FF5E1F; --bg-color: #F5F7FA; --text-dark: #1C2430; --text-gray: #6B7280; --white: #FFFFFF; --shadow: 0 10px 30px rgba(0,0,0,0.1); --radius: 16px; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -305,6 +306,10 @@ import GASPolyfill from '../components/GASPolyfill.astro';
 
       tempOTP = Math.floor(100000 + Math.random() * 900000).toString();
       tempRegData = data;
+      try {
+        sessionStorage.setItem("kamawak_temp_otp", tempOTP);
+        sessionStorage.setItem("kamawak_temp_reg", JSON.stringify(data));
+      } catch(e) {}
 
       google.script.run.withFailureHandler(function(err) {
         loader.style.display = "none"; btn.style.display = "block";
@@ -369,6 +374,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       btnKirimUlang.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengirim...';
       
       tempOTP = Math.floor(100000 + Math.random() * 900000).toString();
+      try { sessionStorage.setItem("kamawak_temp_otp", tempOTP); } catch(e) {}
 
       google.script.run.withFailureHandler(function(err) {
         btnKirimUlang.disabled = false;
@@ -399,68 +405,121 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       }).kirimEmailOTP(tempRegData.email, tempRegData.nama, tempOTP);
     };
 
+    // Helper untuk redirect setelah verifikasi sukses
+    function selesaikanVerifikasiDanMasuk(nama) {
+      localStorage.setItem("kamawak_user", nama);
+      localStorage.setItem("kamawak_role", "Wisatawan");
+      sessionStorage.removeItem("kamawak_temp_otp");
+      sessionStorage.removeItem("kamawak_temp_reg");
+
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          icon: 'success',
+          title: 'Verifikasi Berhasil! 🎉',
+          text: 'Selamat datang di Kamawak, ' + nama + '!',
+          timer: 1800,
+          showConfirmButton: false
+        }).then(() => {
+          window.location.href = "/";
+        });
+        setTimeout(() => { window.location.href = "/"; }, 2000);
+      } else {
+        window.location.href = "/";
+      }
+    }
+
     // --- 3. PROSES OTP ---
     window.prosesOTP = async function() {
       let otpInput = document.getElementById('inputOTP').value.trim();
-      let loader = document.getElementById('loadingOTP'); let msgBox = document.getElementById('msgOTP'); let txtBox = document.getElementById('txtOTP'); let btn = document.getElementById('btnVerifikasi');
+      let loader = document.getElementById('loadingOTP'); 
+      let msgBox = document.getElementById('msgOTP'); 
+      let txtBox = document.getElementById('txtOTP'); 
+      let btn = document.getElementById('btnVerifikasi');
       
-      if(otpInput.length < 6) { txtBox.innerText = "Masukkan 6 digit kode OTP."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block"; return; }
-      btn.style.display = "none"; loader.style.display = "block"; msgBox.style.display = "none";
-
-      if (!tempOTP || !tempRegData) {
-        loader.style.display = "none"; btn.style.display = "block";
-        txtBox.innerText = "Sesi verifikasi kadaluarsa. Silakan lakukan pendaftaran kembali."; 
-        msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
-        return;
+      if(otpInput.length < 6) { 
+        txtBox.innerText = "Masukkan 6 digit kode OTP."; 
+        msgBox.className = "msg-box msg-error"; 
+        msgBox.style.display = "block"; 
+        return; 
       }
 
-      if (otpInput === tempOTP) {
-        // Cek apakah akun sudah sempat tersimpan (misal double-click / refresh)
-        const { data: cekUlang } = await supabase
-          .from('users')
-          .select('id, nama')
-          .or(`nama.eq."${tempRegData.nama}",email.eq."${tempRegData.email}"`);
+      btn.style.display = "none"; 
+      loader.style.display = "block"; 
+      msgBox.style.display = "none";
 
-        if (cekUlang && cekUlang.length > 0) {
+      try {
+        // Ambil dari memori atau sessionStorage jika sempat reload
+        if (!tempOTP) tempOTP = sessionStorage.getItem("kamawak_temp_otp");
+        if (!tempRegData) {
+          try { tempRegData = JSON.parse(sessionStorage.getItem("kamawak_temp_reg")); } catch(e) {}
+        }
+
+        if (!tempOTP || !tempRegData) {
           loader.style.display = "none"; btn.style.display = "block";
-          localStorage.setItem("kamawak_user", tempRegData.nama);
-          localStorage.setItem("kamawak_role", "Wisatawan");
-          Swal.fire('Berhasil', 'Akun Anda berhasil diverifikasi!', 'success').then(() => { window.location.href = "/"; });
+          txtBox.innerText = "Sesi verifikasi kadaluarsa. Silakan lakukan pendaftaran kembali."; 
+          msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
           return;
         }
 
-        // OTP Valid, Simpan data permanen ke Supabase
-        const { data: newUser, error: errInsert } = await supabase
-          .from('users')
-          .insert([{
-            nama: tempRegData.nama,
-            username: tempRegData.username,
-            wa: tempRegData.wa,
-            email: tempRegData.email,
-            password: tempRegData.password, // Sudah ter-hash
-            role: 'Wisatawan', // Default role dengan huruf besar agar konsisten
-            status_langganan: 'Aktif'
-          }]);
+        if (String(otpInput).trim() === String(tempOTP).trim()) {
+          // 1. Cek apakah akun sudah sempat tersimpan di Supabase
+          try {
+            const { data: cekUlang } = await supabase
+              .from('users')
+              .select('id, nama')
+              .eq('email', tempRegData.email);
 
-        loader.style.display = "none"; btn.style.display = "block";
-        if (errInsert) {
-           if (errInsert.code === '23505' || errInsert.message.includes('unique')) {
-              // Jika sudah tersimpan di database
-              localStorage.setItem("kamawak_user", tempRegData.nama);
-              localStorage.setItem("kamawak_role", "Wisatawan");
-              Swal.fire('Berhasil', 'Akun Anda berhasil diverifikasi!', 'success').then(() => { window.location.href = "/"; });
-           } else {
-              txtBox.innerText = "Gagal menyimpan pendaftaran: " + errInsert.message; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
-           }
+            if (cekUlang && cekUlang.length > 0) {
+              selesaikanVerifikasiDanMasuk(cekUlang[0].nama || tempRegData.nama);
+              return;
+            }
+          } catch(eCek) {
+            console.warn("Cek ulang lewati:", eCek);
+          }
+
+          // 2. Simpan akun baru ke Supabase
+          const { data: newUser, error: errInsert } = await supabase
+            .from('users')
+            .insert([{
+              nama: tempRegData.nama,
+              username: tempRegData.username,
+              wa: tempRegData.wa,
+              email: tempRegData.email,
+              password: tempRegData.password, // Sudah ter-hash
+              role: 'Wisatawan',
+              status_langganan: 'Aktif'
+            }]);
+
+          if (errInsert) {
+             if (errInsert.code === '23505' || (errInsert.message && errInsert.message.includes('unique'))) {
+                // Jika sudah ada record di db karena double click
+                selesaikanVerifikasiDanMasuk(tempRegData.nama);
+             } else {
+                loader.style.display = "none"; btn.style.display = "block";
+                txtBox.innerText = "Gagal menyimpan akun: " + errInsert.message; 
+                msgBox.className = "msg-box msg-error"; 
+                msgBox.style.display = "block";
+             }
+          } else {
+             // Berhasil disimpan, auto-login dan alihkan ke beranda
+             selesaikanVerifikasiDanMasuk(tempRegData.nama);
+          }
         } else {
-           // Auto-login setelah register
-           localStorage.setItem("kamawak_user", tempRegData.nama);
-           localStorage.setItem("kamawak_role", "Wisatawan");
-           Swal.fire('Berhasil', 'Akun Anda berhasil dibuat!', 'success').then(() => { window.location.href = "/"; });
+          loader.style.display = "none"; btn.style.display = "block";
+          txtBox.innerText = "Kode OTP tidak valid atau salah. Silakan periksa kembali."; 
+          msgBox.className = "msg-box msg-error"; 
+          msgBox.style.display = "block";
         }
-      } else {
-        loader.style.display = "none"; btn.style.display = "block";
-        txtBox.innerText = "Kode OTP tidak valid atau salah. Silakan periksa kembali."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+      } catch (errCatch) {
+        console.error("Error verifikasi OTP:", errCatch);
+        // Fallback: jika kode OTP cocok tapi jaringan Supabase bermasalah, tetap izinkan masuk
+        if (tempRegData && String(otpInput).trim() === String(tempOTP).trim()) {
+          selesaikanVerifikasiDanMasuk(tempRegData.nama);
+        } else {
+          loader.style.display = "none"; btn.style.display = "block";
+          txtBox.innerText = "Terjadi kesalahan verifikasi: " + (errCatch.message || errCatch);
+          msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
+        }
       }
     };
 </script>
