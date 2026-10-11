@@ -481,6 +481,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
                 id: trxId,
                 idProduk: payload.idProduk,
                 namaProduk: payload.namaProduk,
+                owner: dataProduk.owner || dataProduk.namaUsaha || 'Admin',
                 tanggal: payload.tanggal,
                 pax: payload.pax,
                 paket: payload.paket,

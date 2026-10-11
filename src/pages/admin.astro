@@ -978,7 +978,7 @@ async function muatStatistikGlobal() {
   try {
     const { data: mitraData, error: errMitra } = await supabase.from('users').select('*').eq('role', 'Owner');
     const { data: leadsData, error: errLeads } = await supabase.from('leads').select('*');
-    const { data: trxData, error: errTrx } = await supabase.from('transaksi').select('*').eq('status', 'Berhasil');
+    const { data: trxData, error: errTrx } = await supabase.from('transaksi').select('*').in('status', ['Berhasil', 'Sudah Digunakan']);
 
     if (errMitra) console.error("Error Mitra:", errMitra);
     if (errLeads) console.error("Error Leads:", errLeads);

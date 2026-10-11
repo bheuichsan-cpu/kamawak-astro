@@ -58,6 +58,17 @@ import GASPolyfill from '../components/GASPolyfill.astro';
         .container { padding: 0 15px; margin: 20px auto; }
     }
 
+    .btn-tiket { background: var(--primary); color: white; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; box-shadow: 0 2px 6px rgba(255, 94, 31, 0.25); }
+    .btn-tiket:hover { background: #E04D14; transform: translateY(-1px); }
+
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    @media print {
+      body * { visibility: hidden !important; }
+      #modalETiket, #modalETiket * { visibility: visible !important; }
+      #modalETiket { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background: white !important; display: flex !important; justify-content: center; align-items: center; }
+      .no-print { display: none !important; }
+    }
   </style>
   <GASPolyfill />
 </head>
@@ -80,6 +91,69 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       <div class="section-title"><i class="fa-solid fa-ticket"></i> Histori Pesanan Anda</div>
       <div id="orderList">
         <div class="loader"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL E-TIKET WISATA DIGITAL -->
+  <div id="modalETiket" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index:9999; justify-content:center; align-items:center; padding: 15px; overflow-y: auto;">
+    <div style="background: white; border-radius: 16px; width: 100%; max-width: 420px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); overflow: hidden; position: relative; animation: slideUp 0.3s ease;">
+      <!-- Header Tiket -->
+      <div style="background: linear-gradient(135deg, #FF5E1F, #FF8A50); color: white; padding: 22px 20px; text-align: center; position: relative;">
+        <button onclick="tutupETiket()" class="no-print" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.2); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;">&times;</button>
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; opacity: 0.95;">E-TIKET WISATA RESMI</div>
+        <h2 style="font-family: 'Poppins', sans-serif; font-size: 19px; margin: 6px 0 2px; color: white; line-height: 1.3;" id="tikNamaProduk">Nama Produk</h2>
+        <div style="font-size: 12px; opacity: 0.95;" id="tikPlatform">Kamawak Tourism Platform</div>
+      </div>
+
+      <!-- Body Tiket -->
+      <div style="padding: 20px 24px; text-align: center;">
+        <!-- QR Code Box -->
+        <div style="background: #F9FAFB; padding: 14px; border-radius: 12px; border: 2px dashed #E5E7EB; display: inline-block; margin-bottom: 14px;">
+          <img id="tikQRImg" src="" alt="QR Code Tiket" style="width: 170px; height: 170px; display: block; margin: 0 auto; border-radius: 6px;">
+          <div style="font-family: monospace; font-size: 13px; font-weight: 700; margin-top: 8px; color: var(--text-dark); letter-spacing: 1px;" id="tikKode">TRX-0000000</div>
+        </div>
+
+        <!-- Status Badge Tiket -->
+        <div id="tikStatusBadge" style="margin-bottom: 16px;"></div>
+
+        <!-- Detail Tiket Table / Grid -->
+        <div style="background: #F3F4F6; border-radius: 10px; padding: 12px 14px; text-align: left; font-size: 13px; line-height: 1.6; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <span style="color: var(--text-gray);">Nama Pemesan:</span>
+            <strong id="tikUser">-</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <span style="color: var(--text-gray);">Tgl Wisata:</span>
+            <strong id="tikTgl">-</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <span style="color: var(--text-gray);">Jumlah Peserta:</span>
+            <strong id="tikPax">-</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <span style="color: var(--text-gray);">Tipe Paket:</span>
+            <strong id="tikPaket">-</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-top: 1px dashed #D1D5DB; padding-top: 6px; margin-top: 6px;">
+            <span style="color: var(--text-gray);">Total Pembayaran:</span>
+            <strong style="color: var(--primary); font-size: 15px;" id="tikTotal">-</strong>
+          </div>
+        </div>
+
+        <p class="no-print" style="font-size: 11px; color: var(--text-gray); margin-bottom: 18px; line-height: 1.4;">
+          <i class="fa-solid fa-circle-info" style="color: var(--primary);"></i> Tunjukkan QR Code ini kepada petugas mitra saat kedatangan di lokasi wisata untuk dipindai.
+        </p>
+
+        <!-- Tombol Aksi -->
+        <div class="no-print" style="display: flex; gap: 10px;">
+          <button onclick="window.print()" style="flex: 1; padding: 10px; border: 1px solid #D1D5DB; background: white; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; color: var(--text-dark); display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <i class="fa-solid fa-print"></i> Cetak Tiket
+          </button>
+          <button onclick="tutupETiket()" style="flex: 1; padding: 10px; border: none; background: var(--text-dark); color: white; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer;">
+            Tutup
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -130,19 +204,33 @@ import GASPolyfill from '../components/GASPolyfill.astro';
         let html = "";
         if(data && data.length > 0) {
           data.forEach(item => {
-            let badgeClass = "status-menunggu";
             let statusText = (item.status || "menunggu").toLowerCase();
-            if(statusText.includes("sukses") || statusText.includes("berhasil") || statusText.includes("lunas")) badgeClass = "status-lunas";
-            if(statusText.includes("batal") || statusText.includes("gagal")) badgeClass = "status-batal";
+            let badgeHtml = '';
+            let isTiketAktif = false;
+            if(statusText.includes("digunakan")) {
+              badgeHtml = `<span class="order-status" style="background:#E0E7FF; color:#3730A3;"><i class="fa-solid fa-circle-check"></i> Sudah Digunakan</span>`;
+              isTiketAktif = true;
+            } else if(statusText.includes("sukses") || statusText.includes("berhasil") || statusText.includes("lunas")) {
+              badgeHtml = `<span class="order-status status-lunas"><i class="fa-solid fa-ticket"></i> Siap Digunakan</span>`;
+              isTiketAktif = true;
+            } else if(statusText.includes("batal") || statusText.includes("gagal")) {
+              badgeHtml = `<span class="order-status status-batal">Dibatalkan</span>`;
+            } else {
+              badgeHtml = `<span class="order-status status-menunggu">Menunggu Pembayaran</span>`;
+            }
             
             let tglPesan = item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-';
             let tglWisata = item.tanggal || '-';
+            let encodedItem = encodeURIComponent(JSON.stringify(item));
+            let tombolTiket = isTiketAktif 
+              ? `<button class="btn-tiket" onclick="bukaETiket('${encodedItem}')"><i class="fa-solid fa-qrcode"></i> Lihat E-Tiket</button>`
+              : '';
 
             html += `
               <div class="order-item">
                 <div class="order-header">
                   <span><i class="fa-regular fa-clock"></i> ${tglPesan}</span>
-                  <span class="order-status ${badgeClass}">${item.status || 'Berhasil'}</span>
+                  ${badgeHtml}
                 </div>
                 <div class="order-body">
                   <div>
@@ -153,6 +241,10 @@ import GASPolyfill from '../components/GASPolyfill.astro';
                     </div>
                   </div>
                   <div class="order-price">${formatUang(item.totalBayar)}</div>
+                </div>
+                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #E5E7EB; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                  <span style="font-size: 12px; color: var(--text-gray); font-family: monospace;">Kode: ${item.id}</span>
+                  ${tombolTiket}
                 </div>
               </div>
             `;
@@ -170,6 +262,39 @@ import GASPolyfill from '../components/GASPolyfill.astro';
         document.getElementById("orderList").innerHTML = `<div class="empty-state">Gagal memuat data: ${err.message}</div>`;
       }
     }
+
+    window.bukaETiket = function(itemEncoded) {
+      try {
+        let item = JSON.parse(decodeURIComponent(itemEncoded));
+        document.getElementById('tikNamaProduk').innerText = item.namaProduk || 'Tiket Wisata';
+        document.getElementById('tikKode').innerText = item.id || 'TRX-000000';
+        document.getElementById('tikUser').innerText = item.user || '-';
+        document.getElementById('tikTgl').innerText = item.tanggal || '-';
+        document.getElementById('tikPax').innerText = (item.pax || 1) + ' Pax';
+        document.getElementById('tikPaket').innerText = item.paket || 'Reguler';
+        document.getElementById('tikTotal').innerText = formatUang(item.totalBayar);
+
+        let statusText = (item.status || 'Berhasil').toLowerCase();
+        let badgeHtml = '';
+        if (statusText.includes('digunakan')) {
+          badgeHtml = '<span style="background: #E0E7FF; color: #3730A3; padding: 5px 12px; border-radius: 50px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;"><i class="fa-solid fa-circle-check"></i> TELAH DIGUNAKAN</span>';
+        } else {
+          badgeHtml = '<span style="background: #D1FAE5; color: #065F46; padding: 5px 12px; border-radius: 50px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;"><i class="fa-solid fa-ticket"></i> SIAP DIGUNAKAN</span>';
+        }
+        document.getElementById('tikStatusBadge').innerHTML = badgeHtml;
+
+        let qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + encodeURIComponent(item.id);
+        document.getElementById('tikQRImg').src = qrUrl;
+
+        document.getElementById('modalETiket').style.display = 'flex';
+      } catch(e) {
+        console.error("Gagal membuka tiket:", e);
+      }
+    };
+
+    window.tutupETiket = function() {
+      document.getElementById('modalETiket').style.display = 'none';
+    };
 
     window.kembaliKeHome = function() {
       window.open(BASE_URL + "/", "_top");
