@@ -180,10 +180,10 @@ import GASPolyfill from '../components/GASPolyfill.astro';
     // --- Fungsi Beralih Antar Kartu (UI) ---
     window.tukarMode = function(mode) {
       document.getElementById('cardLogin').style.display = 'none';
-      document.getElementById('cardReg').style.display = 'none';
+      document.getElementById('cardRegister').style.display = 'none';
       document.getElementById('cardOTP').style.display = 'none';
       if(mode === 'login') document.getElementById('cardLogin').style.display = 'block';
-      if(mode === 'register') document.getElementById('cardReg').style.display = 'block';
+      if(mode === 'register') document.getElementById('cardRegister').style.display = 'block';
       if(mode === 'otp') document.getElementById('cardOTP').style.display = 'block';
     }
     
