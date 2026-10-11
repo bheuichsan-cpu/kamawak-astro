@@ -285,6 +285,14 @@ import BottomNav from '../components/BottomNav.astro';
           <label>Sub-tag / Penanda (Pemisah Koma)</label>
           <input type="text" id="cmsTags" class="form-control" placeholder="Misal: Solok, Dekat Danau, Ramah Anak">
         </div>
+        <div class="form-group full-width">
+          <label><i class="fa-solid fa-map-location-dot" style="color:var(--primary);"></i> Rencana Perjalanan (Itinerary) - Format Baris</label>
+          <textarea id="cmsItinerary" class="form-control" rows="3" placeholder="Format per baris:
+08:00 - Meeting Point di Dermaga
+09:00 - Island Hopping & Snorkeling
+12:00 - Makan Siang Ikan Bakar"></textarea>
+          <small style="color:var(--text-gray); font-size:12px;">Kosongkan jika ingin memakai template rundown otomatis cerdas berdasarkan destinasi.</small>
+        </div>
       </div>
       <button class="btn-admin" style="background: #10B981; margin-top: 15px; width: 100%;" onclick="simpanCMS()">Tambahkan ke Database</button>
       <div id="cmsInfo" style="margin-top: 15px; font-size: 14px; font-weight: 600; text-align: center;"></div>
@@ -1311,6 +1319,17 @@ window.simpanCMS = async function() {
           owner: owner || 'Admin',
           status: document.getElementById('cmsStatusLangganan') ? document.getElementById('cmsStatusLangganan').value : 'Aktif'
       };
+
+      let deskripsi = document.getElementById('cmsDeskripsi') ? document.getElementById('cmsDeskripsi').value.trim() : '';
+      let fasilitas = document.getElementById('cmsFasilitas') ? document.getElementById('cmsFasilitas').value.trim() : '';
+      let varian = document.getElementById('cmsVarian') ? document.getElementById('cmsVarian').value.trim() : '';
+      let tags = document.getElementById('cmsTags') ? document.getElementById('cmsTags').value.trim() : '';
+      let itinerary = document.getElementById('cmsItinerary') ? document.getElementById('cmsItinerary').value.trim() : '';
+      if (deskripsi) payload.deskripsi = deskripsi;
+      if (fasilitas) payload.fasilitas = fasilitas;
+      if (varian) payload.varian = varian;
+      if (tags) payload.tags = tags;
+      if (itinerary) payload.itinerary = itinerary;
       
       // Jika ID disediakan, kita update. Jika tidak, insert baru.
       if (id) {

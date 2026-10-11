@@ -245,6 +245,24 @@ import BottomNav from '../components/BottomNav.astro';
     <button class="tab-btn" onclick="filterKategori(this, 'Favorit')"><i class="fa-solid fa-heart" style="color: #EF4444;"></i> Favorit (<span id="wishlistCountBadge">0</span>)</button>
   </div>
 
+  <!-- BANNER PROMO KUPON DISKON KEKINIAN -->
+  <div id="promoBannerStrip" style="background: linear-gradient(90deg, #FFF7ED 0%, #FEF3C7 50%, #ECFDF5 100%); border-bottom: 1px solid #FED7AA; padding: 10px 5%; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 8px; color: #9A3412; font-weight: 600;">
+      <span style="background: #F97316; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+        <i class="fa-solid fa-tags"></i> KUPON DISKON
+      </span>
+      <span>Gunakan kupon <strong style="letter-spacing: 0.5px; background: white; padding: 2px 6px; border-radius: 4px; border: 1px dashed #F97316;">MINANGSERU</strong> (Diskon 10%) & <strong style="letter-spacing: 0.5px; background: white; padding: 2px 6px; border-radius: 4px; border: 1px dashed #059669; color: #047857;">HEMAT50K</strong> (Potongan Rp 50rb) saat pemesanan tiket!</span>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button onclick="salinKuponHome('MINANGSERU')" style="background: white; border: 1px solid #FB923C; color: #EA580C; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(234, 88, 12, 0.1);">
+        <i class="fa-regular fa-copy"></i> Salin Kupon 10%
+      </button>
+      <button onclick="salinKuponHome('HEMAT50K')" style="background: #ECFDF5; border: 1px solid #6EE7B7; color: #047857; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+        <i class="fa-regular fa-copy"></i> Salin Potongan 50rb
+      </button>
+    </div>
+  </div>
+
   <div class="hero-slider" id="heroSlider">
     <img src="https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=1200&auto=format&fit=crop" class="slide active" alt="Hero 1">
     <img src="https://images.unsplash.com/photo-1555899434-94d1368aa7af?q=80&w=1200&auto=format&fit=crop" class="slide" alt="Hero 2">
@@ -877,6 +895,19 @@ import BottomNav from '../components/BottomNav.astro';
       if (searchInput) {
         setTimeout(() => { searchInput.focus(); }, 350);
       }
+    };
+
+    window.salinKuponHome = function(kode) {
+      navigator.clipboard.writeText(kode).then(() => {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: `Kupon "${kode}" Disalin! Gunakan saat pesan tiket.`,
+          showConfirmButton: false,
+          timer: 2000
+        });
+      });
     };
 </script>
 
