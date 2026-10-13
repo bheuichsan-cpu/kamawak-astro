@@ -252,7 +252,7 @@ import BottomNav from '../components/BottomNav.astro';
   </div>
 
   <div class="hero-slider" id="heroSlider">
-    <img src="https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=1200&auto=format&fit=crop" class="slide active" alt="Hero 1">
+    <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop" class="slide active" alt="Hero 1">
     <img src="https://images.unsplash.com/photo-1555899434-94d1368aa7af?q=80&w=1200&auto=format&fit=crop" class="slide" alt="Hero 2">
     <img src="https://images.unsplash.com/photo-1542640244-7e672d6cb469?q=80&w=1200&auto=format&fit=crop" class="slide" alt="Hero 3">
     <div class="hero-overlay"></div>
@@ -506,7 +506,7 @@ import BottomNav from '../components/BottomNav.astro';
     }
 
     const DAFTAR_KOTA_DEFAULT = [
-      { nama: "Semua", label: "Semua Kota", subtag: "Seluruh Destinasi Sumbar", img: "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+      { nama: "Semua", label: "Semua Kota", subtag: "Seluruh Destinasi Sumbar", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
       { nama: "Bukittinggi", label: "Bukittinggi", subtag: "Jam Gadang, Ngarai Sianok, Kuliner", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
       { nama: "Padang", label: "Kota Padang", subtag: "Pantai Padang, Kuliner Rendang, Kota Tua", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
       { nama: "Mandeh", label: "Pesisir Mandeh", subtag: "Pulau Cubadak, Snorkeling, Wisata Bahari", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
@@ -528,7 +528,7 @@ import BottomNav from '../components/BottomNav.astro';
 
       let html = list.map((k, idx) => `
         <div class="city-card ${idx === 0 ? 'city-active' : ''}" onclick="filterKota('${k.nama}', this)" title="Lihat wisata di ${k.label || k.nama}">
-          <img src="${k.img || k.foto || 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=400'}" alt="${k.label || k.nama}">
+          <img src="${k.img || k.foto || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400'}" alt="${k.label || k.nama}">
           <div class="city-overlay">
             <span class="city-name">${k.label || k.nama}</span>
           </div>
@@ -784,7 +784,7 @@ import BottomNav from '../components/BottomNav.astro';
       return data.map(item => {
         let harga = Number(item.harga || item.hargaJual || 0).toLocaleString('id-ID');
         let fotoRaw = (item.foto || '').trim();
-        let foto = 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=500';
+        let foto = 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500';
         if (fotoRaw) {
           if (fotoRaw.startsWith('data:image/') && fotoRaw.includes(',') && fotoRaw.split(',')[1].length > 20) {
             foto = fotoRaw.split(/,\s*(?=https?:\/\/|data:image\/)/i)[0].trim();
@@ -803,7 +803,7 @@ import BottomNav from '../components/BottomNav.astro';
         return `
           <a href="/pdp?id=${item.id || ''}" class="card card-clickable ${isPopular ? 'popular-card' : ''}">
             <div class="card-img-wrapper">
-              <img src="${foto}" class="card-img" alt="${item.nama || ''}" onerror="this.src='https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=500'">
+              <img src="${foto}" class="card-img" alt="${item.nama || ''}" onerror="this.src='https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500'">
               <button class="btn-wishlist-card ${favActiveClass}" onclick="toggleWishlistCard(event, '${item.id}')" title="${isFav ? 'Hapus dari Favorit' : 'Simpan ke Favorit'}">
                 <i class="${heartIcon} fa-heart"></i>
               </button>
