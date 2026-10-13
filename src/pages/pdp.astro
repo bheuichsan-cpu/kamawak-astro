@@ -716,6 +716,20 @@ import BottomNav from '../components/BottomNav.astro';
           const { data, error } = await supabase.from('wisata').select('*').eq('id', idProduk).single();
           if (error) throw error;
           if (data) {
+            // Sinkronkan metadata lokal jika kolom belum ada di database Supabase
+            try {
+              let localMeta = JSON.parse(localStorage.getItem('kamawak_meta_' + idProduk) || 'null');
+              if (localMeta) {
+                if (!data.deskripsi && localMeta.deskripsi) data.deskripsi = localMeta.deskripsi;
+                if (!data.fasilitas && localMeta.fasilitas) data.fasilitas = localMeta.fasilitas;
+                if (!data.varian && localMeta.varian) data.varian = localMeta.varian;
+                if (!data.tags && localMeta.tags) data.tags = localMeta.tags;
+                if (!data.itinerary && localMeta.itinerary) data.itinerary = localMeta.itinerary;
+                if (!data.harga_coret && localMeta.harga_coret) data.harga_coret = localMeta.harga_coret;
+                if (!data.durasi && localMeta.durasi) data.durasi = localMeta.durasi;
+                if (!data.maps && localMeta.maps) data.maps = localMeta.maps;
+              }
+            } catch(e) {}
             dataProduk = data;
             renderHalaman(dataProduk);
           } else {
@@ -785,25 +799,25 @@ import BottomNav from '../components/BottomNav.astro';
           }
       }
 
-      document.getElementById('uiKategori').innerText = data.kategori;
-      document.getElementById('uiNama').innerText = data.nama;
-      document.getElementById('uiDestinasi').innerText = data.destinasi;
-      document.getElementById('uiDurasi').innerText = data.durasi;
-      document.getElementById('uiRating').innerText = data.rating;
-      document.getElementById('uiUlasan').innerText = data.ulasan;
+      document.getElementById('uiKategori').innerText = data.kategori || "-";
+      document.getElementById('uiNama').innerText = data.nama || "";
+      document.getElementById('uiDestinasi').innerText = data.destinasi || data.lokasi || "Sumatera Barat";
+      document.getElementById('uiDurasi').innerText = data.durasi || "1 Hari";
+      document.getElementById('uiRating').innerText = data.rating || "5.0";
+      document.getElementById('uiUlasan').innerText = data.ulasan || "0";
 
       // Setup Harga Dasar
-      hargaDasar = Number(data.hargaJual);
-      let hCoret = Number(data.hargaCoret);
+      hargaDasar = Number(data.hargaJual || data.harga || 0);
+      let hCoret = Number(data.hargaCoret || data.harga_coret || 0);
 
       document.getElementById('uiHargaJual').innerText = formatUang(hargaDasar);
       let mobHarga = document.getElementById('mobileHargaJual');
       if (mobHarga) mobHarga.innerText = formatUang(hargaDasar);
 
-      let qMaps = encodeURIComponent((data.nama || '') + ' ' + (data.destinasi || '') + ' Sumatera Barat');
+      let qMaps = encodeURIComponent((data.nama || '') + ' ' + (data.destinasi || data.lokasi || '') + ' Sumatera Barat');
       let btnMaps = document.getElementById('btnBukaMaps');
       if (btnMaps) {
-        btnMaps.href = "https://www.google.com/maps/search/?api=1&query=" + qMaps;
+        btnMaps.href = (data.maps && data.maps.startsWith('http')) ? data.maps : ("https://www.google.com/maps/search/?api=1&query=" + qMaps);
       }
 
       if(hCoret > hargaDasar) {

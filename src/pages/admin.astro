@@ -239,9 +239,12 @@ import BottomNav from '../components/BottomNav.astro';
           <input type="number" id="cmsHarga" class="form-control" placeholder="Tanpa titik (Misal: 150000)">
         </div>
         <div class="form-group full-width">
-          <label>Galeri Foto (Upload dari Komputer/HP)</label>
-          <input type="file" id="cmsFotoUpload" class="form-control" accept="image/*" multiple>
-          <small style="color:var(--text-gray); font-size:12px;">Bisa pilih banyak foto sekaligus. Akan otomatis diunggah ke Google Drive saat disimpan.</small>
+          <label>Galeri Foto (Upload atau Masukkan Link URL)</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <input type="text" id="cmsFotoUrl" class="form-control" placeholder="URL Foto (https://... pisahkan koma jika banyak)">
+            <input type="file" id="cmsFotoUpload" class="form-control" accept="image/*" multiple>
+          </div>
+          <small style="color:var(--text-gray); font-size:12px;">Bisa masukkan link gambar langsung atau pilih file dari perangkat.</small>
         </div>
         <div class="form-group">
           <label>Harga Coret (Rp)</label>
@@ -301,6 +304,34 @@ import BottomNav from '../components/BottomNav.astro';
       <div id="cmsInfo" style="margin-top: 15px; font-size: 14px; font-weight: 600; text-align: center;"></div>
     </div>
 
+    <!-- Katalog Produk Wisata Terdaftar di Supabase -->
+    <div class="card-section" style="margin-top: 25px; border-top: 5px solid var(--primary);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h3 style="font-family: 'Poppins'; font-size: 18px; margin: 0;"><i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Katalog Produk Wisata di Database</h3>
+          <p style="color: var(--text-gray); font-size: 13px; margin: 4px 0 0 0;">Daftar paket wisata dan destinasi aktif. Klik ikon pensil untuk mengedit atau sampah untuk menghapus.</p>
+        </div>
+        <button class="btn-admin" style="background: #3B82F6; padding: 7px 15px; font-size: 13px;" onclick="muatDaftarWisataCMS()"><i class="fa-solid fa-rotate"></i> Segarkan Data</button>
+      </div>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 60px;">Foto</th>
+              <th>Nama Produk</th>
+              <th>Kategori</th>
+              <th>Lokasi</th>
+              <th>Harga (Rp)</th>
+              <th>Status</th>
+              <th style="text-align: center; width: 130px;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tableWisataCMSBody">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-gray);">Memuat katalog produk...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
     </div>
 
@@ -1128,6 +1159,7 @@ window.switchTab = function(tabId) {
   document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).style.background = 'var(--primary)';
   document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).style.color = 'white';
 
+  if (tabId === 'tabCMS' && typeof muatDaftarWisataCMS === 'function') muatDaftarWisataCMS();
   if (tabId === 'tabPromo' && typeof muatDaftarPromo === 'function') muatDaftarPromo();
   if (tabId === 'tabAds' && typeof muatDaftarIklan === 'function') muatDaftarIklan();
   if ((tabId === 'tabPengaturan' || tabId === 'tabComposer') && typeof muatPengaturan === 'function') muatPengaturan();
@@ -1330,52 +1362,281 @@ window.simpanCMS = async function() {
   }
   
   let btn = (window.event && window.event.target) || document.querySelector('button[onclick="simpanCMS()"]');
-  let oldText = btn.innerText;
-  btn.innerText = "Menyimpan..."; btn.disabled = true;
+  let oldText = btn ? btn.innerText : 'Tambahkan ke Database';
+  if (btn) { btn.innerText = "Menyimpan..."; btn.disabled = true; }
+  
+  // Field-field formulir CMS
+  let deskripsi = document.getElementById('cmsDeskripsi') ? document.getElementById('cmsDeskripsi').value.trim() : '';
+  let fasilitas = document.getElementById('cmsFasilitas') ? document.getElementById('cmsFasilitas').value.trim() : '';
+  let varian = document.getElementById('cmsVarian') ? document.getElementById('cmsVarian').value.trim() : '';
+  let tags = document.getElementById('cmsTags') ? document.getElementById('cmsTags').value.trim() : '';
+  let itinerary = document.getElementById('cmsItinerary') ? document.getElementById('cmsItinerary').value.trim() : '';
+  let durasi = document.getElementById('cmsDurasi') ? document.getElementById('cmsDurasi').value.trim() : '';
+  let maps = document.getElementById('cmsMaps') ? document.getElementById('cmsMaps').value.trim() : '';
+  let wa = document.getElementById('cmsWA') ? document.getElementById('cmsWA').value.trim() : '';
+  let ig = document.getElementById('cmsIG') ? document.getElementById('cmsIG').value.trim() : '';
+  let tiktok = document.getElementById('cmsTikTok') ? document.getElementById('cmsTikTok').value.trim() : '';
+  let fb = document.getElementById('cmsFB') ? document.getElementById('cmsFB').value.trim() : '';
+  let hargaCoret = document.getElementById('cmsHargaCoret') ? document.getElementById('cmsHargaCoret').value.trim() : '';
+  let fotoUrl = document.getElementById('cmsFotoUrl') ? document.getElementById('cmsFotoUrl').value.trim() : '';
+
+  // Tangani file upload jika ada file dipilih
+  let fileInput = document.getElementById('cmsFotoUpload');
+  if (fileInput && fileInput.files && fileInput.files.length > 0 && !fotoUrl) {
+    try {
+      let fileArr = Array.from(fileInput.files);
+      let readPromises = fileArr.slice(0, 3).map(f => new Promise((resolve) => {
+        let reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.onerror = () => resolve('');
+        reader.readAsDataURL(f);
+      }));
+      let base64Results = await Promise.all(readPromises);
+      fotoUrl = base64Results.filter(Boolean).join(',');
+    } catch(e) {}
+  }
+
+  // Data dasar (selalu ada di skema tabel wisata)
+  let basePayload = {
+      nama: nama,
+      kategori: kategori,
+      lokasi: lokasi,
+      harga: Number(harga),
+      owner: owner || 'Admin',
+      status: document.getElementById('cmsStatusLangganan') ? document.getElementById('cmsStatusLangganan').value : 'Aktif'
+  };
+  if (wa) basePayload.wa = wa;
+  if (fotoUrl) basePayload.foto = fotoUrl;
+
+  // Data lengkap (kolom tambahan modern)
+  let fullPayload = { ...basePayload };
+  if (deskripsi) fullPayload.deskripsi = deskripsi;
+  if (fasilitas) fullPayload.fasilitas = fasilitas;
+  if (varian) fullPayload.varian = varian;
+  if (tags) fullPayload.tags = tags;
+  if (itinerary) fullPayload.itinerary = itinerary;
+  if (durasi) fullPayload.durasi = durasi;
+  if (maps) fullPayload.maps = maps;
+  if (ig) fullPayload.ig = ig;
+  if (tiktok) fullPayload.tiktok = tiktok;
+  if (fb) fullPayload.fb = fb;
+  if (hargaCoret) fullPayload.harga_coret = Number(hargaCoret);
+
+  const resetForm = () => {
+    ['cmsID', 'cmsIDOwner', 'cmsNama', 'cmsDestinasi', 'cmsHarga', 'cmsHargaCoret', 'cmsFotoUrl', 'cmsDurasi', 'cmsMaps', 'cmsWA', 'cmsIG', 'cmsTikTok', 'cmsFB', 'cmsDeskripsi', 'cmsFasilitas', 'cmsVarian', 'cmsTags', 'cmsItinerary'].forEach(fid => {
+      let el = document.getElementById(fid);
+      if (el) el.value = '';
+    });
+    let fi = document.getElementById('cmsFotoUpload');
+    if (fi) fi.value = '';
+  };
+
+  const sqlMigrationCode = `ALTER TABLE public.wisata 
+ADD COLUMN IF NOT EXISTS deskripsi text,
+ADD COLUMN IF NOT EXISTS fasilitas text,
+ADD COLUMN IF NOT EXISTS varian text,
+ADD COLUMN IF NOT EXISTS tags text,
+ADD COLUMN IF NOT EXISTS itinerary text,
+ADD COLUMN IF NOT EXISTS harga_coret numeric,
+ADD COLUMN IF NOT EXISTS durasi text,
+ADD COLUMN IF NOT EXISTS maps text,
+ADD COLUMN IF NOT EXISTS ig text,
+ADD COLUMN IF NOT EXISTS tiktok text,
+ADD COLUMN IF NOT EXISTS fb text;`;
+
+  try {
+      let savedId = id;
+      if (id) {
+          const { error } = await supabase.from('wisata').update(fullPayload).eq('id', id);
+          if (error) throw error;
+      } else {
+          // Jangan kirim ID string manual karena kolom id Supabase bertipe UUID
+          const { data, error } = await supabase.from('wisata').insert([fullPayload]).select();
+          if (error) throw error;
+          if (data && data[0]) savedId = data[0].id;
+      }
+
+      // Simpan juga ke cache metadata lokal agar halaman PDP langsung menampilkan data
+      if (savedId) {
+          localStorage.setItem('kamawak_meta_' + savedId, JSON.stringify(fullPayload));
+      }
+
+      Swal.fire({
+          icon: 'success',
+          title: 'Berhasil Disimpan!',
+          text: 'Data produk dan deskripsi berhasil disimpan ke Supabase.',
+          timer: 2000
+      });
+      resetForm();
+      if (typeof muatDaftarWisataCMS === 'function') muatDaftarWisataCMS();
+
+  } catch(err) {
+      let msg = (err && err.message) ? err.message : String(err);
+      
+      // Deteksi jika error karena kolom belum ada di database Supabase (PGRST204 / schema cache)
+      if (msg.includes("Could not find the '") || msg.includes("schema cache") || err.code === 'PGRST204') {
+          Swal.fire({
+              title: 'Kolom Database Belum Ditambahkan',
+              html: `
+                <div style="text-align:left; font-size:13px; color:#374151;">
+                  <p>Tabel <b>wisata</b> di database Supabase Anda belum memiliki kolom <b>deskripsi</b> (dan fitur pelengkap lainnya).</p>
+                  <p style="margin-top:10px;"><strong>Langkah Mudah Mengaktifkannya (10 Detik):</strong></p>
+                  <ol style="margin-left:18px; margin-bottom:10px; line-height: 1.6;">
+                    <li>Buka <b>Supabase Dashboard &gt; SQL Editor</b>.</li>
+                    <li>Jalankan (Run) perintah SQL berikut:</li>
+                  </ol>
+                  <textarea readonly id="sqlCopyAreaCMS" style="width:100%; height:110px; font-family:monospace; font-size:11px; background:#1E293B; color:#A7F3D0; padding:8px; border-radius:6px; border:none; resize:none;">${sqlMigrationCode}</textarea>
+                  <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('sqlCopyAreaCMS').value); alert('Perintah SQL berhasil disalin ke clipboard!');" style="margin-top:8px; padding:6px 14px; background:#3B82F6; color:white; border:none; border-radius:6px; font-size:12px; cursor:pointer;">
+                    <i class="fa-solid fa-copy"></i> Salin Perintah SQL
+                  </button>
+                  <hr style="margin:15px 0; border:none; border-top:1px solid #E5E7EB;">
+                  <p style="font-size:12px; color:#4B5563;"><b>Mode Adaptif Otomatis:</b> Anda dapat menyimpan produk sekarang juga (data utama tersimpan di Supabase &amp; deskripsi/fasilitas dicadangkan di cache lokal).</p>
+                </div>
+              `,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Simpan dengan Mode Adaptif',
+              cancelButtonText: 'Tutup & Jalankan SQL Dulu',
+              confirmButtonColor: '#10B981',
+              cancelButtonColor: '#6B7280'
+          }).then(async (result) => {
+              if (result.isConfirmed) {
+                  try {
+                      let fallbackSavedId = id;
+                      if (id) {
+                          const { error: fbErr } = await supabase.from('wisata').update(basePayload).eq('id', id);
+                          if (fbErr) throw fbErr;
+                      } else {
+                          const { data: fbData, error: fbErr } = await supabase.from('wisata').insert([basePayload]).select();
+                          if (fbErr) throw fbErr;
+                          if (fbData && fbData[0]) fallbackSavedId = fbData[0].id;
+                      }
+                      
+                      if (fallbackSavedId) {
+                          localStorage.setItem('kamawak_meta_' + fallbackSavedId, JSON.stringify(fullPayload));
+                      }
+                      
+                      Swal.fire('Tersimpan Adaptif', 'Produk berhasil disimpan ke Supabase! Deskripsi dan rincian paket tetap aktif.', 'success');
+                      resetForm();
+                      if (typeof muatDaftarWisataCMS === 'function') muatDaftarWisataCMS();
+                  } catch (eFallback) {
+                      Swal.fire('Gagal', eFallback.message || 'Gagal menyimpan data dasar.', 'error');
+                  }
+              }
+          });
+      } else {
+          Swal.fire('Gagal Menyimpan', msg || 'Terjadi kesalahan sistem', 'error');
+      }
+  } finally {
+      if (btn) { btn.innerText = oldText; btn.disabled = false; }
+  }
+};
+
+window.muatDaftarWisataCMS = async function() {
+  let tbody = document.getElementById('tableWisataCMSBody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat katalog produk...</td></tr>';
   
   try {
-      // Data yang akan disimpan ke tabel 'wisata'
-      let payload = {
-          nama: nama,
-          kategori: kategori,
-          lokasi: lokasi,
-          harga: Number(harga),
-          owner: owner || 'Admin',
-          status: document.getElementById('cmsStatusLangganan') ? document.getElementById('cmsStatusLangganan').value : 'Aktif'
-      };
+    const { data, error } = await supabase.from('wisata').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-gray);">Belum ada produk wisata di database. Silakan tambahkan melalui form di atas.</td></tr>';
+      return;
+    }
 
-      let deskripsi = document.getElementById('cmsDeskripsi') ? document.getElementById('cmsDeskripsi').value.trim() : '';
-      let fasilitas = document.getElementById('cmsFasilitas') ? document.getElementById('cmsFasilitas').value.trim() : '';
-      let varian = document.getElementById('cmsVarian') ? document.getElementById('cmsVarian').value.trim() : '';
-      let tags = document.getElementById('cmsTags') ? document.getElementById('cmsTags').value.trim() : '';
-      let itinerary = document.getElementById('cmsItinerary') ? document.getElementById('cmsItinerary').value.trim() : '';
-      if (deskripsi) payload.deskripsi = deskripsi;
-      if (fasilitas) payload.fasilitas = fasilitas;
-      if (varian) payload.varian = varian;
-      if (tags) payload.tags = tags;
-      if (itinerary) payload.itinerary = itinerary;
+    let html = '';
+    data.forEach(item => {
+      let foto = item.foto ? item.foto.split(',')[0].trim() : 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=200';
+      let statusBg = item.status === 'Aktif' ? 'background:#10B981;color:white;' : (item.status === 'Nonaktif' ? 'background:#EF4444;color:white;' : 'background:#F59E0B;color:white;');
+      let namaSafe = (item.nama || '').replace(/'/g, "\\'");
       
-      // Jika ID disediakan, kita update. Jika tidak, insert baru.
-      if (id) {
-          const { error } = await supabase.from('wisata').update(payload).eq('id', id);
-          if (error) throw error;
-          Swal.fire('Berhasil', 'Data produk berhasil diperbarui di Supabase.', 'success');
-      } else {
-          // Generate ID simpel jika tidak auto-increment
-          payload.id = 'PRD-' + Date.now();
-          const { error } = await supabase.from('wisata').insert([payload]);
-          if (error) throw error;
-          Swal.fire('Berhasil', 'Produk baru berhasil ditambahkan ke Supabase.', 'success');
-      }
-      
-      // Kosongkan form setelah sukses (opsional)
-      document.getElementById('cmsNama').value = "";
-      document.getElementById('cmsHarga').value = "";
-      
+      html += `
+        <tr>
+          <td><img src="${foto}" style="width:50px; height:40px; object-fit:cover; border-radius:6px; border:1px solid #E5E7EB;" onerror="this.src='https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=200'"></td>
+          <td style="font-weight:600; font-size:13px;">${item.nama || '-'}</td>
+          <td><span style="background:#F3F4F6; padding:3px 8px; border-radius:4px; font-size:12px;">${item.kategori || '-'}</span></td>
+          <td style="font-size:13px;">${item.lokasi || item.destinasi || '-'}</td>
+          <td style="font-size:13px; font-weight:600;">Rp ${Number(item.harga || 0).toLocaleString('id-ID')}</td>
+          <td><span style="padding:3px 8px; border-radius:12px; font-size:11px; font-weight:600; ${statusBg}">${item.status || 'Aktif'}</span></td>
+          <td style="text-align: center; white-space: nowrap;">
+            <button onclick="editProdukCMS('${item.id}')" style="background:#3B82F6; color:white; border:none; padding:5px 9px; border-radius:6px; font-size:12px; cursor:pointer; margin-right:4px;" title="Edit Produk"><i class="fa-solid fa-pen"></i></button>
+            <a href="/pdp?id=${item.id}" target="_blank" style="background:#10B981; color:white; border:none; padding:5px 9px; border-radius:6px; font-size:12px; text-decoration:none; display:inline-block; margin-right:4px;" title="Lihat di Halaman PDP"><i class="fa-solid fa-eye"></i></a>
+            <button onclick="hapusProdukCMS('${item.id}', '${namaSafe}')" style="background:#EF4444; color:white; border:none; padding:5px 9px; border-radius:6px; font-size:12px; cursor:pointer;" title="Hapus Produk"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
   } catch(e) {
-      Swal.fire('Gagal', e.message || 'Terjadi kesalahan sistem', 'error');
-  } finally {
-      btn.innerText = oldText; btn.disabled = false;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Gagal memuat produk: ${e.message}</td></tr>`;
+  }
+};
+
+window.editProdukCMS = async function(id) {
+  try {
+    const { data, error } = await supabase.from('wisata').select('*').eq('id', id).single();
+    if (error) throw error;
+    if (!data) return;
+
+    let meta = null;
+    try { meta = JSON.parse(localStorage.getItem('kamawak_meta_' + id) || 'null'); } catch(e) {}
+
+    document.getElementById('cmsID').value = data.id || '';
+    document.getElementById('cmsIDOwner').value = data.owner || '';
+    document.getElementById('cmsNama').value = data.nama || '';
+    if (document.getElementById('cmsStatusLangganan')) document.getElementById('cmsStatusLangganan').value = data.status || 'Aktif';
+    if (document.getElementById('cmsKategori')) document.getElementById('cmsKategori').value = data.kategori || 'Tur';
+    document.getElementById('cmsDestinasi').value = data.lokasi || data.destinasi || '';
+    document.getElementById('cmsHarga').value = data.harga || '';
+    if (document.getElementById('cmsFotoUrl')) document.getElementById('cmsFotoUrl').value = data.foto || '';
+    if (document.getElementById('cmsHargaCoret')) document.getElementById('cmsHargaCoret').value = data.harga_coret || (meta ? meta.harga_coret : '') || '';
+    if (document.getElementById('cmsDurasi')) document.getElementById('cmsDurasi').value = data.durasi || (meta ? meta.durasi : '') || '';
+    if (document.getElementById('cmsMaps')) document.getElementById('cmsMaps').value = data.maps || (meta ? meta.maps : '') || '';
+    if (document.getElementById('cmsWA')) document.getElementById('cmsWA').value = data.wa || (meta ? meta.wa : '') || '';
+    if (document.getElementById('cmsIG')) document.getElementById('cmsIG').value = data.ig || (meta ? meta.ig : '') || '';
+    if (document.getElementById('cmsTikTok')) document.getElementById('cmsTikTok').value = data.tiktok || (meta ? meta.tiktok : '') || '';
+    if (document.getElementById('cmsFB')) document.getElementById('cmsFB').value = data.fb || (meta ? meta.fb : '') || '';
+    if (document.getElementById('cmsDeskripsi')) document.getElementById('cmsDeskripsi').value = data.deskripsi || (meta ? meta.deskripsi : '') || '';
+    if (document.getElementById('cmsFasilitas')) document.getElementById('cmsFasilitas').value = data.fasilitas || (meta ? meta.fasilitas : '') || '';
+    if (document.getElementById('cmsVarian')) document.getElementById('cmsVarian').value = data.varian || (meta ? meta.varian : '') || '';
+    if (document.getElementById('cmsTags')) document.getElementById('cmsTags').value = data.tags || data.penanda || (meta ? meta.tags : '') || '';
+    if (document.getElementById('cmsItinerary')) document.getElementById('cmsItinerary').value = data.itinerary || (meta ? meta.itinerary : '') || '';
+
+    window.scrollTo({ top: document.getElementById('tabCMS').offsetTop - 60, behavior: 'smooth' });
+    Swal.fire({
+      icon: 'info',
+      title: 'Mode Edit Produk',
+      text: 'Data produk "' + data.nama + '" berhasil dimuat ke formulir.',
+      timer: 2000,
+      showConfirmButton: false
+    });
+  } catch(e) {
+    Swal.fire('Error', 'Gagal memuat data produk: ' + e.message, 'error');
+  }
+};
+
+window.hapusProdukCMS = async function(id, nama) {
+  const result = await Swal.fire({
+    title: 'Hapus Produk?',
+    html: `Apakah Anda yakin ingin menghapus <b>${nama}</b>?<br><small style="color:red;">Produk ini akan dihapus permanen dari database Supabase.</small>`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#EF4444',
+    confirmButtonText: 'Ya, Hapus!',
+    cancelButtonText: 'Batal'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      const { error } = await supabase.from('wisata').delete().eq('id', id);
+      if (error) throw error;
+      localStorage.removeItem('kamawak_meta_' + id);
+      Swal.fire('Terhapus', 'Produk berhasil dihapus dari database.', 'success');
+      muatDaftarWisataCMS();
+    } catch(e) {
+      Swal.fire('Gagal', e.message, 'error');
+    }
   }
 };
 

@@ -20,8 +20,33 @@ CREATE TABLE public.wisata (
     wa text,
     owner text,
     status text DEFAULT 'Aktif',
+    deskripsi text,
+    fasilitas text,
+    varian text,
+    tags text,
+    itinerary text,
+    harga_coret numeric,
+    durasi text,
+    maps text,
+    ig text,
+    tiktok text,
+    fb text,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- JALANKAN DI SUPABASE SQL EDITOR JIKA TABEL SUDAH DIBUAT SEBELUMNYA:
+-- ALTER TABLE public.wisata 
+-- ADD COLUMN IF NOT EXISTS deskripsi text,
+-- ADD COLUMN IF NOT EXISTS fasilitas text,
+-- ADD COLUMN IF NOT EXISTS varian text,
+-- ADD COLUMN IF NOT EXISTS tags text,
+-- ADD COLUMN IF NOT EXISTS itinerary text,
+-- ADD COLUMN IF NOT EXISTS harga_coret numeric,
+-- ADD COLUMN IF NOT EXISTS durasi text,
+-- ADD COLUMN IF NOT EXISTS maps text,
+-- ADD COLUMN IF NOT EXISTS ig text,
+-- ADD COLUMN IF NOT EXISTS tiktok text,
+-- ADD COLUMN IF NOT EXISTS fb text;
 
 -- 3. Tabel Leads (Klik & Metrik)
 CREATE TABLE public.leads (
