@@ -9,19 +9,10 @@ import BottomNav from '../components/BottomNav.astro';
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kamawak - Pesona Wisata Sumatera Barat</title>
   <script>
-    // SANITASI AWAL — hapus foto pulau dari SEMUA localStorage sebelum halaman render
+    // SANITASI AWAL — hapus foto pulau & lembah dari SEMUA localStorage sebelum halaman render
     (function() {
-      var BAD_IDS = ['1518509562904','1507525428034'];
-      var GOOD = 'photo-1506744038136-46273834b3fb';
-      // Force reset kartu kota jika versi localStorage lama
-      var DATA_VERSION = 'v3';
-      try {
-        if (localStorage.getItem('kamawak_data_version') !== DATA_VERSION) {
-          localStorage.removeItem('kamawak_kartu_kota');
-          localStorage.setItem('kamawak_data_version', DATA_VERSION);
-        }
-      } catch(e) {}
-      // Sanitasi semua key yang masih punya foto pulau
+      var BAD_IDS = ['1518509562904', '1507525428034', '1506744038136', '1544551763'];
+      var GOOD = 'photo-1542314831-068cd1dbfeeb';
       try {
         for (var i = 0; i < localStorage.length; i++) {
           var key = localStorage.key(i);
@@ -284,7 +275,7 @@ import BottomNav from '../components/BottomNav.astro';
   </div>
 
   <div class="hero-slider" id="heroSlider">
-    <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop" class="slide active" alt="Hero 1">
+    <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=1200&auto=format&fit=crop" class="slide active" alt="Hero 1">
     <img src="https://images.unsplash.com/photo-1555899434-94d1368aa7af?q=80&w=1200&auto=format&fit=crop" class="slide" alt="Hero 2">
     <img src="https://images.unsplash.com/photo-1542640244-7e672d6cb469?q=80&w=1200&auto=format&fit=crop" class="slide" alt="Hero 3">
     <div class="hero-overlay"></div>
@@ -538,13 +529,13 @@ import BottomNav from '../components/BottomNav.astro';
     }
 
     const DAFTAR_KOTA_DEFAULT = [
-      { nama: "Semua", label: "Semua Kota", subtag: "Seluruh Destinasi Sumbar", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+      { nama: "Semua", label: "Semua Kota", subtag: "Seluruh Destinasi Sumbar", img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
       { nama: "Bukittinggi", label: "Bukittinggi", subtag: "Jam Gadang, Ngarai Sianok, Kuliner", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
       { nama: "Padang", label: "Kota Padang", subtag: "Pantai Padang, Kuliner Rendang, Kota Tua", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-      { nama: "Mandeh", label: "Pesisir Mandeh", subtag: "Pulau Cubadak, Snorkeling, Wisata Bahari", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-      { nama: "Harau", label: "Lembah Harau", subtag: "Air Terjun, Tebing Granit, Homestay", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+      { nama: "Mandeh", label: "Pesisir Mandeh", subtag: "Kawasan Wisata Bahari & Pesisir", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+      { nama: "Harau", label: "Lembah Harau", subtag: "Tebing Granit & Homestay", img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
       { nama: "Mentawai", label: "Kep. Mentawai", subtag: "Surfing, Budaya Sikerei, Kepulauan", img: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-      { nama: "Pariaman", label: "Pariaman", subtag: "Pantai Gandoriah, Pulau Angso Duo, Tabuik", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=400&auto=format&fit=crop", status: "Aktif" }
+      { nama: "Pariaman", label: "Pariaman", subtag: "Pantai Gandoriah, Budaya Tabuik", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=400&auto=format&fit=crop", status: "Aktif" }
     ];
 
     function muatKoleksiTag() {
@@ -556,12 +547,12 @@ import BottomNav from '../components/BottomNav.astro';
         if (saved) list = JSON.parse(saved);
       } catch(e) {}
 
-      // Sanitasi cache browser jika masih menyimpan link foto pulau lama
+      // Sanitasi cache browser jika masih menyimpan link foto pulau/lembah lama
       let updatedStorage = false;
       if (Array.isArray(list) && list.length > 0) {
         list = list.map(item => {
-          if (item && item.img && (item.img.includes('1518509562904') || item.img.includes('1507525428034'))) {
-            item.img = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop';
+          if (item && item.img && (item.img.includes('1518509562904') || item.img.includes('1507525428034') || item.img.includes('1506744038136') || item.img.includes('1544551763'))) {
+            item.img = 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400&auto=format&fit=crop';
             updatedStorage = true;
           }
           return item;
@@ -576,7 +567,7 @@ import BottomNav from '../components/BottomNav.astro';
 
       let html = list.map((k, idx) => `
         <div class="city-card ${idx === 0 ? 'city-active' : ''}" onclick="filterKota('${k.nama}', this)" title="Lihat wisata di ${k.label || k.nama}">
-          <img src="${k.img || k.foto || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400'}" alt="${k.label || k.nama}">
+          <img src="${k.img || k.foto || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400'}" alt="${k.label || k.nama}">
           <div class="city-overlay">
             <span class="city-name">${k.label || k.nama}</span>
           </div>
@@ -834,7 +825,11 @@ import BottomNav from '../components/BottomNav.astro';
         let fotoRaw = (item.foto || '').trim();
         let foto = 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500';
         if (fotoRaw) {
-          if (fotoRaw.startsWith('data:image/') && fotoRaw.includes(',') && fotoRaw.split(',')[1].length > 20) {
+          if (fotoRaw.includes('|||')) {
+            foto = fotoRaw.split('|||')[0].trim();
+          } else if (fotoRaw.startsWith('[') && fotoRaw.endsWith(']')) {
+            try { foto = JSON.parse(fotoRaw)[0] || foto; } catch(e) {}
+          } else if (fotoRaw.startsWith('data:image/') && fotoRaw.includes(',') && fotoRaw.split(',')[1].length > 20) {
             foto = fotoRaw.split(/,\s*(?=https?:\/\/|data:image\/)/i)[0].trim();
           } else if (fotoRaw.startsWith('http://') || fotoRaw.startsWith('https://')) {
             foto = fotoRaw.split(/,\s*(?=https?:\/\/|data:image\/)/i)[0].trim();

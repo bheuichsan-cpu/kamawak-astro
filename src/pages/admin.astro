@@ -9,19 +9,10 @@ import BottomNav from '../components/BottomNav.astro';
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard - Kamawak</title>
   <script>
-    // SANITASI AWAL — hapus foto pulau dari SEMUA localStorage sebelum halaman render
+    // SANITASI AWAL — hapus foto pulau & lembah dari SEMUA localStorage sebelum halaman render
     (function() {
-      var BAD_IDS = ['1518509562904','1507525428034'];
-      var GOOD = 'photo-1506744038136-46273834b3fb';
-      // Force reset kartu kota jika versi localStorage lama
-      var DATA_VERSION = 'v3';
-      try {
-        if (localStorage.getItem('kamawak_data_version') !== DATA_VERSION) {
-          localStorage.removeItem('kamawak_kartu_kota');
-          localStorage.setItem('kamawak_data_version', DATA_VERSION);
-        }
-      } catch(e) {}
-      // Sanitasi semua key yang masih punya foto pulau
+      var BAD_IDS = ['1518509562904', '1507525428034', '1506744038136', '1544551763'];
+      var GOOD = 'photo-1542314831-068cd1dbfeeb';
       try {
         for (var i = 0; i < localStorage.length; i++) {
           var key = localStorage.key(i);
@@ -292,8 +283,8 @@ import BottomNav from '../components/BottomNav.astro';
             <span style="font-size:11px; color:#6B7280; font-weight:600;">Pilihan Cepat Foto:</span>
             <button type="button" onclick="setPresetCmsFoto('cabin')" style="background:#E0E7FF; color:#4338CA; border:none; padding:3px 9px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:500;">Cabin & Danau</button>
             <button type="button" onclick="setPresetCmsFoto('resort')" style="background:#E0E7FF; color:#4338CA; border:none; padding:3px 9px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:500;">Penginapan / Homestay</button>
-            <button type="button" onclick="setPresetCmsFoto('mandeh')" style="background:#E0E7FF; color:#4338CA; border:none; padding:3px 9px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:500;">Wisata Mandeh</button>
-            <button type="button" onclick="setPresetCmsFoto('harau')" style="background:#E0E7FF; color:#4338CA; border:none; padding:3px 9px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:500;">Lembah Harau</button>
+            <button type="button" onclick="setPresetCmsFoto('villa')" style="background:#E0E7FF; color:#4338CA; border:none; padding:3px 9px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:500;">Villa Eksklusif</button>
+            <button type="button" onclick="setPresetCmsFoto('hotel')" style="background:#E0E7FF; color:#4338CA; border:none; padding:3px 9px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:500;">Hotel & Wisata</button>
           </div>
         </div>
         <div class="form-group">
@@ -1435,9 +1426,9 @@ window.simpanCMS = async function() {
   if (fileInput && fileInput.files && fileInput.files.length > 0 && !fotoUrl) {
     try {
       let fileArr = Array.from(fileInput.files);
-      let compressedPromises = fileArr.slice(0, 10).map(f => window.compressImageClient(f, 800, 0.65));
+      let compressedPromises = fileArr.slice(0, 10).map(f => window.compressImageClient(f, 700, 0.65));
       let results = await Promise.all(compressedPromises);
-      fotoUrl = results.filter(Boolean).join(',\n');
+      fotoUrl = results.filter(Boolean).join('|||');
     } catch(e) {}
   }
 
@@ -1447,7 +1438,7 @@ window.simpanCMS = async function() {
       ? window.parseCmsFotoList(fotoUrl)
       : fotoUrl.split(/,\s*(?=https?:\/\/|data:image\/)/i);
     if (parsedFoto.length > 10) {
-      fotoUrl = parsedFoto.slice(0, 10).join(',\n');
+      fotoUrl = parsedFoto.slice(0, 10).join('|||');
     }
   }
 
@@ -1711,16 +1702,28 @@ window.hapusProdukCMS = async function(id, nama) {
   }
 };
 
-window.compressImageClient = function(file, maxWidth = 800, quality = 0.65) {
+window.compressImageClient = function(file, maxWidth = 700, quality = 0.65) {
   return new Promise((resolve) => {
-    let reader = new FileReader();
-    reader.onload = (e) => {
-      let img = new Image();
-      img.onload = () => {
+    let timeoutId = setTimeout(() => {
+      resolve('');
+    }, 6000);
+
+    let blobUrl = null;
+    try {
+      blobUrl = URL.createObjectURL(file);
+    } catch(err) {}
+
+    let img = new Image();
+    img.onload = () => {
+      clearTimeout(timeoutId);
+      if (blobUrl) {
+        try { URL.revokeObjectURL(blobUrl); } catch(e) {}
+      }
+      try {
         let canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
-        let maxDim = maxWidth || 800;
+        let maxDim = maxWidth || 700;
         if (width > maxDim || height > maxDim) {
           if (width > height) {
             height = Math.round((height * maxDim) / width);
@@ -1735,13 +1738,29 @@ window.compressImageClient = function(file, maxWidth = 800, quality = 0.65) {
         let ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
         let compressed = canvas.toDataURL('image/jpeg', quality);
+        canvas.width = 0;
+        canvas.height = 0;
         resolve(compressed);
-      };
-      img.onerror = () => resolve(e.target.result);
-      img.src = e.target.result;
+      } catch(e) {
+        resolve('');
+      }
     };
-    reader.onerror = () => resolve('');
-    reader.readAsDataURL(file);
+    img.onerror = () => {
+      clearTimeout(timeoutId);
+      if (blobUrl) {
+        try { URL.revokeObjectURL(blobUrl); } catch(e) {}
+      }
+      resolve('');
+    };
+
+    if (blobUrl) {
+      img.src = blobUrl;
+    } else {
+      let reader = new FileReader();
+      reader.onload = (e) => { img.src = e.target.result; };
+      reader.onerror = () => { clearTimeout(timeoutId); resolve(''); };
+      reader.readAsDataURL(file);
+    }
   });
 };
 
@@ -1758,17 +1777,24 @@ window.parseCmsFotoList = function(raw) {
     } catch(e) {}
   }
 
-  // Pisahkan berdasarkan baris baru atau koma pemisah URL
-  let parts = raw.includes('\n') 
-    ? raw.split('\n')
-    : raw.split(/,\s*(?=https?:\/\/|data:image\/)/i);
+  // Gunakan separator khusus ||| antar foto (aman untuk base64 dan URL)
+  if (raw.includes('|||')) {
+    return raw.split('|||').map(s => s.trim()).filter(s =>
+      s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:image/')
+    );
+  }
+
+  // Pisahkan berdasarkan koma yang diikuti URL atau data: (BUKAN split per \n karena base64 bisa panjang)
+  // Gabungkan dulu semua newline agar base64 tidak terpotong
+  let normalized = raw.replace(/\r?\n/g, '');
+  let parts = normalized.split(/,(?=https?:\/\/|data:image\/)/i);
 
   let list = [];
   parts.forEach(p => {
     let s = p.trim().replace(/^,+|,+$/g, '');
     if (!s) return;
     if (s.startsWith('data:image/')) {
-      if (s.includes(',') && s.split(',')[1].length > 20) {
+      if (s.includes(',') && s.split(',')[1] && s.split(',')[1].length > 20) {
         list.push(s);
       }
     } else if (s.startsWith('http://') || s.startsWith('https://')) {
@@ -1782,6 +1808,7 @@ window.parseCmsFotoList = function(raw) {
 };
 
 window.getFirstValidFoto = function(raw, fallback = 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=200') {
+
   let list = window.parseCmsFotoList(raw);
   if (list && list.length > 0) {
     let f = list[0];
@@ -1823,7 +1850,10 @@ window.prosesCmsFotoFiles = async function(input) {
     let filesToProcess = Array.from(files).slice(0, sisaSlot);
     for (let i = 0; i < filesToProcess.length; i++) {
       let f = filesToProcess[i];
-      let b64 = await window.compressImageClient(f, 800, 0.65);
+      if (statusEl) {
+        statusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengompres foto ${i + 1} dari ${filesToProcess.length}...`;
+      }
+      let b64 = await window.compressImageClient(f, 700, 0.65);
       if (b64 && b64.startsWith('data:image/')) {
         existingUrls.push(b64);
       }
@@ -1831,7 +1861,7 @@ window.prosesCmsFotoFiles = async function(input) {
     
     let urlInput = document.getElementById('cmsFotoUrl');
     if (urlInput) {
-      urlInput.value = existingUrls.slice(0, MAX_FOTO).join(',\n');
+      urlInput.value = existingUrls.slice(0, MAX_FOTO).join('|||');
     }
     
     // Reset file input agar pengguna dapat memilih file baru lagi jika diperlukan
@@ -1870,7 +1900,7 @@ window.previewCmsFotoInput = function() {
   if (urls.length > 10) {
     urls = urls.slice(0, 10);
     let el = document.getElementById('cmsFotoUrl');
-    if (el) el.value = urls.join(',\n');
+    if (el) el.value = urls.join('|||');
   }
 
   if (container) container.style.display = 'block';
@@ -1901,7 +1931,7 @@ window.hapusSatuFotoCMS = function(index) {
   if (index >= 0 && index < urls.length) {
     urls.splice(index, 1);
     let el = document.getElementById('cmsFotoUrl');
-    if (el) el.value = urls.join(',\n');
+    if (el) el.value = urls.join('|||');
     window.previewCmsFotoInput();
   }
 };
@@ -1919,8 +1949,8 @@ window.setPresetCmsFoto = function(type) {
   let presets = {
     cabin: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80,https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=800&q=80',
     resort: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80,https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80',
-    mandeh: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80,https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80',
-    harau: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80,https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80'
+    villa: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80,https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
+    hotel: 'https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?w=800&q=80,https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80'
   };
   let url = presets[type] || presets.cabin;
   let input = document.getElementById('cmsFotoUrl');
@@ -2232,13 +2262,13 @@ window.hapusIklan = function(baris) {
 // PINTASAN KOTA / JELAJAHI KOTA (FASE 2)
 // ==========================================
 const KARTU_KOTA_DEFAULT = [
-  { nama: "Semua", label: "Semua Kota", subtag: "Seluruh Destinasi Sumbar", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+  { nama: "Semua", label: "Semua Kota", subtag: "Seluruh Destinasi Sumbar", img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
   { nama: "Bukittinggi", label: "Bukittinggi", subtag: "Jam Gadang, Ngarai Sianok, Kuliner", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
   { nama: "Padang", label: "Kota Padang", subtag: "Pantai Padang, Kuliner Rendang, Kota Tua", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-  { nama: "Mandeh", label: "Pesisir Mandeh", subtag: "Pulau Cubadak, Snorkeling, Wisata Bahari", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-  { nama: "Harau", label: "Lembah Harau", subtag: "Air Terjun, Tebing Granit, Homestay", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+  { nama: "Mandeh", label: "Pesisir Mandeh", subtag: "Kawasan Wisata Bahari & Pesisir", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+  { nama: "Harau", label: "Lembah Harau", subtag: "Tebing Granit & Homestay", img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
   { nama: "Mentawai", label: "Kep. Mentawai", subtag: "Surfing, Budaya Sikerei, Kepulauan", img: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-  { nama: "Pariaman", label: "Pariaman", subtag: "Pantai Gandoriah, Pulau Angso Duo, Tabuik", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=400&auto=format&fit=crop", status: "Aktif" }
+  { nama: "Pariaman", label: "Pariaman", subtag: "Pantai Gandoriah, Budaya Tabuik", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=400&auto=format&fit=crop", status: "Aktif" }
 ];
 
 window.previewTagUrl = function(url) {
@@ -2303,12 +2333,12 @@ window.muatDaftarPintasanKota = function() {
     if (saved) list = JSON.parse(saved);
   } catch(e) {}
 
-  // Sanitasi cache browser jika masih menyimpan link foto pulau lama
+  // Sanitasi cache browser jika masih menyimpan link foto pulau/lembah lama
   let updatedStorage = false;
   if (Array.isArray(list) && list.length > 0) {
     list = list.map(item => {
-      if (item && item.img && (item.img.includes('1518509562904') || item.img.includes('1507525428034'))) {
-        item.img = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop';
+      if (item && item.img && (item.img.includes('1518509562904') || item.img.includes('1507525428034') || item.img.includes('1506744038136') || item.img.includes('1544551763'))) {
+        item.img = 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400&auto=format&fit=crop';
         updatedStorage = true;
       }
       return item;
@@ -2354,13 +2384,13 @@ function renderTabelPintasanKota(list) {
       ? `<span onclick="toggleStatusPintasanTag(${idx})" style="background:#D1FAE5; color:#065F46; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:700; cursor:pointer; user-select:none;" title="Klik untuk nonaktifkan"><i class="fa-solid fa-check"></i> Aktif</span>`
       : `<span onclick="toggleStatusPintasanTag(${idx})" style="background:#FEE2E2; color:#991B1B; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:700; cursor:pointer; user-select:none;" title="Klik untuk aktifkan"><i class="fa-solid fa-pause"></i> Nonaktif</span>`;
     
-    let imgFoto = item.img || item.foto || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400';
+    let imgFoto = item.img || item.foto || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400';
     let subtagStr = item.subtag || '-';
 
     return `
       <tr>
         <td style="text-align: center; padding: 8px;">
-          <img src="${imgFoto}" alt="${item.label || item.nama}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 8px; border: 1px solid #E5E7EB;" onerror="this.src='https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400';">
+          <img src="${imgFoto}" alt="${item.label || item.nama}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 8px; border: 1px solid #E5E7EB;" onerror="this.src='https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400';">
         </td>
         <td style="font-weight: 600; color: var(--text-dark);">${item.nama}</td>
         <td>${item.label || item.nama}</td>
@@ -2393,7 +2423,7 @@ window.simpanPintasanTag = function() {
   }
   if (!label) label = nama;
   if (!url) {
-    url = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop";
+    url = "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400&auto=format&fit=crop";
   }
 
   let list = [];

@@ -759,13 +759,15 @@ import BottomNav from '../components/BottomNav.astro';
       // Proses Galeri Foto (Jika dipisahkan koma)
       let placeholderFoto = 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800';
       if (data.kategori && String(data.kategori).toLowerCase().includes('tur')) {
-        placeholderFoto = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800';
+        placeholderFoto = 'https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?w=800';
       }
       
       let fotos = [];
       if (data.foto && typeof data.foto === 'string' && data.foto.trim() !== '') {
         let rawF = data.foto.trim();
-        if (rawF.startsWith('[') && rawF.endsWith(']')) {
+        if (rawF.includes('|||')) {
+          fotos = rawF.split('|||').map(f => f.trim()).filter(Boolean);
+        } else if (rawF.startsWith('[') && rawF.endsWith(']')) {
           try { fotos = JSON.parse(rawF).filter(Boolean); } catch(e) {}
         }
         if (fotos.length === 0) {
