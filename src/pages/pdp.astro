@@ -479,7 +479,7 @@ import BottomNav from '../components/BottomNav.astro';
       </div>
 
       <!-- SEKSI ITINERARY / RUNDOWN PERJALANAN -->
-      <div class="itinerary-section" id="itinerarySection">
+      <div class="itinerary-section" id="itinerarySection" style="display: none;">
         <div class="itinerary-header">
           <h3 style="font-family: 'Poppins', sans-serif; font-size: 18px; margin: 0;">
             <i class="fa-solid fa-map-location-dot" style="color: var(--primary);"></i> Rencana Perjalanan (Itinerary)
@@ -968,8 +968,35 @@ import BottomNav from '../components/BottomNav.astro';
         let promoBox = document.getElementById('pdpPromoBox');
         if(promoBox) promoBox.style.display = 'block';
 
-        let mobPriceUnit = document.getElementById('mobilePriceUnit');
-        if(mobPriceUnit) mobPriceUnit.innerText = '/ pax';
+        let isAtraksi = katStr.includes("atraksi") || katStr.includes("wahana") || katStr.includes("tiket");
+        if (isAtraksi) {
+          let labelTanggal = document.querySelector('label[for="inputTanggal"]') || document.getElementById('inputTanggal')?.previousElementSibling;
+          if(labelTanggal) labelTanggal.innerHTML = 'Pilih Tanggal Kunjungan / Tiket <span style="color:red;">*</span>';
+
+          let labelPax = document.getElementById('valPax')?.closest('.form-group')?.querySelector('label');
+          if(labelPax) labelPax.innerText = 'Jumlah Tiket';
+
+          let priceLabel = document.querySelector('.price-label');
+          if(priceLabel) priceLabel.innerText = 'Per Tiket / Orang';
+
+          let labelVarian = document.querySelector('.package-grid')?.previousElementSibling;
+          if(labelVarian) {
+            labelVarian.innerText = "Pilihan Kategori Tiket / Wahana";
+          }
+
+          if(!data.varian || data.varian.trim() === "") {
+            let pkgReg = document.getElementById('pkgReguler');
+            let pkgVIP = document.getElementById('pkgVIP');
+            if(pkgReg && pkgReg.querySelector('.pkg-title')) pkgReg.querySelector('.pkg-title').innerText = "Tiket Masuk Reguler";
+            if(pkgVIP && pkgVIP.querySelector('.pkg-title')) pkgVIP.querySelector('.pkg-title').innerText = "Tiket All-In / Terusan";
+          }
+
+          let mobPriceUnit = document.getElementById('mobilePriceUnit');
+          if(mobPriceUnit) mobPriceUnit.innerText = '/ tiket';
+        } else {
+          let mobPriceUnit = document.getElementById('mobilePriceUnit');
+          if(mobPriceUnit) mobPriceUnit.innerText = '/ pax';
+        }
 
         let btn = document.querySelector('.btn-checkout');
         if(btn) btn.style.marginTop = '0';
@@ -1518,10 +1545,22 @@ import BottomNav from '../components/BottomNav.astro';
       const section = document.getElementById('itinerarySection');
       if (!container) return;
 
-      // Sembunyikan seksi itinerary untuk penginapan/hotel/villa/cabin/rental (karena bukan paket tour)
+      // Sembunyikan seksi itinerary untuk Atraksi, Wahana, Tiket, Penginapan, Hotel, Homestay, Villa, Cabin, Rental, Kuliner
+      // Rencana perjalanan (itinerary) HANYA untuk kategori Paket Tur / Tour
       let katStr = String(data?.kategori || '').toLowerCase();
-      let isMitra = (data?.tipe === "mitra") || katStr.includes("penginapan") || katStr.includes("hotel") || katStr.includes("homestay") || katStr.includes("villa") || katStr.includes("cabin") || katStr.includes("rental");
-      if (isMitra) {
+      let isNonTour = (data?.tipe === "mitra") ||
+                      katStr.includes("atraksi") ||
+                      katStr.includes("wahana") ||
+                      katStr.includes("tiket") ||
+                      katStr.includes("penginapan") ||
+                      katStr.includes("hotel") ||
+                      katStr.includes("homestay") ||
+                      katStr.includes("villa") ||
+                      katStr.includes("cabin") ||
+                      katStr.includes("rental") ||
+                      katStr.includes("kuliner");
+
+      if (isNonTour) {
         if (section) section.style.display = 'none';
         return;
       }
