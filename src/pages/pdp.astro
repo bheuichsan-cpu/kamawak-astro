@@ -586,7 +586,7 @@ import BottomNav from '../components/BottomNav.astro';
       </div>
 
       <!-- Total Harga Dinamis -->
-      <div class="total-box">
+      <div class="total-box" id="pdpTotalBox">
         <div style="width: 100%;">
           <div id="rowSubtotal" style="display: none; justify-content: space-between; font-size: 13px; color: var(--text-gray); margin-bottom: 5px;">
             <span>Subtotal:</span>
@@ -613,7 +613,7 @@ import BottomNav from '../components/BottomNav.astro';
     <div>
       <span style="font-size: 10px; color: var(--text-gray); display: block;">Mulai dari</span>
       <span class="mobile-price" id="mobileHargaJual">Rp 0</span>
-      <span style="font-size: 10px; color: var(--text-gray);">/ pax</span>
+      <span id="mobilePriceUnit" style="font-size: 10px; color: var(--text-gray);">/ pax</span>
     </div>
     <button class="btn-mobile-book" onclick="scrollKeBooking()">
       Pilih Tiket <i class="fa-solid fa-arrow-down"></i>
@@ -881,12 +881,23 @@ import BottomNav from '../components/BottomNav.astro';
           if(pkgVIP && pkgVIP.querySelector('.pkg-title')) pkgVIP.querySelector('.pkg-title').innerText = "Deluxe / Family Unit";
         }
         
+        // Sembunyikan Total Pembayaran dan Kotak Promo pada Penginapan (karena reservasi langsung via WhatsApp owner)
+        let totalBox = document.getElementById('pdpTotalBox') || document.querySelector('.total-box');
+        if(totalBox) totalBox.style.display = 'none';
+
+        let promoBox = document.getElementById('pdpPromoBox');
+        if(promoBox) promoBox.style.display = 'none';
+
+        let mobPriceUnit = document.getElementById('mobilePriceUnit');
+        if(mobPriceUnit) mobPriceUnit.innerText = '/ malam';
+        
         // Ubah warna dan fungsi Tombol Checkout menjadi Tombol WhatsApp 'Hubungi Owner'
         let btn = document.querySelector('.btn-checkout');
         if(btn) {
           btn.innerHTML = '<i class="fa-brands fa-whatsapp"></i> Hubungi Owner (Chat WhatsApp)';
           btn.style.background = '#10B981'; // Warna Hijau Khas WhatsApp
           btn.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.35)';
+          btn.style.marginTop = '20px';
           
           btn.onclick = function() {
              let pax = document.getElementById('valPax')?.innerText || '1';
@@ -937,6 +948,18 @@ import BottomNav from '../components/BottomNav.astro';
             sosmedContainer.innerHTML = btnMedsosHTML;
             btn.parentNode.insertBefore(sosmedContainer, btn.nextSibling);
         }
+      } else {
+        let totalBox = document.getElementById('pdpTotalBox') || document.querySelector('.total-box');
+        if(totalBox) totalBox.style.display = 'flex';
+
+        let promoBox = document.getElementById('pdpPromoBox');
+        if(promoBox) promoBox.style.display = 'block';
+
+        let mobPriceUnit = document.getElementById('mobilePriceUnit');
+        if(mobPriceUnit) mobPriceUnit.innerText = '/ pax';
+
+        let btn = document.querySelector('.btn-checkout');
+        if(btn) btn.style.marginTop = '0';
       }
 
       // Hitung awal
