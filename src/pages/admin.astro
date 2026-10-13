@@ -8,6 +8,38 @@ import BottomNav from '../components/BottomNav.astro';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard - Kamawak</title>
+  <script>
+    // SANITASI AWAL — hapus foto pulau dari SEMUA localStorage sebelum halaman render
+    (function() {
+      var BAD_IDS = ['1518509562904','1507525428034'];
+      var GOOD = 'photo-1506744038136-46273834b3fb';
+      // Force reset kartu kota jika versi localStorage lama
+      var DATA_VERSION = 'v3';
+      try {
+        if (localStorage.getItem('kamawak_data_version') !== DATA_VERSION) {
+          localStorage.removeItem('kamawak_kartu_kota');
+          localStorage.setItem('kamawak_data_version', DATA_VERSION);
+        }
+      } catch(e) {}
+      // Sanitasi semua key yang masih punya foto pulau
+      try {
+        for (var i = 0; i < localStorage.length; i++) {
+          var key = localStorage.key(i);
+          if (!key) continue;
+          var val = localStorage.getItem(key);
+          if (!val) continue;
+          var changed = false;
+          for (var j = 0; j < BAD_IDS.length; j++) {
+            if (val.indexOf(BAD_IDS[j]) !== -1) {
+              val = val.split(BAD_IDS[j]).join(GOOD);
+              changed = true;
+            }
+          }
+          if (changed) localStorage.setItem(key, val);
+        }
+      } catch(e) {}
+    })();
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style is:inline>
