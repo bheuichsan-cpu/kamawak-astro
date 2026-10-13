@@ -764,13 +764,26 @@ import BottomNav from '../components/BottomNav.astro';
       
       let fotos = [];
       if (data.foto && typeof data.foto === 'string' && data.foto.trim() !== '') {
-        fotos = data.foto.split(',').map(f => f.trim()).filter(f => f);
+        let rawF = data.foto.trim();
+        if (rawF.startsWith('[') && rawF.endsWith(']')) {
+          try { fotos = JSON.parse(rawF).filter(Boolean); } catch(e) {}
+        }
+        if (fotos.length === 0) {
+          fotos = rawF.split(/,\s*(?=https?:\/\/|data:image\/)/i).map(f => f.trim().replace(/^,+|,+$/g, '')).filter(Boolean);
+        }
+        fotos = fotos.map(f => {
+          if (f.startsWith('http://') || f.startsWith('https://')) return f;
+          if (f.startsWith('data:image/') && f.includes(',') && f.split(',')[1].length > 20) return f;
+          if (f.length > 100 && /^[A-Za-z0-9+/=]+$/.test(f.substring(0, 50))) return 'data:image/jpeg;base64,' + f;
+          return null;
+        }).filter(Boolean);
       }
       
       let fotoUtama = (fotos.length > 0) ? fotos[0] : placeholderFoto;
       let uiFotoEl = document.getElementById('uiFoto');
       if (uiFotoEl) {
         uiFotoEl.src = fotoUtama;
+        uiFotoEl.onerror = function() { this.src = placeholderFoto; };
       }
 
       let uiGalleryEl = document.getElementById('uiGallery');
@@ -778,7 +791,7 @@ import BottomNav from '../components/BottomNav.astro';
         if (fotos.length > 1) {
           let galHtml = "";
           fotos.forEach(imgUrl => {
-            galHtml += `\x3Cimg src="${imgUrl}" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent;" onclick="document.getElementById('uiFoto').src=this.src;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">`;
+            galHtml += `\x3Cimg src="${imgUrl}" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent;" onclick="document.getElementById('uiFoto').src=this.src;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onerror="this.src='${placeholderFoto}'">`;
           });
           uiGalleryEl.innerHTML = galHtml;
           uiGalleryEl.style.display = 'flex';

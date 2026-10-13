@@ -1577,7 +1577,9 @@ window.muatDaftarWisataCMS = async function() {
 
     let html = '';
     data.forEach(item => {
-      let foto = item.foto ? item.foto.split(',')[0].trim() : 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=200';
+      let foto = (typeof window.getFirstValidFoto === 'function') 
+        ? window.getFirstValidFoto(item.foto, 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=200')
+        : (item.foto ? item.foto.split(',')[0].trim() : 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=200');
       let statusBg = item.status === 'Aktif' ? 'background:#10B981;color:white;' : (item.status === 'Nonaktif' ? 'background:#EF4444;color:white;' : 'background:#F59E0B;color:white;');
       let namaSafe = (item.nama || '').replace(/'/g, "\\'");
       
@@ -1704,13 +1706,61 @@ window.compressImageClient = function(file, maxWidth = 1200, quality = 0.75) {
   });
 };
 
+window.parseCmsFotoList = function(raw) {
+  if (!raw || typeof raw !== 'string') return [];
+  raw = raw.trim();
+  if (!raw) return [];
+
+  // Jika array JSON
+  if (raw.startsWith('[') && raw.endsWith(']')) {
+    try {
+      let arr = JSON.parse(raw);
+      if (Array.isArray(arr)) return arr.map(s => String(s).trim()).filter(Boolean);
+    } catch(e) {}
+  }
+
+  // Jika dipisahkan baris baru
+  if (raw.includes('\n')) {
+    return raw.split('\n').map(s => s.trim().replace(/^,+|,+$/g, '')).filter(Boolean);
+  }
+
+  // Pisahkan menggunakan regex aman: hanya memisahkan koma yang diikuti URL https:// atau data:image/
+  let parts = raw.split(/,\s*(?=https?:\/\/|data:image\/)/i);
+  let list = [];
+  parts.forEach(p => {
+    let s = p.trim().replace(/^,+|,+$/g, '');
+    if (!s) return;
+    if (s.startsWith('data:image/')) {
+      if (s.includes(',') && s.split(',')[1].length > 20) {
+        list.push(s);
+      }
+    } else if (s.startsWith('http://') || s.startsWith('https://')) {
+      list.push(s);
+    } else if (s.length > 100 && /^[A-Za-z0-9+/=]+$/.test(s.substring(0, 50))) {
+      list.push('data:image/jpeg;base64,' + s);
+    }
+  });
+
+  return list;
+};
+
+window.getFirstValidFoto = function(raw, fallback = 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=200') {
+  let list = window.parseCmsFotoList(raw);
+  if (list && list.length > 0) {
+    let f = list[0];
+    if (f.startsWith('http://') || f.startsWith('https://') || f.startsWith('data:image/')) {
+      return f;
+    }
+  }
+  return fallback;
+};
+
 window.prosesCmsFotoFiles = async function(input) {
   let files = input.files;
   if (!files || files.length === 0) return;
   
   let statusEl = document.getElementById('cmsFotoStatus');
   let container = document.getElementById('cmsFotoPreviewContainer');
-  let thumbsEl = document.getElementById('cmsFotoThumbnails');
   
   if (container) container.style.display = 'block';
   if (statusEl) {
@@ -1719,28 +1769,24 @@ window.prosesCmsFotoFiles = async function(input) {
   }
 
   try {
-    let compressedList = [];
-    for (let i = 0; i < Math.min(files.length, 5); i++) {
+    let existingUrls = window.parseCmsFotoList(document.getElementById('cmsFotoUrl')?.value || '');
+    for (let i = 0; i < Math.min(files.length, 6); i++) {
       let f = files[i];
       let b64 = await window.compressImageClient(f, 1200, 0.75);
-      if (b64) compressedList.push(b64);
+      if (b64 && b64.startsWith('data:image/')) {
+        existingUrls.push(b64);
+      }
     }
     
     let urlInput = document.getElementById('cmsFotoUrl');
     if (urlInput) {
-      urlInput.value = compressedList.join(',');
+      urlInput.value = existingUrls.join(',\n');
     }
     
-    if (thumbsEl) {
-      thumbsEl.innerHTML = compressedList.map(src => `
-        <img src="${src}" style="width:70px; height:50px; object-fit:cover; border-radius:6px; border:2px solid #10B981;">
-      `).join('');
-    }
+    // Reset file input agar pengguna dapat memilih file baru lagi jika diperlukan
+    input.value = '';
     
-    if (statusEl) {
-      statusEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${compressedList.length} Foto Siap Disimpan (${files.length} file dipilih)`;
-      statusEl.style.color = '#10B981';
-    }
+    window.previewCmsFotoInput();
   } catch(e) {
     if (statusEl) {
       statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Gagal memproses: ' + e.message;
@@ -1754,20 +1800,43 @@ window.previewCmsFotoInput = function() {
   let container = document.getElementById('cmsFotoPreviewContainer');
   let thumbsEl = document.getElementById('cmsFotoThumbnails');
   let statusEl = document.getElementById('cmsFotoStatus');
-  if (!val) {
+
+  let urls = window.parseCmsFotoList(val);
+  if (!urls || urls.length === 0) {
     if (container) container.style.display = 'none';
+    if (thumbsEl) thumbsEl.innerHTML = '';
     return;
   }
-  let urls = val.split(',').map(u => u.trim()).filter(Boolean);
+
   if (container) container.style.display = 'block';
   if (thumbsEl) {
-    thumbsEl.innerHTML = urls.map(u => `
-      <img src="${u}" style="width:70px; height:50px; object-fit:cover; border-radius:6px; border:2px solid #3B82F6;" onerror="this.style.opacity='0.4'">
+    thumbsEl.innerHTML = urls.map((u, idx) => `
+      <div style="position:relative; display:inline-block; margin:4px;">
+        <img src="${u}" style="width:80px; height:60px; object-fit:cover; border-radius:8px; border:2px solid #3B82F6; display:block;" onerror="this.src='https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=200'; this.style.borderColor='#EF4444';">
+        <button type="button" onclick="hapusSatuFotoCMS(${idx})" style="position:absolute; top:-7px; right:-7px; background:#EF4444; color:white; border:none; border-radius:50%; width:22px; height:22px; font-size:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.3); transition:0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" title="Hapus foto ini">
+          <i class="fa-solid fa-times"></i>
+        </button>
+        <div style="position:absolute; bottom:2px; left:4px; font-size:9px; background:rgba(0,0,0,0.6); color:white; padding:1px 4px; border-radius:3px;">
+          #${idx + 1}
+        </div>
+      </div>
     `).join('');
   }
+
   if (statusEl) {
-    statusEl.innerHTML = `<i class="fa-solid fa-link"></i> ${urls.length} Link URL Foto Terdeteksi`;
-    statusEl.style.color = '#3B82F6';
+    statusEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${urls.length} Foto Siap Disimpan <span style="font-size:11px; font-weight:normal; color:#4B5563;">(Klik tanda silang merah ✖ untuk menghapus foto)</span>`;
+    statusEl.style.color = '#10B981';
+  }
+};
+
+window.hapusSatuFotoCMS = function(index) {
+  let val = document.getElementById('cmsFotoUrl')?.value || '';
+  let urls = window.parseCmsFotoList(val);
+  if (index >= 0 && index < urls.length) {
+    urls.splice(index, 1);
+    let el = document.getElementById('cmsFotoUrl');
+    if (el) el.value = urls.join(',\n');
+    window.previewCmsFotoInput();
   }
 };
 
@@ -1776,6 +1845,8 @@ window.resetCmsFotoPreview = function() {
   if (document.getElementById('cmsFotoUpload')) document.getElementById('cmsFotoUpload').value = '';
   let container = document.getElementById('cmsFotoPreviewContainer');
   if (container) container.style.display = 'none';
+  let thumbsEl = document.getElementById('cmsFotoThumbnails');
+  if (thumbsEl) thumbsEl.innerHTML = '';
 };
 
 window.setPresetCmsFoto = function(type) {
