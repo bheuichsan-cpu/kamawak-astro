@@ -239,12 +239,30 @@ import BottomNav from '../components/BottomNav.astro';
           <input type="number" id="cmsHarga" class="form-control" placeholder="Tanpa titik (Misal: 150000)">
         </div>
         <div class="form-group full-width">
-          <label>Galeri Foto (Upload atau Masukkan Link URL)</label>
+          <label>Galeri Foto Produk (Pilih File atau Masukkan URL)</label>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <input type="text" id="cmsFotoUrl" class="form-control" placeholder="URL Foto (https://... pisahkan koma jika banyak)">
-            <input type="file" id="cmsFotoUpload" class="form-control" accept="image/*" multiple>
+            <input type="text" id="cmsFotoUrl" class="form-control" placeholder="URL Foto (https://... pisahkan koma jika banyak)" oninput="previewCmsFotoInput()">
+            <input type="file" id="cmsFotoUpload" class="form-control" accept="image/*" multiple onchange="prosesCmsFotoFiles(this)">
           </div>
-          <small style="color:var(--text-gray); font-size:12px;">Bisa masukkan link gambar langsung atau pilih file dari perangkat.</small>
+          <small style="color:var(--text-gray); font-size:12px;">Pilih foto langsung dari HP/Laptop (otomatis dikompres optimal) atau masukkan URL foto langsung.</small>
+          
+          <!-- Live Preview Box -->
+          <div id="cmsFotoPreviewContainer" style="display:none; margin-top:10px; padding:12px; background:#F8FAFC; border:1px dashed #CBD5E1; border-radius:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span id="cmsFotoStatus" style="font-size:12px; font-weight:600; color:#10B981;"><i class="fa-solid fa-circle-check"></i> Foto Siap Disimpan</span>
+              <button type="button" onclick="resetCmsFotoPreview()" style="background:#EF4444; color:white; border:none; padding:4px 9px; border-radius:4px; font-size:11px; cursor:pointer;"><i class="fa-solid fa-times"></i> Hapus Foto</button>
+            </div>
+            <div id="cmsFotoThumbnails" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+          </div>
+
+          <!-- Pilihan Cepat Foto Rekomendasi -->
+          <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+            <span style="font-size:11px; color:#6B7280; font-weight:600;">Pilihan Cepat Foto:</span>
+            <button type="button" onclick="setPresetCmsFoto('cabin')" style="background:#E0E7FF; color:#4338CA; border:none; padding:3px 9px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:500;">Cabin & Danau</button>
+            <button type="button" onclick="setPresetCmsFoto('resort')" style="background:#E0E7FF; color:#4338CA; border:none; padding:3px 9px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:500;">Penginapan / Homestay</button>
+            <button type="button" onclick="setPresetCmsFoto('mandeh')" style="background:#E0E7FF; color:#4338CA; border:none; padding:3px 9px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:500;">Wisata Mandeh</button>
+            <button type="button" onclick="setPresetCmsFoto('harau')" style="background:#E0E7FF; color:#4338CA; border:none; padding:3px 9px; border-radius:4px; font-size:11px; cursor:pointer; font-weight:500;">Lembah Harau</button>
+          </div>
         </div>
         <div class="form-group">
           <label>Harga Coret (Rp)</label>
@@ -1380,20 +1398,29 @@ window.simpanCMS = async function() {
   let hargaCoret = document.getElementById('cmsHargaCoret') ? document.getElementById('cmsHargaCoret').value.trim() : '';
   let fotoUrl = document.getElementById('cmsFotoUrl') ? document.getElementById('cmsFotoUrl').value.trim() : '';
 
-  // Tangani file upload jika ada file dipilih
+  // Tangani file upload jika ada file dipilih dan belum terisi di fotoUrl
   let fileInput = document.getElementById('cmsFotoUpload');
   if (fileInput && fileInput.files && fileInput.files.length > 0 && !fotoUrl) {
     try {
       let fileArr = Array.from(fileInput.files);
-      let readPromises = fileArr.slice(0, 3).map(f => new Promise((resolve) => {
-        let reader = new FileReader();
-        reader.onload = e => resolve(e.target.result);
-        reader.onerror = () => resolve('');
-        reader.readAsDataURL(f);
-      }));
-      let base64Results = await Promise.all(readPromises);
-      fotoUrl = base64Results.filter(Boolean).join(',');
+      let compressedPromises = fileArr.slice(0, 5).map(f => window.compressImageClient(f, 1200, 0.75));
+      let results = await Promise.all(compressedPromises);
+      fotoUrl = results.filter(Boolean).join(',');
     } catch(e) {}
+  }
+
+  // Fallback cerdas jika fotoUrl masih kosong agar produk selalu memiliki gambar yang menawan
+  if (!fotoUrl) {
+    let katLow = String(kategori).toLowerCase();
+    if (katLow.includes('penginapan') || katLow.includes('hotel')) {
+      fotoUrl = 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80';
+    } else if (katLow.includes('kuliner')) {
+      fotoUrl = 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80';
+    } else if (katLow.includes('rental')) {
+      fotoUrl = 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=800&q=80';
+    } else {
+      fotoUrl = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80';
+    }
   }
 
   // Data dasar (selalu ada di skema tabel wisata)
@@ -1403,10 +1430,10 @@ window.simpanCMS = async function() {
       lokasi: lokasi,
       harga: Number(harga),
       owner: owner || 'Admin',
-      status: document.getElementById('cmsStatusLangganan') ? document.getElementById('cmsStatusLangganan').value : 'Aktif'
+      status: document.getElementById('cmsStatusLangganan') ? document.getElementById('cmsStatusLangganan').value : 'Aktif',
+      foto: fotoUrl
   };
   if (wa) basePayload.wa = wa;
-  if (fotoUrl) basePayload.foto = fotoUrl;
 
   // Data lengkap (kolom tambahan modern)
   let fullPayload = { ...basePayload };
@@ -1429,6 +1456,7 @@ window.simpanCMS = async function() {
     });
     let fi = document.getElementById('cmsFotoUpload');
     if (fi) fi.value = '';
+    if (typeof window.resetCmsFotoPreview === 'function') window.resetCmsFotoPreview();
   };
 
   const sqlMigrationCode = `ALTER TABLE public.wisata 
@@ -1589,7 +1617,10 @@ window.editProdukCMS = async function(id) {
     if (document.getElementById('cmsKategori')) document.getElementById('cmsKategori').value = data.kategori || 'Tur';
     document.getElementById('cmsDestinasi').value = data.lokasi || data.destinasi || '';
     document.getElementById('cmsHarga').value = data.harga || '';
-    if (document.getElementById('cmsFotoUrl')) document.getElementById('cmsFotoUrl').value = data.foto || '';
+    if (document.getElementById('cmsFotoUrl')) {
+      document.getElementById('cmsFotoUrl').value = data.foto || '';
+      if (data.foto && typeof window.previewCmsFotoInput === 'function') window.previewCmsFotoInput();
+    }
     if (document.getElementById('cmsHargaCoret')) document.getElementById('cmsHargaCoret').value = data.harga_coret || (meta ? meta.harga_coret : '') || '';
     if (document.getElementById('cmsDurasi')) document.getElementById('cmsDurasi').value = data.durasi || (meta ? meta.durasi : '') || '';
     if (document.getElementById('cmsMaps')) document.getElementById('cmsMaps').value = data.maps || (meta ? meta.maps : '') || '';
@@ -1638,6 +1669,121 @@ window.hapusProdukCMS = async function(id, nama) {
       Swal.fire('Gagal', e.message, 'error');
     }
   }
+};
+
+window.compressImageClient = function(file, maxWidth = 1200, quality = 0.75) {
+  return new Promise((resolve) => {
+    let reader = new FileReader();
+    reader.onload = (e) => {
+      let img = new Image();
+      img.onload = () => {
+        let canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        let ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        let compressed = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressed);
+      };
+      img.onerror = () => resolve(e.target.result);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve('');
+    reader.readAsDataURL(file);
+  });
+};
+
+window.prosesCmsFotoFiles = async function(input) {
+  let files = input.files;
+  if (!files || files.length === 0) return;
+  
+  let statusEl = document.getElementById('cmsFotoStatus');
+  let container = document.getElementById('cmsFotoPreviewContainer');
+  let thumbsEl = document.getElementById('cmsFotoThumbnails');
+  
+  if (container) container.style.display = 'block';
+  if (statusEl) {
+    statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mengompres dan memproses foto...';
+    statusEl.style.color = '#3B82F6';
+  }
+
+  try {
+    let compressedList = [];
+    for (let i = 0; i < Math.min(files.length, 5); i++) {
+      let f = files[i];
+      let b64 = await window.compressImageClient(f, 1200, 0.75);
+      if (b64) compressedList.push(b64);
+    }
+    
+    let urlInput = document.getElementById('cmsFotoUrl');
+    if (urlInput) {
+      urlInput.value = compressedList.join(',');
+    }
+    
+    if (thumbsEl) {
+      thumbsEl.innerHTML = compressedList.map(src => `
+        <img src="${src}" style="width:70px; height:50px; object-fit:cover; border-radius:6px; border:2px solid #10B981;">
+      `).join('');
+    }
+    
+    if (statusEl) {
+      statusEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${compressedList.length} Foto Siap Disimpan (${files.length} file dipilih)`;
+      statusEl.style.color = '#10B981';
+    }
+  } catch(e) {
+    if (statusEl) {
+      statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Gagal memproses: ' + e.message;
+      statusEl.style.color = '#EF4444';
+    }
+  }
+};
+
+window.previewCmsFotoInput = function() {
+  let val = (document.getElementById('cmsFotoUrl')?.value || '').trim();
+  let container = document.getElementById('cmsFotoPreviewContainer');
+  let thumbsEl = document.getElementById('cmsFotoThumbnails');
+  let statusEl = document.getElementById('cmsFotoStatus');
+  if (!val) {
+    if (container) container.style.display = 'none';
+    return;
+  }
+  let urls = val.split(',').map(u => u.trim()).filter(Boolean);
+  if (container) container.style.display = 'block';
+  if (thumbsEl) {
+    thumbsEl.innerHTML = urls.map(u => `
+      <img src="${u}" style="width:70px; height:50px; object-fit:cover; border-radius:6px; border:2px solid #3B82F6;" onerror="this.style.opacity='0.4'">
+    `).join('');
+  }
+  if (statusEl) {
+    statusEl.innerHTML = `<i class="fa-solid fa-link"></i> ${urls.length} Link URL Foto Terdeteksi`;
+    statusEl.style.color = '#3B82F6';
+  }
+};
+
+window.resetCmsFotoPreview = function() {
+  if (document.getElementById('cmsFotoUrl')) document.getElementById('cmsFotoUrl').value = '';
+  if (document.getElementById('cmsFotoUpload')) document.getElementById('cmsFotoUpload').value = '';
+  let container = document.getElementById('cmsFotoPreviewContainer');
+  if (container) container.style.display = 'none';
+};
+
+window.setPresetCmsFoto = function(type) {
+  let presets = {
+    cabin: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80,https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=800&q=80',
+    resort: 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=800&q=80,https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
+    mandeh: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80,https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
+    harau: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80,https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80'
+  };
+  let url = presets[type] || presets.cabin;
+  let input = document.getElementById('cmsFotoUrl');
+  if (input) input.value = url;
+  window.previewCmsFotoInput();
 };
 
 

@@ -783,7 +783,8 @@ import BottomNav from '../components/BottomNav.astro';
       let wishlist = JSON.parse(localStorage.getItem('kamawak_wishlist') || '[]');
       return data.map(item => {
         let harga = Number(item.harga || item.hargaJual || 0).toLocaleString('id-ID');
-        let foto = item.foto || 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=500';
+        let fotoRaw = item.foto || '';
+        let foto = (fotoRaw && typeof fotoRaw === 'string' && fotoRaw.trim() !== '') ? fotoRaw.split(',')[0].trim() : 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=500';
         let isFav = wishlist.includes(String(item.id));
         let heartIcon = isFav ? 'fa-solid' : 'fa-regular';
         let favActiveClass = isFav ? 'active' : '';
@@ -793,7 +794,7 @@ import BottomNav from '../components/BottomNav.astro';
         return `
           <a href="/pdp?id=${item.id || ''}" class="card card-clickable ${isPopular ? 'popular-card' : ''}">
             <div class="card-img-wrapper">
-              <img src="${foto}" class="card-img" alt="${item.nama || ''}">
+              <img src="${foto}" class="card-img" alt="${item.nama || ''}" onerror="this.src='https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=500'">
               <button class="btn-wishlist-card ${favActiveClass}" onclick="toggleWishlistCard(event, '${item.id}')" title="${isFav ? 'Hapus dari Favorit' : 'Simpan ke Favorit'}">
                 <i class="${heartIcon} fa-heart"></i>
               </button>

@@ -428,7 +428,7 @@ import BottomNav from '../components/BottomNav.astro';
     
     <!-- KIRI: INFORMASI PRODUK -->
     <div class="product-main">
-      <div class="product-img-wrapper"><img src="" id="uiFoto" class="product-img" alt="Gambar Produk"></div>
+      <div class="product-img-wrapper"><img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800" id="uiFoto" class="product-img" alt="Gambar Produk" onerror="this.src='https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800'"></div>
       <div id="uiGallery" style="display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto;"></div>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px;">
         <span class="badge-kategori" id="uiKategori" style="margin-bottom: 0;">Kategori</span>
@@ -753,16 +753,35 @@ import BottomNav from '../components/BottomNav.astro';
 
       // Tanamkan data ke UI Kiri
       // Proses Galeri Foto (Jika dipisahkan koma)
-      if(data.foto) {
-         let fotos = data.foto.split(',').map(f => f.trim()).filter(f => f);
-         document.getElementById('uiFoto').src = fotos[0] || 'https://via.placeholder.com/500';
-         if(fotos.length > 1) {
-            let galHtml = "";
-            fotos.forEach(imgUrl => {
-                galHtml += `\x3Cimg src="${imgUrl}" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent;" onclick="document.getElementById('uiFoto').src=this.src;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">`;
-            });
-            document.getElementById('uiGallery').innerHTML = galHtml;
-         }
+      let placeholderFoto = 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800';
+      if (data.kategori && String(data.kategori).toLowerCase().includes('tur')) {
+        placeholderFoto = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800';
+      }
+      
+      let fotos = [];
+      if (data.foto && typeof data.foto === 'string' && data.foto.trim() !== '') {
+        fotos = data.foto.split(',').map(f => f.trim()).filter(f => f);
+      }
+      
+      let fotoUtama = (fotos.length > 0) ? fotos[0] : placeholderFoto;
+      let uiFotoEl = document.getElementById('uiFoto');
+      if (uiFotoEl) {
+        uiFotoEl.src = fotoUtama;
+      }
+
+      let uiGalleryEl = document.getElementById('uiGallery');
+      if (uiGalleryEl) {
+        if (fotos.length > 1) {
+          let galHtml = "";
+          fotos.forEach(imgUrl => {
+            galHtml += `\x3Cimg src="${imgUrl}" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent;" onclick="document.getElementById('uiFoto').src=this.src;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">`;
+          });
+          uiGalleryEl.innerHTML = galHtml;
+          uiGalleryEl.style.display = 'flex';
+        } else {
+          uiGalleryEl.innerHTML = '';
+          uiGalleryEl.style.display = 'none';
+        }
       }
       
       document.getElementById('uiDeskripsi').innerText = data.deskripsi || "Tidak ada deskripsi tersedia.";
