@@ -1431,23 +1431,25 @@ window.simpanCMS = async function() {
       harga: Number(harga),
       owner: owner || 'Admin',
       status: document.getElementById('cmsStatusLangganan') ? document.getElementById('cmsStatusLangganan').value : 'Aktif',
-      foto: fotoUrl
+      foto: fotoUrl,
+      wa: wa || null
   };
-  if (wa) basePayload.wa = wa;
 
   // Data lengkap (kolom tambahan modern)
-  let fullPayload = { ...basePayload };
-  if (deskripsi) fullPayload.deskripsi = deskripsi;
-  if (fasilitas) fullPayload.fasilitas = fasilitas;
-  if (varian) fullPayload.varian = varian;
-  if (tags) fullPayload.tags = tags;
-  if (itinerary) fullPayload.itinerary = itinerary;
-  if (durasi) fullPayload.durasi = durasi;
-  if (maps) fullPayload.maps = maps;
-  if (ig) fullPayload.ig = ig;
-  if (tiktok) fullPayload.tiktok = tiktok;
-  if (fb) fullPayload.fb = fb;
-  if (hargaCoret) fullPayload.harga_coret = Number(hargaCoret);
+  let fullPayload = {
+      ...basePayload,
+      deskripsi: deskripsi || null,
+      fasilitas: fasilitas || null,
+      varian: varian || null,
+      tags: tags || null,
+      itinerary: itinerary || null,
+      durasi: durasi || null,
+      maps: maps || null,
+      ig: ig || null,
+      tiktok: tiktok || null,
+      fb: fb || null,
+      harga_coret: (hargaCoret && !isNaN(hargaCoret)) ? Number(hargaCoret) : null
+  };
 
   const resetForm = () => {
     ['cmsID', 'cmsIDOwner', 'cmsNama', 'cmsDestinasi', 'cmsHarga', 'cmsHargaCoret', 'cmsFotoUrl', 'cmsDurasi', 'cmsMaps', 'cmsWA', 'cmsIG', 'cmsTikTok', 'cmsFB', 'cmsDeskripsi', 'cmsFasilitas', 'cmsVarian', 'cmsTags', 'cmsItinerary'].forEach(fid => {
@@ -1628,11 +1630,14 @@ window.editProdukCMS = async function(id) {
     if (document.getElementById('cmsIG')) document.getElementById('cmsIG').value = data.ig || (meta ? meta.ig : '') || '';
     if (document.getElementById('cmsTikTok')) document.getElementById('cmsTikTok').value = data.tiktok || (meta ? meta.tiktok : '') || '';
     if (document.getElementById('cmsFB')) document.getElementById('cmsFB').value = data.fb || (meta ? meta.fb : '') || '';
-    if (document.getElementById('cmsDeskripsi')) document.getElementById('cmsDeskripsi').value = data.deskripsi || (meta ? meta.deskripsi : '') || '';
-    if (document.getElementById('cmsFasilitas')) document.getElementById('cmsFasilitas').value = data.fasilitas || (meta ? meta.fasilitas : '') || '';
+    let dVal = data.deskripsi || (meta ? meta.deskripsi : '') || '';
+    if (document.getElementById('cmsDeskripsi')) document.getElementById('cmsDeskripsi').value = dVal.replace(/\\n/g, '\n');
+    let fVal = data.fasilitas || (meta ? meta.fasilitas : '') || '';
+    if (document.getElementById('cmsFasilitas')) document.getElementById('cmsFasilitas').value = fVal.replace(/\\n/g, '\n');
     if (document.getElementById('cmsVarian')) document.getElementById('cmsVarian').value = data.varian || (meta ? meta.varian : '') || '';
     if (document.getElementById('cmsTags')) document.getElementById('cmsTags').value = data.tags || data.penanda || (meta ? meta.tags : '') || '';
-    if (document.getElementById('cmsItinerary')) document.getElementById('cmsItinerary').value = data.itinerary || (meta ? meta.itinerary : '') || '';
+    let iVal = data.itinerary || (meta ? meta.itinerary : '') || '';
+    if (document.getElementById('cmsItinerary')) document.getElementById('cmsItinerary').value = iVal.replace(/\\n/g, '\n');
 
     window.scrollTo({ top: document.getElementById('tabCMS').offsetTop - 60, behavior: 'smooth' });
     Swal.fire({

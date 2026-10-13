@@ -728,6 +728,10 @@ import BottomNav from '../components/BottomNav.astro';
                 if (!data.harga_coret && localMeta.harga_coret) data.harga_coret = localMeta.harga_coret;
                 if (!data.durasi && localMeta.durasi) data.durasi = localMeta.durasi;
                 if (!data.maps && localMeta.maps) data.maps = localMeta.maps;
+                if (!data.wa && localMeta.wa) data.wa = localMeta.wa;
+                if (!data.ig && localMeta.ig) data.ig = localMeta.ig;
+                if (!data.tiktok && localMeta.tiktok) data.tiktok = localMeta.tiktok;
+                if (!data.fb && localMeta.fb) data.fb = localMeta.fb;
               }
             } catch(e) {}
             dataProduk = data;
@@ -784,7 +788,12 @@ import BottomNav from '../components/BottomNav.astro';
         }
       }
       
-      document.getElementById('uiDeskripsi').innerText = data.deskripsi || "Tidak ada deskripsi tersedia.";
+      let deskripsiClean = (data.deskripsi || "Tidak ada deskripsi tersedia.").replace(/\\n/g, '\n');
+      let elDesk = document.getElementById('uiDeskripsi');
+      if (elDesk) {
+        elDesk.innerText = deskripsiClean;
+        elDesk.style.whiteSpace = 'pre-line';
+      }
       
       // Proses Fasilitas
       if(data.fasilitas) {
@@ -798,24 +807,22 @@ import BottomNav from '../components/BottomNav.astro';
       }
 
       // Proses Varian Paket Dinamis
-      if(data.tipe !== "mitra") {
-          let gridPaket = document.querySelector('.package-grid');
-          if(data.varian && data.varian.trim() !== "") {
-              let varHtml = "";
-              let vars = data.varian.split(',');
-              vars.forEach((v, idx) => {
-                  let parts = v.split(':');
-                  let namaPaket = parts[0] ? parts[0].trim() : "Paket";
-                  let tambahHarga = parts[1] ? Number(parts[1].trim()) : 0;
-                  let tHargaStr = (tambahHarga === 0) ? "Harga Dasar" : "+ " + formatUang(tambahHarga);
-                  let clActive = (idx === 0) ? "active" : "";
-                  varHtml += `<div class="package-box ${clActive}" data-raw="${v}" onclick="pilihPaketDinamis(this, ${tambahHarga})">
-                                <div class="pkg-title">${namaPaket}</div>
-                                <div class="pkg-price">${tHargaStr}</div>
-                              </div>`;
-              });
-              gridPaket.innerHTML = varHtml;
-          }
+      let gridPaket = document.querySelector('.package-grid');
+      if(gridPaket && data.varian && data.varian.trim() !== "") {
+          let varHtml = "";
+          let vars = data.varian.split(',');
+          vars.forEach((v, idx) => {
+              let parts = v.split(':');
+              let namaPaket = parts[0] ? parts[0].trim() : "Paket";
+              let tambahHarga = parts[1] ? Number(parts[1].trim()) : 0;
+              let tHargaStr = (tambahHarga === 0) ? "Harga Dasar" : "+ " + formatUang(tambahHarga);
+              let clActive = (idx === 0) ? "active" : "";
+              varHtml += `<div class="package-box ${clActive}" data-raw="${v}" onclick="pilihPaketDinamis(this, ${tambahHarga})">
+                            <div class="pkg-title">${namaPaket}</div>
+                            <div class="pkg-price">${tHargaStr}</div>
+                          </div>`;
+          });
+          gridPaket.innerHTML = varHtml;
       }
 
       document.getElementById('uiKategori').innerText = data.kategori || "-";
@@ -845,41 +852,85 @@ import BottomNav from '../components/BottomNav.astro';
         document.getElementById('uiHargaCoret').style.display = "none";
       }
 
-      // --- LOGIKA ADAPTIF (BUNGLON) UNTUK PENGINAPAN/RENTAL ---
-      if(data.tipe === "mitra") {
-        // Sembunyikan pilihan Paket VIP
-        let paketGrid = document.querySelector('.package-grid');
-        if(paketGrid) {
-            paketGrid.style.display = 'none';
-            paketGrid.previousElementSibling.style.display = 'none'; // Sembunyikan labelnya
+      // --- LOGIKA ADAPTIF (BUNGLON) UNTUK PENGINAPAN / HOTEL / RENTAL ---
+      let katStr = String(data.kategori || '').toLowerCase();
+      let isMitra = (data.tipe === "mitra") || katStr.includes("penginapan") || katStr.includes("hotel") || katStr.includes("homestay") || katStr.includes("villa") || katStr.includes("cabin") || katStr.includes("rental");
+      
+      if(isMitra) {
+        // Sesuaikan teks label agar cocok untuk akomodasi/penginapan
+        let labelTanggal = document.querySelector('label[for="inputTanggal"]') || document.getElementById('inputTanggal')?.previousElementSibling;
+        if(labelTanggal) labelTanggal.innerHTML = 'Pilih Tanggal Check-in / Menginap <span style="color:red;">*</span>';
+        
+        let labelPax = document.getElementById('valPax')?.closest('.form-group')?.querySelector('label');
+        if(labelPax) labelPax.innerText = 'Jumlah Tamu / Malam';
+
+        let priceLabel = document.querySelector('.price-label');
+        if(priceLabel) priceLabel.innerText = 'Per Malam / Unit';
+
+        // Sesuaikan judul variasi paket menjadi Tipe Kamar / Unit jika penginapan
+        let labelVarian = document.querySelector('.package-grid')?.previousElementSibling;
+        if(labelVarian) {
+          labelVarian.innerText = "Pilihan Tipe Kamar / Unit";
+        }
+
+        // Jika tidak ada varian khusus, sesuaikan teks default paket
+        if(!data.varian || data.varian.trim() === "") {
+          let pkgReg = document.getElementById('pkgReguler');
+          let pkgVIP = document.getElementById('pkgVIP');
+          if(pkgReg && pkgReg.querySelector('.pkg-title')) pkgReg.querySelector('.pkg-title').innerText = "Standar Room / Unit";
+          if(pkgVIP && pkgVIP.querySelector('.pkg-title')) pkgVIP.querySelector('.pkg-title').innerText = "Deluxe / Family Unit";
         }
         
-        // Ubah warna dan fungsi Tombol Checkout menjadi Tombol WhatsApp
+        // Ubah warna dan fungsi Tombol Checkout menjadi Tombol WhatsApp 'Hubungi Owner'
         let btn = document.querySelector('.btn-checkout');
-        btn.innerHTML = '<i class="fa-brands fa-whatsapp"></i> Chat Owner / Tanya Kamar';
-        btn.style.background = '#10B981'; // Warna Hijau Khas WhatsApp
-        
-        btn.onclick = function() {
-           let pax = document.getElementById('valPax').innerText;
-           let tgl = document.getElementById('inputTanggal').value;
-           
-           // Format nomor WA agar aman
-           let nomorWA = String(data.linkWA).trim();
-           if(nomorWA.startsWith('0')) { nomorWA = '62' + nomorWA.substring(1); }
-           else if(!nomorWA.startsWith('62')) { nomorWA = '62' + nomorWA; }
-           
-           let pesan = `Halo, saya melihat *${data.nama}* di Kamawak.%0A%0ARencana Booking:%0ATanggal: ${tgl || 'Belum ditentukan'}%0AJumlah Pengunjung: ${pax} Orang%0A%0AApakah masih ada kamar/unit yang tersedia?`;
-           window.open("https://wa.me/" + nomorWA + "?text=" + pesan, '_blank');
-        };
+        if(btn) {
+          btn.innerHTML = '<i class="fa-brands fa-whatsapp"></i> Hubungi Owner (Chat WhatsApp)';
+          btn.style.background = '#10B981'; // Warna Hijau Khas WhatsApp
+          btn.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.35)';
+          
+          btn.onclick = function() {
+             let pax = document.getElementById('valPax')?.innerText || '1';
+             let tgl = document.getElementById('inputTanggal')?.value || '';
+             
+             // Ambil nomor WA: data.wa -> data.linkWA -> local WA profil -> default
+             let rawWA = data.wa || data.linkWA || localStorage.getItem('kamawak_prof_wa') || '6281267891234';
+             let nomorWA = String(rawWA).trim();
+             if(nomorWA.startsWith('0')) { nomorWA = '62' + nomorWA.substring(1); }
+             else if(!nomorWA.startsWith('62')) { nomorWA = '62' + nomorWA; }
+             
+             let activePkg = document.querySelector('.package-box.active .pkg-title')?.innerText || '';
+             let pkgText = activePkg ? `%0APilihan Kamar/Paket: ${activePkg}` : '';
+             
+             let pesan = `Halo, saya melihat *${data.nama}* di Kamawak.%0A%0ARencana Booking:%0ATanggal: ${tgl || 'Segera'}%0AJumlah Tamu: ${pax} Orang${pkgText}%0A%0AApakah masih ada kamar/unit yang tersedia?`;
+             window.open("https://wa.me/" + nomorWA + "?text=" + pesan, '_blank');
+          };
+        }
 
-        // Tambahkan tombol medsos pendamping di bawah tombol WA
+        // Sesuaikan tombol mobile sticky bar
+        let mobBtn = document.querySelector('.btn-mobile-book');
+        if(mobBtn) {
+          mobBtn.innerHTML = '<i class="fa-brands fa-whatsapp"></i> Hubungi Owner';
+          mobBtn.style.background = '#10B981';
+          mobBtn.onclick = function() {
+            if(btn) btn.click();
+          };
+        }
+
+        // Tambahkan tombol medsos pendamping di bawah tombol WA jika tersedia
+        let linkIG = data.ig || data.linkIG;
+        let linkTikTok = data.tiktok || data.linkTikTok;
+        let linkFB = data.fb || data.linkFB;
         let btnMedsosHTML = "";
-        if(data.linkIG) btnMedsosHTML += `\x3Cbutton style="background:#E1306C; color:white; border:none; border-radius:10px; padding:10px; cursor:pointer; flex:1;" onclick="window.open('${data.linkIG}', '_blank')" title="Instagram">\x3Ci class="fa-brands fa-instagram">\x3C/i>\x3C/button>`;
-        if(data.linkTikTok) btnMedsosHTML += `\x3Cbutton style="background:#000000; color:white; border:none; border-radius:10px; padding:10px; cursor:pointer; flex:1;" onclick="window.open('${data.linkTikTok}', '_blank')" title="TikTok">\x3Ci class="fa-brands fa-tiktok">\x3C/i>\x3C/button>`;
-        if(data.linkFB) btnMedsosHTML += `\x3Cbutton style="background:#1877F2; color:white; border:none; border-radius:10px; padding:10px; cursor:pointer; flex:1;" onclick="window.open('${data.linkFB}', '_blank')" title="Facebook">\x3Ci class="fa-brands fa-facebook-f">\x3C/i>\x3C/button>`;
+        if(linkIG) btnMedsosHTML += `\x3Cbutton style="background:#E1306C; color:white; border:none; border-radius:10px; padding:10px; cursor:pointer; flex:1;" onclick="window.open('${linkIG}', '_blank')" title="Instagram">\x3Ci class="fa-brands fa-instagram">\x3C/i>\x3C/button>`;
+        if(linkTikTok) btnMedsosHTML += `\x3Cbutton style="background:#000000; color:white; border:none; border-radius:10px; padding:10px; cursor:pointer; flex:1;" onclick="window.open('${linkTikTok}', '_blank')" title="TikTok">\x3Ci class="fa-brands fa-tiktok">\x3C/i>\x3C/button>`;
+        if(linkFB) btnMedsosHTML += `\x3Cbutton style="background:#1877F2; color:white; border:none; border-radius:10px; padding:10px; cursor:pointer; flex:1;" onclick="window.open('${linkFB}', '_blank')" title="Facebook">\x3Ci class="fa-brands fa-facebook-f">\x3C/i>\x3C/button>`;
         
-        if (btnMedsosHTML !== "") {
+        let oldSosmed = document.getElementById('pdpSosmedContainer');
+        if(oldSosmed) oldSosmed.remove();
+
+        if (btnMedsosHTML !== "" && btn) {
             let sosmedContainer = document.createElement("div");
+            sosmedContainer.id = "pdpSosmedContainer";
             sosmedContainer.style.display = "flex";
             sosmedContainer.style.gap = "10px";
             sosmedContainer.style.marginTop = "15px";
@@ -1430,6 +1481,15 @@ import BottomNav from '../components/BottomNav.astro';
       const container = document.getElementById('itineraryTimeline');
       const section = document.getElementById('itinerarySection');
       if (!container) return;
+
+      // Sembunyikan seksi itinerary untuk penginapan/hotel/villa/cabin/rental (karena bukan paket tour)
+      let katStr = String(data?.kategori || '').toLowerCase();
+      let isMitra = (data?.tipe === "mitra") || katStr.includes("penginapan") || katStr.includes("hotel") || katStr.includes("homestay") || katStr.includes("villa") || katStr.includes("cabin") || katStr.includes("rental");
+      if (isMitra) {
+        if (section) section.style.display = 'none';
+        return;
+      }
+      if (section) section.style.display = 'block';
 
       let listItinerary = [];
 
