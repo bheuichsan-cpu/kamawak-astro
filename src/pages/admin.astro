@@ -239,12 +239,12 @@ import BottomNav from '../components/BottomNav.astro';
           <input type="number" id="cmsHarga" class="form-control" placeholder="Tanpa titik (Misal: 150000)">
         </div>
         <div class="form-group full-width">
-          <label>Galeri Foto Produk / Kamar (Maksimal 5 Foto - Pilih File atau Masukkan URL)</label>
+          <label>Galeri Foto Produk / Kamar (Maksimal 10 Foto - Pilih File atau Masukkan URL)</label>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <input type="text" id="cmsFotoUrl" class="form-control" placeholder="URL Foto (https://... pisahkan koma jika banyak)" oninput="previewCmsFotoInput()">
             <input type="file" id="cmsFotoUpload" class="form-control" accept="image/*" multiple onchange="prosesCmsFotoFiles(this)">
           </div>
-          <small style="color:var(--text-gray); font-size:12px;">Pilih hingga 5 foto langsung dari HP/Laptop (otomatis dikompres optimal &amp; ringan) atau masukkan URL foto langsung.</small>
+          <small style="color:var(--text-gray); font-size:12px;">Pilih hingga 10 foto langsung dari HP/Laptop (otomatis dikompres optimal &amp; ringan) atau masukkan URL foto langsung.</small>
           
           <!-- Live Preview Box -->
           <div id="cmsFotoPreviewContainer" style="display:none; margin-top:10px; padding:12px; background:#F8FAFC; border:1px dashed #CBD5E1; border-radius:8px;">
@@ -1403,19 +1403,19 @@ window.simpanCMS = async function() {
   if (fileInput && fileInput.files && fileInput.files.length > 0 && !fotoUrl) {
     try {
       let fileArr = Array.from(fileInput.files);
-      let compressedPromises = fileArr.slice(0, 5).map(f => window.compressImageClient(f, 800, 0.65));
+      let compressedPromises = fileArr.slice(0, 10).map(f => window.compressImageClient(f, 800, 0.65));
       let results = await Promise.all(compressedPromises);
       fotoUrl = results.filter(Boolean).join(',\n');
     } catch(e) {}
   }
 
-  // Batasi fotoUrl maksimal 5 foto jika diinput manual
+  // Batasi fotoUrl maksimal 10 foto jika diinput manual
   if (fotoUrl) {
     let parsedFoto = (typeof window.parseCmsFotoList === 'function') 
       ? window.parseCmsFotoList(fotoUrl)
       : fotoUrl.split(/,\s*(?=https?:\/\/|data:image\/)/i);
-    if (parsedFoto.length > 5) {
-      fotoUrl = parsedFoto.slice(0, 5).join(',\n');
+    if (parsedFoto.length > 10) {
+      fotoUrl = parsedFoto.slice(0, 10).join(',\n');
     }
   }
 
@@ -1768,14 +1768,14 @@ window.prosesCmsFotoFiles = async function(input) {
   let container = document.getElementById('cmsFotoPreviewContainer');
   
   let existingUrls = window.parseCmsFotoList(document.getElementById('cmsFotoUrl')?.value || '');
-  const MAX_FOTO = 5;
+  const MAX_FOTO = 10;
   let sisaSlot = MAX_FOTO - existingUrls.length;
 
   if (sisaSlot <= 0) {
     Swal.fire({
       icon: 'warning',
-      title: 'Batas Maksimal 5 Foto',
-      text: 'Galeri foto sudah mencapai batas maksimal 5 foto. Silakan hapus beberapa foto terlebih dahulu jika ingin menggantinya.'
+      title: 'Batas Maksimal 10 Foto',
+      text: 'Galeri foto sudah mencapai batas maksimal 10 foto. Silakan hapus beberapa foto terlebih dahulu jika ingin menggantinya.'
     });
     input.value = '';
     return;
@@ -1810,8 +1810,8 @@ window.prosesCmsFotoFiles = async function(input) {
     if (files.length > sisaSlot) {
       Swal.fire({
         icon: 'info',
-        title: 'Maksimal 5 Foto',
-        text: `Hanya ${sisaSlot} foto yang ditambahkan karena batas maksimal galeri adalah 5 foto.`
+        title: 'Maksimal 10 Foto',
+        text: `Hanya ${sisaSlot} foto yang ditambahkan karena batas maksimal galeri adalah 10 foto.`
       });
     }
   } catch(e) {
@@ -1835,8 +1835,8 @@ window.previewCmsFotoInput = function() {
     return;
   }
 
-  if (urls.length > 5) {
-    urls = urls.slice(0, 5);
+  if (urls.length > 10) {
+    urls = urls.slice(0, 10);
     let el = document.getElementById('cmsFotoUrl');
     if (el) el.value = urls.join(',\n');
   }
@@ -1857,9 +1857,9 @@ window.previewCmsFotoInput = function() {
   }
 
   if (statusEl) {
-    let sisa = 5 - urls.length;
-    statusEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> <b>${urls.length} dari 5 Foto</b> Tersimpan <span style="font-size:11px; font-weight:normal; color:#4B5563;">(${sisa > 0 ? 'Bisa tambah ' + sisa + ' foto lagi' : 'Slot penuh (5/5)'}. Klik ✖ untuk menghapus)</span>`;
-    statusEl.style.color = (urls.length >= 5) ? '#D97706' : '#10B981';
+    let sisa = 10 - urls.length;
+    statusEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> <b>${urls.length} dari 10 Foto</b> Tersimpan <span style="font-size:11px; font-weight:normal; color:#4B5563;">(${sisa > 0 ? 'Bisa tambah ' + sisa + ' foto lagi' : 'Slot penuh (10/10)'}. Klik ✖ untuk menghapus)</span>`;
+    statusEl.style.color = (urls.length >= 10) ? '#D97706' : '#10B981';
   }
 };
 
@@ -1887,7 +1887,7 @@ window.setPresetCmsFoto = function(type) {
   let presets = {
     cabin: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80,https://images.unsplash.com/photo-1587061949409-02df41d5e562?w=800&q=80',
     resort: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80,https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80',
-    mandeh: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80,https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
+    mandeh: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80,https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80',
     harau: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80,https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80'
   };
   let url = presets[type] || presets.cabin;
@@ -2202,7 +2202,7 @@ window.hapusIklan = function(baris) {
 const KARTU_KOTA_DEFAULT = [
   { nama: "Semua", label: "Semua Kota", subtag: "Seluruh Destinasi Sumbar", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
   { nama: "Bukittinggi", label: "Bukittinggi", subtag: "Jam Gadang, Ngarai Sianok, Kuliner", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-  { nama: "Padang", label: "Kota Padang", subtag: "Pantai Padang, Kuliner Rendang, Kota Tua", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+  { nama: "Padang", label: "Kota Padang", subtag: "Pantai Padang, Kuliner Rendang, Kota Tua", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
   { nama: "Mandeh", label: "Pesisir Mandeh", subtag: "Pulau Cubadak, Snorkeling, Wisata Bahari", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
   { nama: "Harau", label: "Lembah Harau", subtag: "Air Terjun, Tebing Granit, Homestay", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
   { nama: "Mentawai", label: "Kep. Mentawai", subtag: "Surfing, Budaya Sikerei, Kepulauan", img: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
@@ -2270,6 +2270,21 @@ window.muatDaftarPintasanKota = function() {
     let saved = localStorage.getItem("kamawak_kartu_kota");
     if (saved) list = JSON.parse(saved);
   } catch(e) {}
+
+  // Sanitasi cache browser jika masih menyimpan link foto pulau lama
+  let updatedStorage = false;
+  if (Array.isArray(list) && list.length > 0) {
+    list = list.map(item => {
+      if (item && item.img && (item.img.includes('1518509562904') || item.img.includes('1507525428034'))) {
+        item.img = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop';
+        updatedStorage = true;
+      }
+      return item;
+    });
+    if (updatedStorage) {
+      localStorage.setItem("kamawak_kartu_kota", JSON.stringify(list));
+    }
+  }
 
   if (!list || list.length === 0) {
     list = [...KARTU_KOTA_DEFAULT];
