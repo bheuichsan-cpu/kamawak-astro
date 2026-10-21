@@ -413,12 +413,18 @@ import BottomNav from '../components/BottomNav.astro';
         .btn-back { padding: 8px !important; font-size: 0 !important; }
         .btn-back i { font-size: 14px !important; margin: 0 !important; }
         .product-img { height: 250px; }
+        .hero-slide-img { height: 280px !important; }
+        #btnSlidePrev, #btnSlideNext { width: 34px !important; height: 34px !important; font-size: 13px !important; }
         .container { padding: 0 15px; margin: 15px auto; }
         .product-title { font-size: 22px; }
         .price-main { font-size: 24px; }
         .booking-card { margin-top: 20px; position: static; }
     }
 
+    .hero-slider-track::-webkit-scrollbar { display: none; }
+    .hero-slide-img { width: 100%; height: 420px; object-fit: cover; display: block; cursor: zoom-in; transition: object-fit 0.3s ease; }
+    .thumb-pdp { transition: 0.2s; }
+    .thumb-pdp.active { border-color: var(--primary) !important; transform: scale(1.05); box-shadow: 0 2px 8px rgba(255, 94, 31, 0.4); }
   </style>
 
   <!-- MIDTRANS SNAP (SANDBOX) -->
@@ -439,8 +445,38 @@ import BottomNav from '../components/BottomNav.astro';
     
     <!-- KIRI: INFORMASI PRODUK -->
     <div class="product-main">
-      <div class="product-img-wrapper"><img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800" id="uiFoto" class="product-img" alt="Gambar Produk" onerror="this.src='https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800'"></div>
-      <div id="uiGallery" style="display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto;"></div>
+      
+      <!-- HERO CAROUSEL: SWIPEABLE & SLIDER FOTO BESAR -->
+      <div class="hero-carousel-container" style="position: relative; border-radius: 14px; overflow: hidden; margin-bottom: 12px; background: #0F172A; box-shadow: 0 4px 20px rgba(0,0,0,0.12);">
+        
+        <!-- Track Geser Horizontal (Swipeable Touch & Mouse Drag) -->
+        <div id="heroSliderTrack" class="hero-slider-track" style="display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch;">
+          <div class="hero-slide-item" style="flex: 0 0 100%; scroll-snap-align: start; position: relative;">
+            <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1200" id="uiFoto" class="hero-slide-img" alt="Foto Kamar / Produk" onclick="bukaModalFotoFull(this.src)" onerror="this.src='https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800'">
+          </div>
+        </div>
+
+        <!-- Tombol Panah Navigasi Geser Kiri / Kanan -->
+        <button type="button" id="btnSlidePrev" onclick="geserSlideFoto(-1)" aria-label="Foto Sebelumnya" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.92); border: none; color: #1E293B; font-size: 16px; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,0.3); z-index: 10; transition: 0.2s;">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button type="button" id="btnSlideNext" onclick="geserSlideFoto(1)" aria-label="Foto Selanjutnya" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.92); border: none; color: #1E293B; font-size: 16px; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,0.3); z-index: 10; transition: 0.2s;">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+
+        <!-- Indikator Jumlah Foto Badge Melayang -->
+        <div id="slideCounterBadge" style="position: absolute; bottom: 12px; right: 12px; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; z-index: 10;">
+          <i class="fa-solid fa-images"></i> <span id="slideCounterText">1 / 1 Foto</span>
+        </div>
+
+        <!-- Tombol Beralih Mode Foto Utuh (Tanpa Terpotong) -->
+        <button type="button" id="btnToggleFit" onclick="toggleFitMode()" title="Klik untuk beralih mode Foto Utuh atau Penuh" style="position: absolute; top: 12px; right: 12px; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); color: white; border: none; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; z-index: 10; transition: 0.2s;">
+          <i class="fa-solid fa-expand"></i> <span id="txtToggleFit">Foto Utuh</span>
+        </button>
+      </div>
+
+      <!-- Thumbnail Navigasi -->
+      <div id="uiGallery" style="display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 6px;"></div>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px;">
         <span class="badge-kategori" id="uiKategori" style="margin-bottom: 0;">Kategori</span>
         <div style="display: flex; gap: 8px; align-items: center;">
@@ -698,6 +734,128 @@ import BottomNav from '../components/BottomNav.astro';
     let promoAktif = null;
     let nominalDiskonPromo = 0;
 
+    let isFitMode = false;
+    let daftarFotoSlider = [];
+    let currentSlideIdx = 0;
+
+    function inisiatorHeroSlider(listFoto) {
+      daftarFotoSlider = listFoto;
+      currentSlideIdx = 0;
+      const track = document.getElementById('heroSliderTrack');
+      const counterText = document.getElementById('slideCounterText');
+      const btnPrev = document.getElementById('btnSlidePrev');
+      const btnNext = document.getElementById('btnSlideNext');
+      const galleryEl = document.getElementById('uiGallery');
+
+      if (!track) return;
+
+      // 1. Render item slide pada track geser horizontal
+      track.innerHTML = listFoto.map((url, idx) => `
+        <div class="hero-slide-item" style="flex: 0 0 100%; width: 100%; scroll-snap-align: start; position: relative;">
+          <img src="${url}" class="hero-slide-img" alt="Foto ${idx+1}" style="width: 100%; height: 420px; object-fit: ${isFitMode ? 'contain' : 'cover'}; background: ${isFitMode ? '#0A0F1D' : 'transparent'}; display: block; cursor: zoom-in;" onclick="bukaModalFotoFull('${url}')" onerror="this.src='https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800'">
+        </div>
+      `).join('');
+
+      // 2. Tombol Navigasi Kiri / Kanan
+      if (listFoto.length > 1) {
+        if (btnPrev) btnPrev.style.display = 'flex';
+        if (btnNext) btnNext.style.display = 'flex';
+      } else {
+        if (btnPrev) btnPrev.style.display = 'none';
+        if (btnNext) btnNext.style.display = 'none';
+      }
+
+      // 3. Counter Badge
+      if (counterText) counterText.innerText = `1 / ${listFoto.length} Foto`;
+
+      // 4. Render Thumbnail Navigasi
+      if (galleryEl) {
+        if (listFoto.length > 1) {
+          galleryEl.innerHTML = listFoto.map((url, idx) => `
+            <img src="${url}" class="thumb-pdp ${idx === 0 ? 'active' : ''}" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid ${idx === 0 ? 'var(--primary)' : 'transparent'}; flex-shrink: 0;" onclick="lompatKeSlideFoto(${idx})" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'" onerror="this.src='https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800'">
+          `).join('');
+          galleryEl.style.display = 'flex';
+        } else {
+          galleryEl.innerHTML = '';
+          galleryEl.style.display = 'none';
+        }
+      }
+
+      // 5. Listener Scroll Track untuk update index aktif saat digeser (swipe touch HP)
+      track.onscroll = function() {
+        const itemWidth = track.clientWidth || 1;
+        const newIdx = Math.round(track.scrollLeft / itemWidth);
+        if (newIdx !== currentSlideIdx && newIdx >= 0 && newIdx < listFoto.length) {
+          currentSlideIdx = newIdx;
+          if (counterText) counterText.innerText = `${currentSlideIdx + 1} / ${listFoto.length} Foto`;
+          
+          const thumbs = document.querySelectorAll('.thumb-pdp');
+          thumbs.forEach((t, i) => {
+            if (i === currentSlideIdx) {
+              t.classList.add('active');
+              t.style.borderColor = 'var(--primary)';
+              t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            } else {
+              t.classList.remove('active');
+              t.style.borderColor = 'transparent';
+            }
+          });
+        }
+      };
+    }
+
+    window.geserSlideFoto = function(dir) {
+      const track = document.getElementById('heroSliderTrack');
+      if (!track || daftarFotoSlider.length <= 1) return;
+      let targetIdx = currentSlideIdx + dir;
+      if (targetIdx < 0) targetIdx = daftarFotoSlider.length - 1;
+      if (targetIdx >= daftarFotoSlider.length) targetIdx = 0;
+      lompatKeSlideFoto(targetIdx);
+    };
+
+    window.lompatKeSlideFoto = function(idx) {
+      const track = document.getElementById('heroSliderTrack');
+      if (!track) return;
+      currentSlideIdx = idx;
+      const targetPos = idx * track.clientWidth;
+      track.scrollTo({ left: targetPos, behavior: 'smooth' });
+    };
+
+    window.toggleFitMode = function() {
+      isFitMode = !isFitMode;
+      const imgs = document.querySelectorAll('.hero-slide-img');
+      imgs.forEach(img => {
+        img.style.objectFit = isFitMode ? 'contain' : 'cover';
+        img.style.background = isFitMode ? '#0A0F1D' : 'transparent';
+      });
+      const txt = document.getElementById('txtToggleFit');
+      if (txt) txt.innerText = isFitMode ? 'Foto Penuh' : 'Foto Utuh';
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'info',
+          title: isFitMode ? 'Mode Foto Utuh (Tanpa Terpotong)' : 'Mode Foto Penuh (Isi Layar)',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      }
+    };
+
+    window.bukaModalFotoFull = function(src) {
+      const modal = document.getElementById('modalLightboxFoto');
+      const img = document.getElementById('lightboxFotoImg');
+      if (modal && img) {
+        img.src = src;
+        modal.style.display = 'flex';
+      }
+    };
+
+    window.tutupModalFotoFull = function() {
+      const modal = document.getElementById('modalLightboxFoto');
+      if (modal) modal.style.display = 'none';
+    };
+
     window.onload = function() {
       if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
 
@@ -784,27 +942,8 @@ import BottomNav from '../components/BottomNav.astro';
         }).filter(Boolean);
       }
       
-      let fotoUtama = (fotos.length > 0) ? fotos[0] : placeholderFoto;
-      let uiFotoEl = document.getElementById('uiFoto');
-      if (uiFotoEl) {
-        uiFotoEl.src = fotoUtama;
-        uiFotoEl.onerror = function() { this.src = placeholderFoto; };
-      }
-
-      let uiGalleryEl = document.getElementById('uiGallery');
-      if (uiGalleryEl) {
-        if (fotos.length > 1) {
-          let galHtml = "";
-          fotos.forEach(imgUrl => {
-            galHtml += `\x3Cimg src="${imgUrl}" style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent;" onclick="document.getElementById('uiFoto').src=this.src;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'" onerror="this.src='${placeholderFoto}'">`;
-          });
-          uiGalleryEl.innerHTML = galHtml;
-          uiGalleryEl.style.display = 'flex';
-        } else {
-          uiGalleryEl.innerHTML = '';
-          uiGalleryEl.style.display = 'none';
-        }
-      }
+      // Render Slider Foto Besar & Thumbnail (Mendukung Geser Samping / Swipe)
+      inisiatorHeroSlider(fotos.length > 0 ? fotos : [placeholderFoto]);
       
       let deskripsiClean = (data.deskripsi || "Tidak ada deskripsi tersedia.").replace(/\\n/g, '\n');
       let elDesk = document.getElementById('uiDeskripsi');
@@ -1871,5 +2010,13 @@ import BottomNav from '../components/BottomNav.astro';
       }
     };
   </script>
+
+  <!-- Modal Zoom Foto Fullscreen (Lightbox) -->
+  <div id="modalLightboxFoto" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; align-items: center; justify-content: center; padding: 20px;" onclick="tutupModalFotoFull()">
+    <button type="button" onclick="tutupModalFotoFull()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+      <i class="fa-solid fa-times"></i>
+    </button>
+    <img id="lightboxFotoImg" src="" style="max-width: 95vw; max-height: 90vh; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);" onclick="event.stopPropagation()">
+  </div>
 </body>
 </html>

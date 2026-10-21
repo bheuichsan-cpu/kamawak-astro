@@ -5,3 +5,4 @@ Disallow: /admin
 Disallow: /owner
 
 Sitemap: https://kamawak.id/sitemap.xml
+
