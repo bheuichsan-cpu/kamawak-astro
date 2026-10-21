@@ -1,0 +1,7 @@
+# Robots.txt for kamawak.id
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /owner
+
+Sitemap: https://kamawak.id/sitemap.xml

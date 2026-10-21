@@ -8,6 +8,17 @@ import BottomNav from '../components/BottomNav.astro';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Detail Produk - Kamawak</title>
+  <meta name="description" content="Pesan paket wisata dan akomodasi terbaik di Sumatera Barat via Kamawak.id. Layanan reservasi resmi, mudah, dan terpercaya.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="canonical" href="https://kamawak.id/pdp">
+
+  <!-- Open Graph / WhatsApp -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Kamawak">
+  <meta property="og:title" content="Detail Wisata & Penginapan - Kamawak">
+  <meta property="og:description" content="Temukan dan pesan pengalaman wisata terbaik di Sumatera Barat melalui Kamawak.id">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1200&auto=format&fit=crop&q=80">
+  <meta name="twitter:card" content="summary_large_image">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style is:inline>
@@ -834,6 +845,7 @@ import BottomNav from '../components/BottomNav.astro';
 
       document.getElementById('uiKategori').innerText = data.kategori || "-";
       document.getElementById('uiNama').innerText = data.nama || "";
+      if (data.nama) document.title = data.nama + " | Kamawak.id";
       document.getElementById('uiDestinasi').innerText = data.destinasi || data.lokasi || "Sumatera Barat";
       document.getElementById('uiDurasi').innerText = data.durasi || "1 Hari";
       document.getElementById('uiRating').innerText = data.rating || "5.0";
