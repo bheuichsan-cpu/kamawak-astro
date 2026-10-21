@@ -1,0 +1,261 @@
+---
+import BottomNav from '../components/BottomNav.astro';
+---
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polling Logo Resmi - Kamawak.id</title>
+  <meta name="description" content="Vote dan pilih logo resmi terbaik untuk platform pariwisata Sumatera Barat Kamawak.id.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style is:inline>
+    :root { --primary: #FF5E1F; --dark: #1E293B; --bg: #F8FAFC; --card: #FFFFFF; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--bg); color: var(--dark); padding-bottom: 90px; }
+    .navbar { background: white; padding: 16px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+    .logo { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 700; color: var(--primary); text-decoration: none; }
+    .container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
+    .header-box { text-align: center; margin-bottom: 30px; }
+    .header-box h1 { font-family: 'Poppins', sans-serif; font-size: 28px; margin-bottom: 8px; color: var(--dark); }
+    .header-box p { color: #64748B; font-size: 15px; line-height: 1.6; }
+    
+    .section-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 30px; border: 1px solid #E2E8F0; }
+    .section-title { font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: var(--dark); margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
+    .section-desc { font-size: 13.5px; color: #64748B; margin-bottom: 16px; }
+    
+    .img-showcase { width: 100%; border-radius: 12px; border: 1px solid #E2E8F0; cursor: zoom-in; transition: transform 0.2s, box-shadow 0.2s; display: block; margin-bottom: 16px; }
+    .img-showcase:hover { transform: scale(1.01); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+    
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px) { .options-grid { grid-template-columns: 1fr; } }
+    
+    .option-card { border: 2px solid #E2E8F0; border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: 0.2s; position: relative; background: #FFFFFF; }
+    .option-card:hover { border-color: #CBD5E1; background: #F8FAFC; }
+    .option-card.selected { border-color: var(--primary); background: #FFF7ED; box-shadow: 0 4px 15px rgba(255, 94, 31, 0.15); }
+    .option-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .option-name { font-weight: 700; font-size: 15px; color: var(--dark); }
+    .option-card.selected .option-name { color: var(--primary); }
+    .option-desc { font-size: 12.5px; color: #64748B; line-height: 1.4; }
+    .radio-circle { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #CBD5E1; display: flex; align-items: center; justify-content: center; }
+    .option-card.selected .radio-circle { border-color: var(--primary); background: var(--primary); }
+    .option-card.selected .radio-circle::after { content: ''; width: 8px; height: 8px; background: white; border-radius: 50%; }
+
+    .sticky-vote-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #E2E8F0; padding: 14px 5%; display: flex; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); }
+    .vote-summary { font-size: 14px; font-weight: 600; color: var(--dark); }
+    .btn-submit-vote { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; box-shadow: 0 4px 15px rgba(255, 94, 31, 0.3); }
+    .btn-submit-vote:hover { background: #E04D14; transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="/" class="logo">Kamawak<span style="color:#1E293B;">.id</span></a>
+    <span style="font-size: 12px; background: #FF5E1F15; color: var(--primary); padding: 4px 10px; border-radius: 20px; font-weight: 700;">
+      <i class="fa-solid fa-square-poll-vertical"></i> Polling Resmi
+    </span>
+  </nav>
+
+  <div class="container">
+    
+    <div class="header-box">
+      <h1>Pilih Logo Resmi Kamawak.id</h1>
+      <p>Suara Anda sangat menentukan identitas visual brand <b>Kamawak.id</b>.<br>Klik foto untuk memperbesar, pilih 1 logo favorit Anda di bawah, lalu kirimkan suara Anda.</p>
+    </div>
+
+    <!-- KELOMPOK 1: SERI OPSI 4 FAVORIT (.id) -->
+    <div class="section-card" style="border-top: 4px solid var(--primary);">
+      <div class="section-title">
+        <span style="background: #FFF0EB; color: var(--primary); width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px;">1</span>
+        Seri Pilihan Favorit: Modern Wordmark (.id) ⭐
+      </div>
+      <p class="section-desc">Gaya tulisan bersih berteknologi modern (*Tech OTA*) yang secara tegas menyertakan nama domain resmi <b>.id</b>.</p>
+      
+      <img src="/images/logo-polling/kamawak_option4_variations_showcase_1792577988819.jpg" class="img-showcase" alt="Variasi Opsi 4 kamawak.id" onclick="bukaModalFoto(this.src)">
+
+      <div class="options-grid">
+        <div class="option-card" onclick="pilihOpsi('Variasi 4A (The Connected Horizon)', this)">
+          <div class="option-header">
+            <span class="option-name">Variasi 4A · The Connected Horizon</span>
+            <div class="radio-circle"></div>
+          </div>
+          <p class="option-desc">kamawak.id huruf kecil geometris bersih dengan titik oranye menyala. Paling seimbang dan elegan.</p>
+        </div>
+
+        <div class="option-card" onclick="pilihOpsi('Variasi 4B (Architectural Gonjong)', this)">
+          <div class="option-header">
+            <span class="option-name">Variasi 4B · Architectural Gonjong</span>
+            <div class="radio-circle"></div>
+          </div>
+          <p class="option-desc">KAMAWAK.ID kapital tebal dengan celah sudut atap Rumah Gadang pada K, M, W. Sangat kokoh dan berwibawa.</p>
+        </div>
+
+        <div class="option-card" onclick="pilihOpsi('Variasi 4C (Dynamic Journey Curve)', this)">
+          <div class="option-header">
+            <span class="option-name">Variasi 4C · Dynamic Journey Curve</span>
+            <div class="radio-circle"></div>
+          </div>
+          <p class="option-desc">kamawak.id dengan garis lintasan perjalanan oranye melengkung ramah layaknya senyuman kepuasan tamu.</p>
+        </div>
+
+        <div class="option-card" onclick="pilihOpsi('Variasi 4D (Two-Tone Capsule Badge)', this)">
+          <div class="option-header">
+            <span class="option-name">Variasi 4D · Capsule Badge .id</span>
+            <div class="radio-circle"></div>
+          </div>
+          <p class="option-desc">kamawak dengan .id terbungkus di dalam kapsul badge oranye. Sangat ikonik untuk ikon aplikasi dan medsos.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- KELOMPOK 2: SERI SIMBOL & IKON MINANG -->
+    <div class="section-card">
+      <div class="section-title">
+        <span style="background: #EFF6FF; color: #2563EB; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px;">2</span>
+        Seri Kombinasi: Simbol Ikonik + Tulisan
+      </div>
+      <p class="section-desc">Kombinasi lambang ikon khas Minang (atap Gonjong, ombak pesisir Mandeh, kompas, dan pin destinasi) bersanding dengan nama Kamawak.</p>
+      
+      <img src="/images/logo-polling/kamawak_logo_concepts_presentation_1792577405423.jpg" class="img-showcase" alt="Konsep Logo Ikonik Kamawak" onclick="bukaModalFoto(this.src)">
+
+      <div class="options-grid">
+        <div class="option-card" onclick="pilihOpsi('Opsi 1 (The Modern Gonjong Wave)', this)">
+          <div class="option-header">
+            <span class="option-name">Opsi 1 · Modern Gonjong Wave</span>
+            <div class="radio-circle"></div>
+          </div>
+          <p class="option-desc">Ikon huruf K dari perpaduan atap Rumah Gadang dan ombak laut pesisir Mandeh bergradasi emas-oranye.</p>
+        </div>
+
+        <div class="option-card" onclick="pilihOpsi('Opsi 2 (Compass of Minang)', this)">
+          <div class="option-header">
+            <span class="option-name">Opsi 2 · Compass of Minang</span>
+            <div class="radio-circle"></div>
+          </div>
+          <p class="option-desc">Jarum kompas petualang dibingkai dua lengkungan gonjong kembar dalam nuansa warna oranye dan navy.</p>
+        </div>
+
+        <div class="option-card" onclick="pilihOpsi('Opsi 3 (Nature & Horizon Pin)', this)">
+          <div class="option-header">
+            <span class="option-name">Opsi 3 · Nature & Horizon Pin</span>
+            <div class="radio-circle"></div>
+          </div>
+          <p class="option-desc">Geo-pin peta yang memuat siluet matahari terbit di balik gunung Marapi/Singgalang dan riak danau.</p>
+        </div>
+
+        <div class="option-card" onclick="pilihOpsi('Opsi 4 (Joyful Travel Loop)', this)">
+          <div class="option-header">
+            <span class="option-name">Opsi 4 · Joyful Travel Loop</span>
+            <div class="radio-circle"></div>
+          </div>
+          <p class="option-desc">Pita tak terputus (infinity) yang membentuk senyuman dan sudut gonjong lancip yang bersahabat.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- KELOMPOK 3: SERI EKSPLORASI ARTISTIK -->
+    <div class="section-card">
+      <div class="section-title">
+        <span style="background: #F0FDF4; color: #16A34A; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px;">3</span>
+        Seri Eksplorasi: Tipografi Artistik & Karakter Unik
+      </div>
+      <p class="section-desc">Eksplorasi gaya huruf khusus: mulai dari tulisan kuas pantai tropis, ekspedisi gunung outdoor, hingga kemewahan editorial.</p>
+      
+      <img src="/images/logo-polling/kamawak_branding_showcase_4models_1792577846187.jpg" class="img-showcase" alt="Model Artistik Kamawak" onclick="bukaModalFoto(this.src)">
+
+      <div class="options-grid">
+        <div class="option-card" onclick="pilihOpsi('Model A (Modern Vacation Brush Script)', this)">
+          <div class="option-header">
+            <span class="option-name">Model A · Vacation Brush Script</span>
+            <div class="radio-circle"></div>
+          </div>
+          <p class="option-desc">Tulisan kuas kaligrafi tropis yang mengalir tebal, santai, dan penuh kebebasan liburan pantai.</p>
+        </div>
+
+        <div class="option-card" onclick="pilihOpsi('Model B (Outdoor Expedition Slab-Serif)', this)">
+          <div class="option-header">
+            <span class="option-name">Model B · Outdoor Expedition</span>
+            <div class="radio-circle"></div>
+          </div>
+          <p class="option-desc">Tipografi tebal slab-serif petualangan alam bebas ala National Geographic / ekspedisi gunung.</p>
+        </div>
+
+        <div class="option-card" onclick="pilihOpsi('Model C (Editorial Luxury Serif)', this)">
+          <div class="option-header">
+            <span class="option-name">Model C · Editorial Luxury Serif</span>
+            <div class="radio-circle"></div>
+          </div>
+          <p class="option-desc">Tipografi serif kontras tinggi yang anggun dan berkelas ala majalah travel mewah & boutique resort.</p>
+        </div>
+
+        <div class="option-card" onclick="pilihOpsi('Model D (Architectural Monoline)', this)">
+          <div class="option-header">
+            <span class="option-name">Model D · Architectural Monoline</span>
+            <div class="radio-circle"></div>
+          </div>
+          <p class="option-desc">Huruf garis tunggal modern dengan celah sudut arsitektural kontemporer yang futuristik.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- STICKY BOTTOM BAR UNTUK KIRIM VOTE -->
+  <div class="sticky-vote-bar">
+    <div>
+      <div style="font-size: 11.5px; color: #64748B;">Pilihan Anda Saat Ini:</div>
+      <div id="labelPilihan" class="vote-summary" style="color: var(--primary);">Belum memilih opsi</div>
+    </div>
+    <button class="btn-submit-vote" onclick="kirimVoteWhatsApp()">
+      <i class="fa-brands fa-whatsapp"></i> Kirim Vote
+    </button>
+  </div>
+
+  <!-- Lightbox Modal Full Image -->
+  <div id="modalZoom" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; align-items: center; justify-content: center; padding: 20px;" onclick="tutupModalFoto()">
+    <button type="button" onclick="tutupModalFoto()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+      <i class="fa-solid fa-times"></i>
+    </button>
+    <img id="imgZoomFull" src="" style="max-width: 95vw; max-height: 90vh; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);" onclick="event.stopPropagation()">
+  </div>
+
+  <script is:inline>
+    let pilihanTerpilih = "";
+
+    function pilihOpsi(nama, el) {
+      pilihanTerpilih = nama;
+      document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('labelPilihan').innerText = nama;
+    }
+
+    function bukaModalFoto(src) {
+      const modal = document.getElementById('modalZoom');
+      const img = document.getElementById('imgZoomFull');
+      if (modal && img) {
+        img.src = src;
+        modal.style.display = 'flex';
+      }
+    }
+
+    function tutupModalFoto() {
+      const modal = document.getElementById('modalZoom');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function kirimVoteWhatsApp() {
+      if (!pilihanTerpilih) {
+        Swal.fire('Pilih Dulu', 'Silakan klik salah satu kartu opsi logo di atas sebelum mengirim vote.', 'warning');
+        return;
+      }
+
+      let pesan = `Halo Tim Kamawak! 👋%0A%0ASaya sudah melihat seluruh rekomendasi desain logo di website https://kamawak.id/polling.%0A%0A🗳️ *Pilihan Suara Saya:*%0A👉 *${pilihanTerpilih}*%0A%0ASemoga logo ini terpilih menjadi identitas resmi Kamawak.id! 🚀`;
+      let waUrl = `https://api.whatsapp.com/send?text=${pesan}`;
+      window.open(waUrl, '_blank');
+    }
+  </script>
+</body>
+</html>
