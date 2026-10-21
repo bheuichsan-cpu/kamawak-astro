@@ -99,15 +99,15 @@ const { current = 'home' } = Astro.props;
 
       if (user && user !== "") {
         if (role.includes("owner") || role.includes("mitra")) {
-          btnAkun.href = "/owner?u=" + encodeURIComponent(user);
+          btnAkun.href = "/owner";
           if (labelAkun) labelAkun.innerText = "Mitra";
           if (iconAkun) iconAkun.className = "fa-solid fa-store";
         } else if (role.includes("admin")) {
-          btnAkun.href = "/admin?u=" + encodeURIComponent(user);
+          btnAkun.href = "/admin";
           if (labelAkun) labelAkun.innerText = "Admin";
           if (iconAkun) iconAkun.className = "fa-solid fa-gauge-high";
         } else {
-          btnAkun.href = "/profil?u=" + encodeURIComponent(user);
+          btnAkun.href = "/profil";
           if (labelAkun) labelAkun.innerText = "Profil";
           if (iconAkun) iconAkun.className = "fa-solid fa-circle-user";
         }

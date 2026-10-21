@@ -252,6 +252,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
       if (!data) {
           txtBox.innerText = "Kredensial tidak valid atau tidak ditemukan."; msgBox.className = "msg-box msg-error"; msgBox.style.display = "block";
       } else {
+          localStorage.setItem("kamawak_id", data.id);
           localStorage.setItem("kamawak_user", data.nama); 
           localStorage.setItem("kamawak_role", data.role);
           
@@ -406,7 +407,8 @@ import GASPolyfill from '../components/GASPolyfill.astro';
     };
 
     // Helper untuk redirect setelah verifikasi sukses
-    function selesaikanVerifikasiDanMasuk(nama) {
+    function selesaikanVerifikasiDanMasuk(nama, id) {
+      if (id) localStorage.setItem("kamawak_id", id);
       localStorage.setItem("kamawak_user", nama);
       localStorage.setItem("kamawak_role", "Wisatawan");
       sessionStorage.removeItem("kamawak_temp_otp");
@@ -470,7 +472,7 @@ import GASPolyfill from '../components/GASPolyfill.astro';
               .eq('email', tempRegData.email);
 
             if (cekUlang && cekUlang.length > 0) {
-              selesaikanVerifikasiDanMasuk(cekUlang[0].nama || tempRegData.nama);
+              selesaikanVerifikasiDanMasuk(cekUlang[0].nama || tempRegData.nama, cekUlang[0].id);
               return;
             }
           } catch(eCek) {
@@ -488,7 +490,8 @@ import GASPolyfill from '../components/GASPolyfill.astro';
               password: tempRegData.password, // Sudah ter-hash
               role: 'Wisatawan',
               status_langganan: 'Aktif'
-            }]);
+            }])
+            .select('id, nama');
 
           if (errInsert) {
              if (errInsert.code === '23505' || (errInsert.message && errInsert.message.includes('unique'))) {
@@ -502,7 +505,8 @@ import GASPolyfill from '../components/GASPolyfill.astro';
              }
           } else {
              // Berhasil disimpan, auto-login dan alihkan ke beranda
-             selesaikanVerifikasiDanMasuk(tempRegData.nama);
+             const createdId = (newUser && newUser[0]) ? newUser[0].id : null;
+             selesaikanVerifikasiDanMasuk(tempRegData.nama, createdId);
           }
         } else {
           loader.style.display = "none"; btn.style.display = "block";

@@ -418,20 +418,12 @@ import BottomNav from '../components/BottomNav.astro';
 
     window.onload = function() {
       if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
-      // Sinkronisasi Sesi
-      let urlUser = new URLSearchParams(window.location.search).get("u") || localStorage.getItem("kamawak_user") || "";
-      let urlRole = new URLSearchParams(window.location.search).get("r") || localStorage.getItem("kamawak_role") || "";
-      if(urlUser && urlRole && urlUser !== "") {
-         localStorage.setItem("kamawak_user", urlUser);
-         localStorage.setItem("kamawak_role", urlRole);
-         
-      }
 
       let activeUser = localStorage.getItem("kamawak_user");
-      let activeRole = localStorage.getItem("kamawak_role");
+      let activeRole = localStorage.getItem("kamawak_role") || "Wisatawan";
 
       if (!activeUser) {
-        window.open("/login", "_top");
+        window.location.href = "/login";
         return;
       }
 

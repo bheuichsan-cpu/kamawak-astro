@@ -78,7 +78,7 @@ import BottomNav from '../components/BottomNav.astro';
   <script is:inline src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <GASPolyfill />
 </head>
-<body>
+<body id="ownerBody" style="display: none;">
 
     <nav class="navbar">
     <a href="/owner" class="logo">Kamawak. <span style="font-size:14px; color:var(--text-dark);">| Dasbor Mitra</span></a>
@@ -262,20 +262,67 @@ import BottomNav from '../components/BottomNav.astro';
     import { supabase } from '../lib/supabase.js';
 
     const BASE_URL = "";
-    let namaUser = new URLSearchParams(window.location.search).get("u") || localStorage.getItem("kamawak_user") || "";
+    let namaUser = localStorage.getItem("kamawak_user") || "";
 
     function formatUang(angka) { return "Rp " + Number(angka || 0).toLocaleString('id-ID'); }
 
-    window.onload = function() {
+    window.onload = async function() {
       if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
-      if (!namaUser || namaUser === "") { window.open("/login", '_top'); return; }
-      
-      let namaDecode = decodeURIComponent(namaUser);
-      
-      document.getElementById("namaTampil").innerText = namaDecode;
-      document.getElementById("printDate").innerText = "Dicetak pada: " + new Date().toLocaleString('id-ID');
 
-      muatDashboardOwner(namaDecode);
+      const savedId = localStorage.getItem("kamawak_id");
+      const savedUser = localStorage.getItem("kamawak_user");
+      const savedRole = (localStorage.getItem("kamawak_role") || "").toLowerCase();
+
+      // Tolak jika tidak ada sesi atau role bukan Owner/Mitra/Admin
+      if ((!savedId && !savedUser) || (!savedRole.includes("owner") && !savedRole.includes("mitra") && !savedRole.includes("admin"))) {
+        localStorage.clear();
+        window.location.href = "/login";
+        return;
+      }
+
+      try {
+        let query = supabase.from('users').select('*');
+        if (savedId) {
+          query = query.eq('id', savedId);
+        } else {
+          query = query.eq('nama', savedUser);
+        }
+        const { data: userData, error: userError } = await query.single();
+
+        if (userError || !userData) {
+          console.warn("Akses ditolak: Data pengguna tidak ditemukan di database.");
+          localStorage.clear();
+          window.location.href = "/login";
+          return;
+        }
+
+        const role = (userData.role || '').toLowerCase();
+        if (!role.includes("owner") && !role.includes("mitra") && !role.includes("admin")) {
+          alert("Akses ditolak: Akun Anda bukan akun Mitra/Owner.");
+          window.location.href = "/";
+          return;
+        }
+
+        // Sinkronisasi data resmi dari database
+        namaUser = userData.nama;
+        localStorage.setItem("kamawak_id", userData.id);
+        localStorage.setItem("kamawak_user", userData.nama);
+        localStorage.setItem("kamawak_role", userData.role);
+
+        // Buka tampilan setelah diverifikasi resmi
+        const ownerBody = document.getElementById("ownerBody");
+        if (ownerBody) ownerBody.style.display = "block";
+
+        let namaDecode = userData.nama;
+        document.getElementById("namaTampil").innerText = namaDecode;
+        document.getElementById("printDate").innerText = "Dicetak pada: " + new Date().toLocaleString('id-ID');
+
+        muatDashboardOwner(namaDecode);
+      } catch (err) {
+        console.error("Gagal verifikasi sesi mitra:", err);
+        localStorage.clear();
+        window.location.href = "/login";
+      }
     };
 
     async function muatDashboardOwner(namaOwner) {

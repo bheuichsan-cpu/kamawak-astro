@@ -689,14 +689,6 @@ import BottomNav from '../components/BottomNav.astro';
 
     window.onload = function() {
       if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
-      // Sinkronisasi Sesi dari URL
-      let urlUser = new URLSearchParams(window.location.search).get("u") || localStorage.getItem("kamawak_user") || "";
-      let urlRole = new URLSearchParams(window.location.search).get("r") || localStorage.getItem("kamawak_role") || "";
-      if(urlUser && urlRole && urlUser !== "") {
-         localStorage.setItem("kamawak_user", urlUser);
-         localStorage.setItem("kamawak_role", urlRole);
-         
-      }
 
       if(!idProduk || idProduk === "") {
         Swal.fire('Error', 'Produk tidak valid atau URL tidak lengkap.', 'error').then(() => {

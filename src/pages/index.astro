@@ -383,16 +383,6 @@ import BottomNav from '../components/BottomNav.astro';
     // FUNGSI BARU: CEK SESI LOGIN DI HALAMAN UTAMA
     // ==========================================
     function cekStatusLogin() {
-      // 1. Sinkronisasi Sesi dari URL (Solusi isolasi GAS iframe)
-      let urlUser = new URLSearchParams(window.location.search).get("u") || localStorage.getItem("kamawak_user") || "";
-      let urlRole = new URLSearchParams(window.location.search).get("r") || localStorage.getItem("kamawak_role") || "";
-      if(urlUser && urlRole && urlUser !== "") {
-         localStorage.setItem("kamawak_user", urlUser);
-         localStorage.setItem("kamawak_role", urlRole);
-         // Opsional: Bersihkan URL bar (mungkin tidak ngefek di dalam iframe, tapi aman dipanggil)
-         
-      }
-
       let user = localStorage.getItem("kamawak_user");
       let role = localStorage.getItem("kamawak_role");
       let nav = document.getElementById("navMenu");
@@ -404,15 +394,15 @@ import BottomNav from '../components/BottomNav.astro';
         
         let htmlSapaanAtauDasbor = "";
         
-                if(!isWisatawan) {
+        if(!isWisatawan) {
           // Jika ia Mitra/Admin, beri tombol masuk Dasbor
           let target = role.toLowerCase().includes("admin") ? "admin" : "owner";
-          let urlDasbor = BASE_URL + "/" + target + "?u=" + encodeURIComponent(user);
+          let urlDasbor = "/" + target;
           let btnIcon = role.toLowerCase().includes("admin") ? '<i class="fa-solid fa-gauge-high"></i> <span>Dasbor Admin</span>' : '<i class="fa-solid fa-plane"></i> <span>Dasbor Mitra</span>';
           htmlSapaanAtauDasbor = `\x3Cbutton onclick="window.open('${urlDasbor}', '_top')" class="btn-login-nav" style="background: var(--text-dark); color: white; border:none; cursor:pointer; margin-right: 8px;">${btnIcon}\x3C/button>`;
         } else {
           // Jika ia Wisatawan, beri tombol ke Profil
-          let urlProfil = BASE_URL + "/profil?u=" + encodeURIComponent(user) + "&r=" + encodeURIComponent(role);
+          let urlProfil = "/profil";
           htmlSapaanAtauDasbor = `\x3Cbutton onclick="window.open('${urlProfil}', '_top')" class="btn-login-nav" style="background: var(--primary); color: white; border:none; cursor:pointer; margin-right: 8px;">\x3Ci class="fa-solid fa-user-circle">\x3C/i> <span>Profil & Pesanan</span>\x3C/button>`;
         }
         

@@ -120,7 +120,7 @@ import BottomNav from '../components/BottomNav.astro';
   <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <GASPolyfill />
 </head>
-<body id="mainBody">
+<body id="mainBody" style="display: none;">
 
   <nav class="navbar">
     <a href="/admin" class="logo">Kamawak. <span style="font-size: 12px; background: #FF5E1F20; color: var(--primary); padding: 3px 8px; border-radius: 4px;">Admin Panel</span></a>
@@ -1214,30 +1214,59 @@ window.logout = function() {
   window.location.href = '/';
 };
 
-window.onload = function() {
-  let urlUser = new URLSearchParams(window.location.search).get("u") || localStorage.getItem("kamawak_user") || "";
-  let urlRole = new URLSearchParams(window.location.search).get("r") || localStorage.getItem("kamawak_role") || "";
-  if(urlUser && urlRole && urlUser !== "") {
-     localStorage.setItem("kamawak_user", urlUser);
-     localStorage.setItem("kamawak_role", urlRole);
-  }
+window.onload = async function() {
+  const savedId = localStorage.getItem("kamawak_id");
+  const savedUser = localStorage.getItem("kamawak_user");
+  const savedRole = localStorage.getItem("kamawak_role");
 
-  let role = localStorage.getItem("kamawak_role");
-  if (!role || role.toLowerCase() !== "admin") {
+  // Jika tidak ada session atau role bukan admin, tolak akses langsung
+  if ((!savedId && !savedUser) || !savedRole || savedRole.toLowerCase() !== "admin") {
+    localStorage.clear();
     window.location.href = "/login";
     return;
   }
-  
-  document.getElementById("adminName").innerText = "Halo, " + localStorage.getItem("kamawak_user");
-  
-  muatStatistikGlobal();
-  muatDaftarMitra();
-  muatTransaksi();
-  muatDaftarPengguna();
-  muatKas();
-  muatPengaturan();
-  if (typeof muatDaftarPintasanKota === 'function') muatDaftarPintasanKota();
-  if (typeof muatDaftarPromo === 'function') muatDaftarPromo();
+
+  try {
+    let query = supabase.from('users').select('id, nama, role');
+    if (savedId) {
+      query = query.eq('id', savedId);
+    } else {
+      query = query.eq('nama', savedUser);
+    }
+    const { data: userAuth, error: authErr } = await query.single();
+
+    if (authErr || !userAuth || (userAuth.role || '').toLowerCase() !== 'admin') {
+      console.warn("Akses Admin ditolak: Kredensial tidak valid di database.");
+      localStorage.clear();
+      window.location.href = "/login";
+      return;
+    }
+
+    // Perbarui session dari record database valid
+    localStorage.setItem("kamawak_id", userAuth.id);
+    localStorage.setItem("kamawak_user", userAuth.nama);
+    localStorage.setItem("kamawak_role", userAuth.role);
+
+    // Buka tampilan setelah diverifikasi resmi oleh database
+    const mainBody = document.getElementById("mainBody");
+    if (mainBody) mainBody.style.display = "block";
+
+    const adminNameEl = document.getElementById("adminName");
+    if (adminNameEl) adminNameEl.innerText = "Halo, " + userAuth.nama;
+
+    muatStatistikGlobal();
+    muatDaftarMitra();
+    muatTransaksi();
+    muatDaftarPengguna();
+    muatKas();
+    muatPengaturan();
+    if (typeof muatDaftarPintasanKota === 'function') muatDaftarPintasanKota();
+    if (typeof muatDaftarPromo === 'function') muatDaftarPromo();
+  } catch (err) {
+    console.error("Gagal verifikasi sesi admin:", err);
+    localStorage.clear();
+    window.location.href = "/login";
+  }
 };
 
 async function muatStatistikGlobal() {
