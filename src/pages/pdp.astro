@@ -414,8 +414,10 @@ import BottomNav from '../components/BottomNav.astro';
         .btn-back i { font-size: 14px !important; margin: 0 !important; }
         .product-img { height: 250px; }
         .hero-carousel-flanked { height: 290px !important; border-radius: 12px !important; }
-        .hero-center-stage { max-width: calc(100% - 64px) !important; padding: 0 2px !important; }
-        .hero-flank-wing { min-width: 32px !important; }
+        .hero-center-stage { max-width: calc(100% - 68px) !important; padding: 0 !important; }
+        .hero-flank-wing { min-width: 34px !important; }
+        .hero-flank-wing.flank-left { border-right: 2px solid #FFFFFF !important; }
+        .hero-flank-wing.flank-right { border-left: 2px solid #FFFFFF !important; }
         .flank-icon-circle { width: 30px !important; height: 30px !important; font-size: 12px !important; }
         .container { padding: 0 15px; margin: 15px auto; }
         .product-title { font-size: 22px; }
@@ -423,33 +425,50 @@ import BottomNav from '../components/BottomNav.astro';
         .booking-card { margin-top: 20px; position: static; }
     }
 
-    /* HERO CAROUSEL FLANKED: FOTO TENGAH UTUH + SAYAP FOTO SEBELUM/SESUDAH */
+    /* HERO CAROUSEL FLANKED: FOTO TENGAH UTUH + SAYAP FOTO SEBELUM/SESUDAH (TANPA AREA HITAM) */
     .hero-carousel-flanked {
       position: relative;
       border-radius: 16px;
       overflow: hidden;
       margin-bottom: 12px;
-      background: #080D1A;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
       height: 440px;
       display: flex;
       align-items: center;
       justify-content: center;
       user-select: none;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Ambient Glow Latar Belakang (Menggantikan Semua Warna Hitam dengan Warna Alami Foto) */
+    .hero-ambient-backdrop {
+      position: absolute;
+      inset: -15px;
+      background-size: cover;
+      background-position: center;
+      filter: blur(28px) saturate(1.25);
+      opacity: 0.38;
+      pointer-events: none;
+      z-index: 1;
     }
 
     /* Stage Tengah: Foto Utuh Tanpa Terpotong (Scale to fit) */
     .hero-center-stage {
       height: 100%;
       flex: 0 0 auto;
-      max-width: calc(100% - 120px);
+      max-width: calc(100% - 130px);
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
       z-index: 10;
       background: transparent;
-      padding: 0 4px;
+      padding: 0;
+      margin: 0;
     }
     .hero-main-uncropped-img {
       max-height: 100%;
@@ -459,15 +478,15 @@ import BottomNav from '../components/BottomNav.astro';
       object-fit: contain;
       display: block;
       cursor: zoom-in;
-      box-shadow: 0 0 35px rgba(0,0,0,0.65);
-      border-radius: 6px;
-      transition: opacity 0.22s ease-in-out, transform 0.22s ease-in-out;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border-radius: 0;
+      transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
     }
 
-    /* Sayap Kiri & Kanan (Mengisi Ruang Hitam/Kosong dengan Foto Sebelum & Sesudah) */
+    /* Sayap Kiri & Kanan (Mengisi Ruang Kosong Samping Tanpa Garis Hitam) */
     .hero-flank-wing {
       flex: 1 1 0;
-      min-width: 60px;
+      min-width: 65px;
       height: 100%;
       position: relative;
       overflow: hidden;
@@ -476,14 +495,23 @@ import BottomNav from '../components/BottomNav.astro';
       align-items: center;
       justify-content: center;
       z-index: 5;
+      background: #F1F5F9;
+    }
+    /* Pembatas Foto Berwarna Putih Bersih (BUKAN HITAM) */
+    .hero-flank-wing.flank-left {
+      border-right: 3px solid #FFFFFF;
+    }
+    .hero-flank-wing.flank-right {
+      border-left: 3px solid #FFFFFF;
     }
     .flank-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
-      filter: brightness(0.5) blur(0.5px);
-      transition: filter 0.3s ease, transform 0.3s ease;
+      filter: brightness(0.96);
+      opacity: 0.9;
+      transition: filter 0.25s ease, transform 0.25s ease, opacity 0.25s ease;
     }
     .flank-overlay {
       position: absolute;
@@ -491,36 +519,32 @@ import BottomNav from '../components/BottomNav.astro';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(8, 13, 26, 0.25);
-      transition: background 0.3s ease;
-    }
-    .flank-left .flank-overlay {
-      background: linear-gradient(to right, rgba(8,13,26,0.5) 0%, rgba(8,13,26,0.1) 100%);
-    }
-    .flank-right .flank-overlay {
-      background: linear-gradient(to left, rgba(8,13,26,0.5) 0%, rgba(8,13,26,0.1) 100%);
+      background: rgba(255, 255, 255, 0.12);
+      transition: background 0.25s ease;
     }
     .flank-icon-circle {
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.88);
-      color: #0F172A;
+      background: #FFFFFF;
+      color: #1E293B;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 15px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.35);
-      transition: transform 0.2s ease, background 0.2s ease;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.14);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
     }
     .hero-flank-wing:hover .flank-img {
-      filter: brightness(0.75) blur(0px);
+      filter: brightness(1.02);
+      opacity: 1;
       transform: scale(1.04);
     }
     .hero-flank-wing:hover .flank-icon-circle {
       transform: scale(1.12);
       background: #FFFFFF;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.2);
     }
 
     /* Mode Single Photo (Bila hanya ada 1 foto) */
@@ -623,9 +647,20 @@ import BottomNav from '../components/BottomNav.astro';
 </head>
 <body>
 
+  <script is:inline>
+    window.kembaliKeHome = function(event) {
+      if (event && event.preventDefault) event.preventDefault();
+      if (window.history && window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
+        window.history.back();
+      } else {
+        window.location.href = '/';
+      }
+    };
+  </script>
+
   <nav class="navbar">
     <a href="/" class="logo">Kamawak.</a>
-    <button class="btn-back" onclick="kembaliKeHome()"><i class="fa-solid fa-arrow-left"></i> Kembali</button>
+    <a href="/" class="btn-back" onclick="kembaliKeHome(event)" title="Kembali ke Halaman Utama"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
   </nav>
 
   <div id="loader"><i class="fa-solid fa-spinner fa-spin"></i> Memuat Detail Produk...</div>
@@ -635,10 +670,13 @@ import BottomNav from '../components/BottomNav.astro';
     <!-- KIRI: INFORMASI PRODUK -->
     <div class="product-main">
       
-      <!-- HERO CAROUSEL FLANKED: FOTO UTAMA UTUH TANPA TERPOTONG + SAYAP KIRI/KANAN DIISI FOTO SEBELUM & SESUDAH -->
+      <!-- HERO CAROUSEL FLANKED: FOTO UTAMA UTUH TANPA TERPOTONG + SAYAP KIRI/KANAN DIISI FOTO SEBELUM & SESUDAH (BEBAS HITAM) -->
       <div class="hero-carousel-flanked" id="heroCarouselFlanked">
         
-        <!-- Sayap Kiri: Potongan Foto Sebelumnya (Mengisi Area Kosong Kiri) -->
+        <!-- Ambient Blur Backdrop (Mengisi Latar dengan Warna Alami Foto) -->
+        <div id="heroAmbientBackdrop" class="hero-ambient-backdrop"></div>
+
+        <!-- Sayap Kiri: Potongan Foto Sebelumnya (Mengisi Area Kosong Kiri Tanpa Hitam) -->
         <div class="hero-flank-wing flank-left" id="flankLeft" onclick="geserSlideFoto(-1)" title="Klik untuk lihat foto sebelumnya">
           <img id="imgFlankLeft" src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500" class="flank-img" alt="Foto Sebelumnya" onerror="this.src='https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500'">
           <div class="flank-overlay">
@@ -651,7 +689,7 @@ import BottomNav from '../components/BottomNav.astro';
           <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1200" id="uiFoto" class="hero-main-uncropped-img" alt="Foto Kamar / Produk" onclick="bukaModalFotoFull(this.src)" title="Klik untuk perbesar foto (Layar Penuh)" onerror="this.src='https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800'">
         </div>
 
-        <!-- Sayap Kanan: Potongan Foto Sesudahnya (Mengisi Area Kosong Kanan) -->
+        <!-- Sayap Kanan: Potongan Foto Sesudahnya (Mengisi Area Kosong Kanan Tanpa Hitam) -->
         <div class="hero-flank-wing flank-right" id="flankRight" onclick="geserSlideFoto(1)" title="Klik untuk lihat foto sesudahnya">
           <img id="imgFlankRight" src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500" class="flank-img" alt="Foto Sesudahnya" onerror="this.src='https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500'">
           <div class="flank-overlay">
@@ -659,14 +697,14 @@ import BottomNav from '../components/BottomNav.astro';
           </div>
         </div>
 
-        <!-- Indikator Jumlah Foto Badge Melayang -->
-        <div id="slideCounterBadge" style="position: absolute; bottom: 12px; right: 12px; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; z-index: 20;">
-          <i class="fa-solid fa-images"></i> <span id="slideCounterText">1 / 1 Foto</span>
+        <!-- Indikator Jumlah Foto Badge Melayang (Putih Elegan) -->
+        <div id="slideCounterBadge" style="position: absolute; bottom: 12px; right: 12px; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(8px); color: #1E293B; border: 1px solid rgba(226, 232, 240, 0.9); padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; z-index: 20; box-shadow: 0 4px 14px rgba(0,0,0,0.08);">
+          <i class="fa-solid fa-images" style="color: var(--primary);"></i> <span id="slideCounterText">1 / 1 Foto</span>
         </div>
 
-        <!-- Tombol Buka Foto Layar Penuh -->
-        <button type="button" id="btnBukaFullFoto" onclick="bukaModalFotoFull(daftarFotoSlider[currentSlideIdx] || document.getElementById('uiFoto')?.src)" title="Lihat foto resolusi penuh" style="position: absolute; top: 12px; right: 12px; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); color: white; border: none; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; z-index: 20; transition: 0.2s;">
-          <i class="fa-solid fa-expand"></i> <span>Perbesar Foto</span>
+        <!-- Tombol Buka Foto Layar Penuh (Putih Elegan) -->
+        <button type="button" id="btnBukaFullFoto" onclick="bukaModalFotoFull(daftarFotoSlider[currentSlideIdx] || document.getElementById('uiFoto')?.src)" title="Lihat foto resolusi penuh" style="position: absolute; top: 12px; right: 12px; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(8px); color: #1E293B; border: 1px solid rgba(226, 232, 240, 0.9); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; z-index: 20; transition: 0.2s; box-shadow: 0 4px 14px rgba(0,0,0,0.08);">
+          <i class="fa-solid fa-expand" style="color: var(--primary);"></i> <span>Perbesar Foto</span>
         </button>
       </div>
 
@@ -1064,6 +1102,12 @@ import BottomNav from '../components/BottomNav.astro';
         if (counterText) {
           counterText.innerText = `${currentSlideIdx + 1} / ${N} Foto`;
         }
+      }
+
+      // Set Ambient Blur Backdrop
+      const ambient = document.getElementById('heroAmbientBackdrop');
+      if (ambient) {
+        ambient.style.backgroundImage = `url("${currentUrl}")`;
       }
 
       // Update Highlight Thumbnail
@@ -1824,8 +1868,13 @@ import BottomNav from '../components/BottomNav.astro';
 
     }
 
-    function kembaliKeHome() {
-      window.open(BASE_URL, '_top');
+    function kembaliKeHome(event) {
+      if (event && event.preventDefault) event.preventDefault();
+      if (window.history && window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
+        window.history.back();
+      } else {
+        window.location.href = '/';
+      }
     }
 
     window.bagikanPaket = async function() {
