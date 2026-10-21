@@ -261,6 +261,52 @@ import BottomNav from '../components/BottomNav.astro';
         .btn-partner { padding: 8px 15px; font-size: 12px; }
     }
 
+    /* RUNNING TEXT (MARQUEE) PROMO STYLES */
+    .promo-marquee-container {
+      user-select: none;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .promo-marquee-track {
+      display: inline-flex;
+      align-items: center;
+      gap: 30px;
+      white-space: nowrap;
+      animation: marqueeScroll 26s linear infinite;
+    }
+    .promo-marquee-track:hover {
+      animation-play-state: paused;
+    }
+    @keyframes marqueeScroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .marquee-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .marquee-code-pill {
+      background: rgba(255, 255, 255, 0.25);
+      border: 1px dashed rgba(255, 255, 255, 0.85);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #FFF;
+      transition: 0.2s;
+    }
+    .marquee-code-pill:hover {
+      background: white;
+      color: #EA580C;
+      transform: scale(1.06);
+    }
+    .marquee-separator {
+      color: #FDE047;
+      font-size: 14px;
+      margin: 0 4px;
+    }
   </style>
   <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <GASPolyfill />
@@ -288,10 +334,11 @@ import BottomNav from '../components/BottomNav.astro';
     <button class="tab-btn" onclick="filterKategori(this, 'Favorit')"><i class="fa-solid fa-heart" style="color: #EF4444;"></i> Favorit (<span id="wishlistCountBadge">0</span>)</button>
   </div>
 
-  <!-- BANNER PROMO KUPON DISKON KEKINIAN (DINAMIS) -->
-  <div id="promoBannerStrip" style="display: none; background: linear-gradient(90deg, #FFF7ED 0%, #FEF3C7 50%, #ECFDF5 100%); border-bottom: 1px solid #FED7AA; padding: 10px 5%; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; flex-wrap: wrap;">
-    <div id="promoBannerLeft" style="display: flex; align-items: center; gap: 8px; color: #9A3412; font-weight: 600; flex-wrap: wrap;"></div>
-    <div id="promoBannerRight" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;"></div>
+  <!-- RUNNING TEXT PROMO MARQUEE (HANYA MUNCUL JIKA STATUS VOUCHER DIAKTIFKAN) -->
+  <div id="promoBannerStrip" class="promo-marquee-container" style="display: none; background: linear-gradient(90deg, #FF5E1F 0%, #EA580C 50%, #C2410C 100%); color: white; padding: 10px 0; border-bottom: 2px solid #FB923C; box-shadow: 0 2px 10px rgba(255, 94, 31, 0.25);" title="Arahkan kursor untuk jeda, klik kupon untuk menyalin">
+    <div class="promo-marquee-track" id="promoMarqueeTrack">
+      <!-- Diisi dinamis jika master voucher promo aktif -->
+    </div>
   </div>
 
   <div class="hero-slider" id="heroSlider">
@@ -961,69 +1008,110 @@ import BottomNav from '../components/BottomNav.astro';
 
     function muatBannerPromoHome() {
       const banner = document.getElementById('promoBannerStrip');
-      const bLeft = document.getElementById('promoBannerLeft');
-      const bRight = document.getElementById('promoBannerRight');
-      if (!banner || !bLeft || !bRight) return;
+      const track = document.getElementById('promoMarqueeTrack');
+      if (!banner || !track) return;
 
       const masterAktif = localStorage.getItem('kamawak_promo_master_aktif');
-      if (masterAktif === 'false') {
+      // PENTING: Hanya tampil jika status master promo benar-benar AKTIF ('true').
+      // Jangan pernah berasumsi default aktif agar tidak muncul sekilas (flash) saat promo dinonaktifkan.
+      if (masterAktif !== 'true') {
         banner.style.display = 'none';
+        track.innerHTML = '';
         return;
       }
 
       let raw = localStorage.getItem('kamawak_promo_codes');
       let promos = [];
-      if (raw !== null && raw !== undefined) {
-        try { promos = JSON.parse(raw); } catch(e) {}
-      } else {
-        promos = [
-          { kode: 'MINANGSERU', tipe: 'persen', nilai: 10, min: 100000, deskripsi: 'Diskon 10% Spesial Jelajah Minangkabau', aktif: true },
-          { kode: 'HEMAT50K', tipe: 'nominal', nilai: 50000, min: 200000, deskripsi: 'Potongan Langsung Rp 50.000', aktif: true },
-          { kode: 'PROMOAWAL', tipe: 'persen', nilai: 15, min: 150000, deskripsi: 'Diskon 15% Eksklusif Wisatawan Baru', aktif: true }
-        ];
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) promos = parsed;
+        } catch(e) {}
       }
 
-      const activePromos = Array.isArray(promos) ? promos.filter(p => p.aktif !== false) : [];
+      // Filter hanya voucher kupon yang aktif
+      const activePromos = promos.filter(p => p.aktif !== false && p.aktif !== 'false');
       if (activePromos.length === 0) {
         banner.style.display = 'none';
+        track.innerHTML = '';
         return;
       }
 
-      // Render Hanya Kupon Aktif
-      banner.style.display = 'flex';
-      let kuponTexts = activePromos.slice(0, 2).map(p => {
-        const valStr = p.tipe === 'persen' ? `${p.nilai}%` : `Rp ${Number(p.nilai).toLocaleString('id-ID')}`;
-        return `<strong style="letter-spacing: 0.5px; background: white; padding: 2px 6px; border-radius: 4px; border: 1px dashed #F97316; color: #EA580C;">${p.kode}</strong> (Hemat ${valStr})`;
-      }).join(' & ');
-
-      bLeft.innerHTML = `
-        <span style="background: #F97316; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
-          <i class="fa-solid fa-tags"></i> KUPON DISKON
+      // Format running text ticker (Marquee)
+      let itemsHtml = `
+        <span class="marquee-item">
+          <i class="fa-solid fa-fire" style="color: #FDE047;"></i>
+          <strong>PROMO SPESIAL LIBURAN RANAH MINANG</strong>
         </span>
-        <span>Gunakan kupon ${kuponTexts} saat pemesanan tiket!</span>
+        <span class="marquee-separator">✦</span>
       `;
 
-      bRight.innerHTML = activePromos.slice(0, 2).map(p => {
-        const label = p.tipe === 'persen' ? `Salin ${p.nilai}%` : `Salin Rp ${Math.round(p.nilai/1000)}rb`;
-        return `
-          <button onclick="salinKuponHome('${p.kode}')" style="background: white; border: 1px solid #FB923C; color: #EA580C; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(234, 88, 12, 0.1);">
-            <i class="fa-regular fa-copy"></i> ${label}
-          </button>
+      activePromos.forEach(p => {
+        const valStr = p.tipe === 'persen' ? `${p.nilai}%` : `Rp ${Number(p.nilai).toLocaleString('id-ID')}`;
+        const minStr = p.min && Number(p.min) > 0 ? ` (Min. Rp ${Number(p.min).toLocaleString('id-ID')})` : '';
+        const descStr = p.deskripsi ? ` • ${p.deskripsi}` : '';
+        itemsHtml += `
+          <span class="marquee-item">
+            <i class="fa-solid fa-tags" style="color: #FDE047;"></i>
+            <span>Gunakan kode</span>
+            <span class="marquee-code-pill" onclick="salinKuponHome('${p.kode}', event)" title="Klik untuk salin kode">${p.kode}</span>
+            <span>Hemat ${valStr}${minStr}${descStr}</span>
+          </span>
+          <span class="marquee-separator">✦</span>
         `;
-      }).join('');
+      });
+
+      itemsHtml += `
+        <span class="marquee-item">
+          <i class="fa-regular fa-hand-pointer" style="color: #FDE047;"></i>
+          <span>Klik kode kupon untuk menyalin otomatis</span>
+        </span>
+        <span class="marquee-separator">✦</span>
+      `;
+
+      // Gandakan konten 2x untuk perulangan mulus tanpa jeda (seamless infinite marquee)
+      track.innerHTML = itemsHtml + itemsHtml;
+      banner.style.display = 'block';
     }
 
-    window.salinKuponHome = function(kode) {
-      navigator.clipboard.writeText(kode).then(() => {
-        Swal.fire({
-          toast: true,
-          position: 'top-end',
-          icon: 'success',
-          title: `Kupon "${kode}" Disalin! Gunakan saat pesan tiket.`,
-          showConfirmButton: false,
-          timer: 2000
+    window.salinKuponHome = function(kode, event) {
+      if (event) {
+        event.stopPropagation();
+      }
+      const salinSukses = () => {
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: `Kupon "${kode}" Berhasil Disalin!`,
+            text: 'Gunakan saat pemesanan untuk menikmati diskon.',
+            showConfirmButton: false,
+            timer: 2500,
+            timerProgressBar: true
+          });
+        }
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(kode).then(salinSukses).catch(() => {
+          fallbackSalin(kode);
         });
-      });
+      } else {
+        fallbackSalin(kode);
+      }
+
+      function fallbackSalin(text) {
+        try {
+          const temp = document.createElement('input');
+          temp.value = text;
+          document.body.appendChild(temp);
+          temp.select();
+          document.execCommand('copy');
+          document.body.removeChild(temp);
+          salinSukses();
+        } catch(e) {}
+      }
     };
 </script>
 
