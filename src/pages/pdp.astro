@@ -344,12 +344,12 @@ import BottomNav from '../components/BottomNav.astro';
       }
     }
 
-    .pdp-container { max-width: 1200px; margin: 30px auto; padding: 0 5%; display: grid; grid-template-columns: 1fr 380px; gap: 30px; align-items: start; }
+    .pdp-container { max-width: 1200px; margin: 30px auto; padding: 0 5%; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 30px; align-items: start; box-sizing: border-box; width: 100%; }
     
-    @media (max-width: 900px) { .pdp-container { grid-template-columns: 1fr; } }
+    @media (max-width: 900px) { .pdp-container { grid-template-columns: minmax(0, 1fr); } }
 
-    /* BAGIAN KIRI: Info & Galeri */
-    .product-main { background: var(--white); border-radius: var(--radius); padding: 25px; box-shadow: var(--shadow); }
+    /* BAGIAN KIRI: Info & Galeri (Kunci Anti-Melebar CSS Grid) */
+    .product-main { background: var(--white); border-radius: var(--radius); padding: 25px; box-shadow: var(--shadow); min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden; }
     .product-img-wrapper { overflow: hidden; border-radius: 12px; margin-bottom: 20px; }
     .product-img { width: 100%; height: 400px; object-fit: cover; transition: transform 0.5s ease; }
     .product-img:hover { transform: scale(1.05); cursor: zoom-in; }
@@ -532,8 +532,68 @@ import BottomNav from '../components/BottomNav.astro';
       width: 100% !important;
     }
 
-    .thumb-pdp { transition: 0.2s; }
-    .thumb-pdp.active { border-color: var(--primary) !important; transform: scale(1.05); box-shadow: 0 2px 8px rgba(255, 94, 31, 0.4); }
+    /* THUMBNAIL STRIP BAWAH (ANTI-MELEBAR & RESPONSIVE TOUCH SCROLL) */
+    .pdp-gallery-strip {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 22px;
+      overflow-x: auto;
+      padding: 6px 4px 10px 4px;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+    }
+    .pdp-gallery-strip::-webkit-scrollbar {
+      height: 6px;
+    }
+    .pdp-gallery-strip::-webkit-scrollbar-track {
+      background: #F1F5F9;
+      border-radius: 6px;
+    }
+    .pdp-gallery-strip::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 6px;
+    }
+    .pdp-gallery-strip::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+    .thumb-pdp {
+      width: 72px;
+      height: 52px;
+      object-fit: cover;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+      background: #E2E8F0;
+      box-sizing: border-box;
+      opacity: 0.75;
+    }
+    .thumb-pdp:hover {
+      opacity: 0.95;
+      transform: translateY(-2px);
+    }
+    .thumb-pdp.active {
+      border-color: var(--primary) !important;
+      opacity: 1;
+      transform: scale(1.06);
+      box-shadow: 0 3px 10px rgba(255, 94, 31, 0.4);
+    }
+    @media (max-width: 768px) {
+      .pdp-gallery-strip {
+        gap: 8px;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+      }
+      .thumb-pdp {
+        width: 58px;
+        height: 42px;
+        border-radius: 6px;
+      }
+    }
 
     /* SEKITAR / NEARBY PLACES STYLES */
     .btn-nearby-tab { background: #F1F5F9; color: var(--text-dark); border: 1px solid #E2E8F0; padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; }
@@ -610,8 +670,8 @@ import BottomNav from '../components/BottomNav.astro';
         </button>
       </div>
 
-      <!-- Thumbnail Navigasi -->
-      <div id="uiGallery" style="display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 6px;"></div>
+      <!-- Thumbnail Navigasi (Anti-Melebar & Responsive Touch Strip) -->
+      <div id="uiGallery" class="pdp-gallery-strip"></div>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px;">
         <span class="badge-kategori" id="uiKategori" style="margin-bottom: 0;">Kategori</span>
         <div style="display: flex; gap: 8px; align-items: center;">
@@ -1011,11 +1071,9 @@ import BottomNav from '../components/BottomNav.astro';
       thumbs.forEach((t, i) => {
         if (i === currentSlideIdx) {
           t.classList.add('active');
-          t.style.borderColor = 'var(--primary)';
           t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         } else {
           t.classList.remove('active');
-          t.style.borderColor = 'transparent';
         }
       });
     }
@@ -1026,10 +1084,9 @@ import BottomNav from '../components/BottomNav.astro';
       if (listFoto.length > 1) {
         galleryEl.innerHTML = listFoto.map((url, idx) => `
           <img src="${url}" class="thumb-pdp ${idx === 0 ? 'active' : ''}" 
-               style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid ${idx === 0 ? 'var(--primary)' : 'transparent'}; flex-shrink: 0;" 
+               alt="Thumbnail ${idx + 1}"
+               title="Foto ke-${idx + 1}"
                onclick="lompatKeSlideFoto(${idx})" 
-               onmouseover="this.style.opacity='0.85'" 
-               onmouseout="this.style.opacity='1'" 
                onerror="this.src='https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500'">
         `).join('');
         galleryEl.style.display = 'flex';
