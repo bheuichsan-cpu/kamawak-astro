@@ -425,6 +425,26 @@ import BottomNav from '../components/BottomNav.astro';
     .hero-slide-img { width: 100%; height: 420px; object-fit: cover; display: block; cursor: zoom-in; transition: object-fit 0.3s ease; }
     .thumb-pdp { transition: 0.2s; }
     .thumb-pdp.active { border-color: var(--primary) !important; transform: scale(1.05); box-shadow: 0 2px 8px rgba(255, 94, 31, 0.4); }
+
+    /* SEKITAR / NEARBY PLACES STYLES */
+    .btn-nearby-tab { background: #F1F5F9; color: var(--text-dark); border: 1px solid #E2E8F0; padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; }
+    .btn-nearby-tab:hover { background: #E2E8F0; }
+    .btn-nearby-tab.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 2px 8px rgba(255, 94, 31, 0.3); }
+    .btn-quick-map { background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; }
+    .btn-quick-map:hover { background: #DBEAFE; transform: translateY(-1px); }
+    .nearby-card { background: white; border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; color: inherit; position: relative; }
+    .nearby-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); border-color: #CBD5E1; }
+    .nearby-card img { width: 100%; height: 160px; object-fit: cover; }
+    .nearby-card-body { padding: 14px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
+    .nearby-badge { position: absolute; top: 10px; left: 10px; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); color: white; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px; }
+    .nearby-sidebar-item { display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: 10px; background: #F8FAFC; border: 1px solid #F1F5F9; text-decoration: none; color: inherit; transition: 0.2s; }
+    .nearby-sidebar-item:hover { background: #FFF7ED; border-color: #FED7AA; transform: translateX(3px); }
+    .nearby-sidebar-item img { width: 65px; height: 55px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+    @media (max-width: 900px) {
+      .nearby-items-track { display: flex !important; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 15px; gap: 14px; -webkit-overflow-scrolling: touch; }
+      .nearby-card { flex: 0 0 240px; scroll-snap-align: start; }
+      #sidebarSekitarWidget { display: none !important; }
+    }
   </style>
 
   <!-- MIDTRANS SNAP (SANDBOX) -->
@@ -572,87 +592,162 @@ import BottomNav from '../components/BottomNav.astro';
       </div>
     </div>
 
-    <!-- KANAN: MESIN PEMESANAN (BOOKING CARD) -->
-    <div class="booking-card">
-      <div class="price-header">
-        <div class="price-coret" id="uiHargaCoret">Rp 0</div>
-        <div class="price-main" id="uiHargaJual">Rp 0</div>
-        <div class="price-label">Per orang / Pax</div>
-      </div>
-
-      <!-- 1. Pilih Tanggal -->
-      <div class="form-group">
-        <label>Pilih Tanggal Keberangkatan <span style="color:red;">*</span></label>
-        <input type="date" id="inputTanggal" class="input-date" required>
-      </div>
-
-      <!-- 2. Pilih Paket -->
-      <div class="form-group">
-        <label>Pilih Tipe Paket</label>
-        <div class="package-grid">
-          <div class="package-box active" id="pkgReguler" onclick="pilihPaket('reguler')">
-            <div class="pkg-title">Paket Reguler</div>
-            <div class="pkg-price">Harga Standar</div>
-          </div>
-          <div class="package-box" id="pkgVIP" onclick="pilihPaket('vip')">
-            <div class="pkg-title">Paket VIP / Premium</div>
-            <div class="pkg-price">+ Rp 250.000 / pax</div>
-          </div>
+    <!-- KANAN: SIDEBAR KANAN (BOOKING CARD + WIDGET SEKITAR) -->
+    <div class="product-sidebar" style="display: flex; flex-direction: column; gap: 20px;">
+      
+      <!-- 1. KARTU PEMESANAN (BOOKING CARD) -->
+      <div class="booking-card">
+        <div class="price-header">
+          <div class="price-coret" id="uiHargaCoret">Rp 0</div>
+          <div class="price-main" id="uiHargaJual">Rp 0</div>
+          <div class="price-label">Per orang / Pax</div>
         </div>
-      </div>
 
-      <!-- 3. Jumlah Pax -->
-      <div class="form-group">
-        <label>Jumlah Peserta (Pax)</label>
-        <div class="pax-counter">
-          <button class="btn-qty" onclick="ubahPax(-1)">-</button>
-          <div class="pax-value" id="valPax">1</div>
-          <button class="btn-qty" onclick="ubahPax(1)">+</button>
+        <!-- 1. Pilih Tanggal -->
+        <div class="form-group">
+          <label>Pilih Tanggal Keberangkatan <span style="color:red;">*</span></label>
+          <input type="date" id="inputTanggal" class="input-date" required>
         </div>
-      </div>
 
-      <!-- 4. Kode Promo / Kupon Diskon (Dinamis) -->
-      <div class="promo-box" id="pdpPromoBox">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 12px; font-weight: 700; color: var(--text-dark);">
-            <i class="fa-solid fa-tags" style="color: var(--primary);"></i> Kode Promo / Voucher
-          </span>
-          <span id="promoBadgeActive" style="display: none; color: #059669; font-size: 11px; font-weight: 700;">
-            <i class="fa-solid fa-circle-check"></i> Kupon Terpasang
-          </span>
-        </div>
-        <div class="promo-row">
-          <input type="text" id="inputKodePromo" class="promo-input" placeholder="Masukkan kode promo">
-          <button type="button" id="btnApplyPromo" class="btn-apply-promo" onclick="terapkanKodePromo()">Gunakan</button>
-          <button type="button" id="btnRemovePromo" class="btn-remove-promo" onclick="hapusKodePromo()"><i class="fa-solid fa-xmark"></i> Batal</button>
-        </div>
-        <div id="containerKuponCepat" style="display: none; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: center;">
-          <!-- Di-render dinamis oleh renderKuponCepat() hanya untuk kupon yang berstatus AKTIF -->
-        </div>
-        <div id="promoAlert" style="font-size: 11px; margin-top: 6px; display: none;"></div>
-      </div>
-
-      <!-- Total Harga Dinamis -->
-      <div class="total-box" id="pdpTotalBox">
-        <div style="width: 100%;">
-          <div id="rowSubtotal" style="display: none; justify-content: space-between; font-size: 13px; color: var(--text-gray); margin-bottom: 5px;">
-            <span>Subtotal:</span>
-            <span id="uiSubtotal">Rp 0</span>
-          </div>
-          <div id="rowDiskon" style="display: none; justify-content: space-between; font-size: 13px; color: #059669; font-weight: 700; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #E5E7EB;">
-            <span>Potongan Promo (<span id="uiKodePromoNama"></span>):</span>
-            <span id="uiNominalDiskon">- Rp 0</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-            <div class="total-label">Total Pembayaran</div>
-            <div class="total-amount" id="uiTotalBayar">Rp 0</div>
+        <!-- 2. Pilih Paket -->
+        <div class="form-group">
+          <label>Pilih Tipe Paket</label>
+          <div class="package-grid">
+            <div class="package-box active" id="pkgReguler" onclick="pilihPaket('reguler')">
+              <div class="pkg-title">Paket Reguler</div>
+              <div class="pkg-price">Harga Standar</div>
+            </div>
+            <div class="package-box" id="pkgVIP" onclick="pilihPaket('vip')">
+              <div class="pkg-title">Paket VIP / Premium</div>
+              <div class="pkg-price">+ Rp 250.000 / pax</div>
+            </div>
           </div>
         </div>
+
+        <!-- 3. Jumlah Pax -->
+        <div class="form-group">
+          <label>Jumlah Peserta (Pax)</label>
+          <div class="pax-counter">
+            <button class="btn-qty" onclick="ubahPax(-1)">-</button>
+            <div class="pax-value" id="valPax">1</div>
+            <button class="btn-qty" onclick="ubahPax(1)">+</button>
+          </div>
+        </div>
+
+        <!-- 4. Kode Promo / Kupon Diskon (Dinamis) -->
+        <div class="promo-box" id="pdpPromoBox">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; font-weight: 700; color: var(--text-dark);">
+              <i class="fa-solid fa-tags" style="color: var(--primary);"></i> Kode Promo / Voucher
+            </span>
+            <span id="promoBadgeActive" style="display: none; color: #059669; font-size: 11px; font-weight: 700;">
+              <i class="fa-solid fa-circle-check"></i> Kupon Terpasang
+            </span>
+          </div>
+          <div class="promo-row">
+            <input type="text" id="inputKodePromo" class="promo-input" placeholder="Masukkan kode promo">
+            <button type="button" id="btnApplyPromo" class="btn-apply-promo" onclick="terapkanKodePromo()">Gunakan</button>
+            <button type="button" id="btnRemovePromo" class="btn-remove-promo" onclick="hapusKodePromo()"><i class="fa-solid fa-xmark"></i> Batal</button>
+          </div>
+          <div id="containerKuponCepat" style="display: none; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: center;">
+            <!-- Di-render dinamis oleh renderKuponCepat() hanya untuk kupon yang berstatus AKTIF -->
+          </div>
+          <div id="promoAlert" style="font-size: 11px; margin-top: 6px; display: none;"></div>
+        </div>
+
+        <!-- Total Harga Dinamis -->
+        <div class="total-box" id="pdpTotalBox">
+          <div style="width: 100%;">
+            <div id="rowSubtotal" style="display: none; justify-content: space-between; font-size: 13px; color: var(--text-gray); margin-bottom: 5px;">
+              <span>Subtotal:</span>
+              <span id="uiSubtotal">Rp 0</span>
+            </div>
+            <div id="rowDiskon" style="display: none; justify-content: space-between; font-size: 13px; color: #059669; font-weight: 700; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #E5E7EB;">
+              <span>Potongan Promo (<span id="uiKodePromoNama"></span>):</span>
+              <span id="uiNominalDiskon">- Rp 0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+              <div class="total-label">Total Pembayaran</div>
+              <div class="total-amount" id="uiTotalBayar">Rp 0</div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-checkout" onclick="prosesCheckout()">Lanjutkan Pemesanan</button>
       </div>
 
-      <button class="btn-checkout" onclick="prosesCheckout()">Lanjutkan Pemesanan</button>
+      <!-- 2. WIDGET SEKITAR LOKASI (MENGISI RUANG KOSONG DESKTOP) -->
+      <div id="sidebarSekitarWidget" style="display: none; background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); border: 1px solid #E2E8F0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <h4 style="font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 6px; margin: 0;">
+            <i class="fa-solid fa-compass" style="color: var(--primary);"></i> Sekitar Lokasi Ini
+          </h4>
+          <span id="sidebarLocationBadge" style="font-size: 11px; background: #FFF0EB; color: var(--primary); padding: 2px 8px; border-radius: 12px; font-weight: 600;">Destinasi</span>
+        </div>
+        <p style="font-size: 12px; color: var(--text-gray); margin-bottom: 14px; line-height: 1.4;">
+          Tempat menarik & penginapan terdekat yang bisa Anda kunjungi sekalian:
+        </p>
+        <div id="sidebarNearbyList" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Diisi dinamis -->
+        </div>
+      </div>
+
     </div>
 
+  </div>
+
+  <!-- SEKSI BAWAH LEBAR PENUH: EKSPLORASI SEKITAR LOKASI -->
+  <div id="sectionEksplorasiSekitar" style="display: none; max-width: 1200px; margin: 30px auto 50px auto; padding: 0 5%;">
+    <div style="background: white; border-radius: 16px; padding: 28px; box-shadow: var(--shadow); border: 1px solid #E2E8F0;">
+      
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 15px; margin-bottom: 22px; border-bottom: 1px solid #F1F5F9; padding-bottom: 18px;">
+        <div>
+          <span style="font-size: 11px; font-weight: 700; color: var(--primary); background: #FFF0EB; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-map-location-dot"></i> Panduan Wisata Satu Rute
+          </span>
+          <h2 style="font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 700; color: var(--text-dark); margin-top: 8px; margin-bottom: 4px;">
+            Eksplorasi di Sekitar <span id="nearbyLocationName" style="color: var(--primary);">Destinasi</span>
+          </h2>
+          <p style="font-size: 13.5px; color: var(--text-gray); margin: 0;">
+            Temukan penginapan, tempat makan, atraksi, dan paket tur lain di area yang sama agar liburan Anda makin berkesan.
+          </p>
+        </div>
+
+        <!-- Filter Tab Kategori Sekitar -->
+        <div class="nearby-filter-tabs" style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" class="btn-nearby-tab active" onclick="filterNearbyCategory('all', this)">
+            <i class="fa-solid fa-border-all"></i> Semua
+          </button>
+          <button type="button" class="btn-nearby-tab" onclick="filterNearbyCategory('penginapan', this)">
+            <i class="fa-solid fa-hotel"></i> Penginapan
+          </button>
+          <button type="button" class="btn-nearby-tab" onclick="filterNearbyCategory('wisata', this)">
+            <i class="fa-solid fa-ticket"></i> Wisata & Tur
+          </button>
+          <button type="button" class="btn-nearby-tab" onclick="filterNearbyCategory('kuliner', this)">
+            <i class="fa-solid fa-utensils"></i> Kuliner & Rental
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid / Horizontal Swipeable Cards -->
+      <div id="nearbyItemsTrack" class="nearby-items-track" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px;">
+        <!-- Diisi dinamis -->
+      </div>
+
+      <!-- Quick Shortcuts Google Maps Sekitar -->
+      <div style="margin-top: 25px; padding-top: 20px; border-top: 1px dashed #E2E8F0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <span style="font-size: 13px; color: var(--text-gray); font-weight: 600;">
+          <i class="fa-solid fa-compass" style="color: #3B82F6;"></i> Butuh fasilitas umum di sekitar sini?
+        </span>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <a id="btnMapsResto" href="#" target="_blank" class="btn-quick-map"><i class="fa-solid fa-utensils"></i> Cari Kuliner Terdekat</a>
+          <a id="btnMapsATM" href="#" target="_blank" class="btn-quick-map"><i class="fa-solid fa-money-bill-wave"></i> Cari ATM / Bank</a>
+          <a id="btnMapsSPBU" href="#" target="_blank" class="btn-quick-map"><i class="fa-solid fa-gas-pump"></i> Cari SPBU Pertamina</a>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <!-- STICKY MOBILE BOOKING BAR -->
@@ -897,6 +992,7 @@ import BottomNav from '../components/BottomNav.astro';
             } catch(e) {}
             dataProduk = data;
             renderHalaman(dataProduk);
+            muatTempatSekitar(dataProduk);
           } else {
             Swal.fire('Error', 'Produk tidak ditemukan.', 'error').then(() => kembaliKeHome());
           }
@@ -1155,6 +1251,181 @@ import BottomNav from '../components/BottomNav.astro';
       muatCuacaDestinasi((data.destinasi || '') + ' ' + (data.lokasi || '') + ' ' + (data.nama || ''));
       muatItineraryDestinasi(data);
       muatUlasanWisatawan(data.id || idProduk, data.rating, data.ulasan);
+    }
+
+    // ==========================================
+    // FITUR: EKSPLORASI SEKITAR (SIDEBAR & BOTTOM SECTION)
+    // ==========================================
+    let daftarSekitarGlobal = [];
+
+    async function muatTempatSekitar(currentProduct) {
+      try {
+        const rawLokasi = (currentProduct.destinasi || currentProduct.lokasi || "").trim();
+        const currentId = currentProduct.id;
+
+        const keywords = ["Harau", "Mandeh", "Bukittinggi", "Padang", "Maninjau", "Mentawai", "Solok", "Payakumbuh", "Pariaman", "Batusangkar", "Tanah Datar", "Alahan Panjang"];
+        let matchedKw = "";
+        for (const kw of keywords) {
+          if (rawLokasi.toLowerCase().includes(kw.toLowerCase())) {
+            matchedKw = kw;
+            break;
+          }
+        }
+        if (!matchedKw && rawLokasi.length > 2) {
+          matchedKw = rawLokasi.split(/[\s,]+/)[0];
+        }
+
+        const { data: allActive, error } = await supabase
+          .from('wisata')
+          .select('id, nama, destinasi, lokasi, kategori, harga, harga_coret, foto, status')
+          .eq('status', 'Aktif')
+          .neq('id', currentId);
+
+        if (error || !allActive || allActive.length === 0) return;
+
+        // Pisahkan produk yang match lokasi
+        let nearbyMatches = [];
+        if (matchedKw) {
+          nearbyMatches = allActive.filter(item => {
+            const itemLok = (item.destinasi || item.lokasi || "").toLowerCase();
+            return itemLok.includes(matchedKw.toLowerCase());
+          });
+        }
+
+        // Lengkapi dengan produk lain jika kurang dari 4
+        if (nearbyMatches.length < 4) {
+          const others = allActive.filter(item => !nearbyMatches.some(m => m.id === item.id));
+          nearbyMatches = nearbyMatches.concat(others.slice(0, 8 - nearbyMatches.length));
+        }
+
+        daftarSekitarGlobal = nearbyMatches;
+        const namaLokasiTampil = matchedKw || rawLokasi || "Sumatera Barat";
+
+        // Render Sidebar Kanan (3 Item)
+        renderSidebarSekitar(nearbyMatches.slice(0, 3), namaLokasiTampil);
+
+        // Render Seksi Bawah Lebar Penuh
+        renderSeksiBawahSekitar(nearbyMatches, namaLokasiTampil);
+
+        // Setup Google Maps Shortcuts
+        setupGoogleMapsSekitar(namaLokasiTampil);
+
+      } catch(e) {
+        console.warn("Gagal memuat rekomendasi sekitar:", e);
+      }
+    }
+
+    function renderSidebarSekitar(items, namaLokasi) {
+      const widget = document.getElementById('sidebarSekitarWidget');
+      const badge = document.getElementById('sidebarLocationBadge');
+      const list = document.getElementById('sidebarNearbyList');
+      if (!widget || !list || items.length === 0) return;
+
+      if (badge) badge.innerText = namaLokasi;
+      list.innerHTML = items.map(item => {
+        let foto = (item.foto && item.foto.includes('|||')) ? item.foto.split('|||')[0].trim() : (item.foto || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=200');
+        let harga = formatUang(item.harga || 0);
+        let kat = item.kategori || "Wisata";
+        return `
+          <a href="/pdp?id=${item.id}" class="nearby-sidebar-item">
+            <img src="${foto}" alt="${item.nama}" onerror="this.src='https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=200'">
+            <div style="flex-grow: 1; min-width: 0;">
+              <span style="font-size: 10px; font-weight: 700; color: var(--primary); text-transform: uppercase;">${kat}</span>
+              <h5 style="font-size: 13px; font-weight: 600; color: var(--text-dark); margin: 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.nama}</h5>
+              <div style="font-size: 12px; font-weight: 700; color: #10B981;">Mulai ${harga}</div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="font-size: 11px; color: #94A3B8;"></i>
+          </a>
+        `;
+      }).join('');
+      widget.style.display = 'block';
+    }
+
+    function renderSeksiBawahSekitar(items, namaLokasi) {
+      const section = document.getElementById('sectionEksplorasiSekitar');
+      const nameEl = document.getElementById('nearbyLocationName');
+      const track = document.getElementById('nearbyItemsTrack');
+      if (!section || !track || items.length === 0) return;
+
+      if (nameEl) nameEl.innerText = namaLokasi;
+
+      track.innerHTML = items.map(item => {
+        let foto = (item.foto && item.foto.includes('|||')) ? item.foto.split('|||')[0].trim() : (item.foto || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500');
+        let harga = formatUang(item.harga || 0);
+        let kat = item.kategori || "Wisata";
+        let lok = item.destinasi || item.lokasi || namaLokasi;
+        return `
+          <a href="/pdp?id=${item.id}" class="nearby-card">
+            <span class="nearby-badge"><i class="fa-solid fa-tag"></i> ${kat}</span>
+            <img src="${foto}" alt="${item.nama}" onerror="this.src='https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500'">
+            <div class="nearby-card-body">
+              <div>
+                <div style="font-size: 11px; color: var(--text-gray); margin-bottom: 4px;">
+                  <i class="fa-solid fa-location-dot" style="color: var(--primary);"></i> ${lok}
+                </div>
+                <h4 style="font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 600; color: var(--text-dark); line-height: 1.35; margin-bottom: 8px;">${item.nama}</h4>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: flex-end; padding-top: 10px; border-top: 1px dashed #F1F5F9; margin-top: 6px;">
+                <div>
+                  <span style="font-size: 10.5px; color: var(--text-gray); display: block;">Mulai dari</span>
+                  <span style="font-size: 14px; font-weight: 700; color: var(--primary);">${harga}</span>
+                </div>
+                <span style="font-size: 11px; font-weight: 600; color: #2563EB; display: inline-flex; align-items: center; gap: 4px;">Lihat <i class="fa-solid fa-arrow-right"></i></span>
+              </div>
+            </div>
+          </a>
+        `;
+      }).join('');
+      section.style.display = 'block';
+    }
+
+    window.filterNearbyCategory = function(cat, btn) {
+      document.querySelectorAll('.btn-nearby-tab').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      let filtered = daftarSekitarGlobal;
+      if (cat === 'penginapan') {
+        filtered = daftarSekitarGlobal.filter(i => {
+          let k = (i.kategori || "").toLowerCase();
+          return k.includes('hotel') || k.includes('villa') || k.includes('cabin') || k.includes('homestay') || k.includes('penginapan');
+        });
+      } else if (cat === 'wisata') {
+        filtered = daftarSekitarGlobal.filter(i => {
+          let k = (i.kategori || "").toLowerCase();
+          return k.includes('wisata') || k.includes('tur') || k.includes('tour') || k.includes('atraksi') || k.includes('tiket');
+        });
+      } else if (cat === 'kuliner') {
+        filtered = daftarSekitarGlobal.filter(i => {
+          let k = (i.kategori || "").toLowerCase();
+          return k.includes('kuliner') || k.includes('resto') || k.includes('makan') || k.includes('rental') || k.includes('transport');
+        });
+      }
+
+      const track = document.getElementById('nearbyItemsTrack');
+      const namaLok = document.getElementById('nearbyLocationName')?.innerText || "Sekitar";
+      if (filtered.length > 0) {
+        renderSeksiBawahSekitar(filtered, namaLok);
+      } else {
+        if (track) {
+          track.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 30px 15px; color: var(--text-gray); font-size: 13px; background: #F8FAFC; border-radius: 10px;">
+              <i class="fa-solid fa-circle-info" style="color: #94A3B8; font-size: 18px; margin-bottom: 6px; display: block;"></i>
+              Belum ada rekomendasi kategori ini di ${namaLok}. Rekomendasi lainnya tetap tersedia di tab "Semua".
+            </div>
+          `;
+        }
+      }
+    };
+
+    function setupGoogleMapsSekitar(lokasi) {
+      const qLok = encodeURIComponent(lokasi + " Sumatera Barat");
+      const btnResto = document.getElementById('btnMapsResto');
+      const btnATM = document.getElementById('btnMapsATM');
+      const btnSPBU = document.getElementById('btnMapsSPBU');
+
+      if (btnResto) btnResto.href = `https://www.google.com/maps/search/Restoran+Kuliner+di+dekat+${qLok}`;
+      if (btnATM) btnATM.href = `https://www.google.com/maps/search/ATM+Bank+di+dekat+${qLok}`;
+      if (btnSPBU) btnSPBU.href = `https://www.google.com/maps/search/SPBU+Pertamina+di+dekat+${qLok}`;
     }
 
     // --- LOGIKA KALKULATOR CERDAS ---
