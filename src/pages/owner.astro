@@ -52,26 +52,187 @@ import BottomNav from '../components/BottomNav.astro';
       .print-header { display: block !important; text-align: center; margin-bottom: 30px; }
     }
 
-    /* RESPONSIVE DESIGN (MOBILE) */
+    /* RESPONSIVE DESIGN (MOBILE - OPSI 1 APP-FIRST & WALLET CENTER) */
     @media (max-width: 768px) {
-        .navbar { padding: 8px 10px; flex-direction: row; justify-content: space-between; align-items: center; }
-        .logo { font-size: 18px; }
-        .logo span { font-size: 11px !important; }
-        .navbar div { display: flex; gap: 5px; align-items: center; }
-        .navbar div button { padding: 8px !important; font-size: 0 !important; margin-right: 0 !important; }
+        .navbar { padding: 10px 14px; flex-direction: row; justify-content: space-between; align-items: center; }
+        .logo { font-size: 19px; }
+        .logo span { font-size: 11.5px !important; }
+        .navbar div { display: flex; gap: 6px; align-items: center; }
+        .navbar div button { padding: 7px 11px !important; font-size: 12px !important; border-radius: 8px !important; }
+        .navbar div button span { display: none; }
         .navbar div button i { font-size: 14px !important; margin: 0 !important; }
-        
-        .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
-        .container { padding: 0 10px; margin: 10px auto; }
-        .welcome-header { margin-bottom: 15px; }
-        .welcome-header h1 { font-size: 16px; margin-bottom: 2px; }
-        .welcome-header p { font-size: 11px; line-height: 1.3; }
-        .stat-card { flex-direction: column; text-align: center; gap: 10px; padding: 12px; }
-        .stat-info h3 { font-size: 10px; }
-        .stat-info .value { font-size: 18px; }
-        .stat-icon { width: 35px; height: 35px; font-size: 16px; margin: 0 auto; }
-        table { display: block; overflow-x: auto; white-space: nowrap; font-size: 11px; }
-        th, td { padding: 8px; }
+
+        .container { padding: 0 12px; margin: 12px auto; }
+
+        .welcome-header { margin-bottom: 14px; }
+        .welcome-header h1 { font-size: 17px; margin-bottom: 2px; font-weight: 800; }
+        .welcome-header p { font-size: 11.5px; line-height: 1.35; color: #64748B; }
+
+        /* Giant Hero QR Scanner Card */
+        .scan-banner {
+          padding: 16px !important;
+          border-radius: 16px !important;
+          margin-bottom: 16px !important;
+          flex-direction: column !important;
+          align-items: stretch !important;
+          gap: 12px !important;
+          box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25) !important;
+        }
+        .scan-banner h3 {
+          font-size: 16px !important;
+          margin-bottom: 3px !important;
+        }
+        .scan-banner p {
+          font-size: 11.5px !important;
+          opacity: 0.95;
+        }
+        .scan-banner button {
+          width: 100% !important;
+          padding: 13px !important;
+          font-size: 14px !important;
+          justify-content: center !important;
+          border-radius: 12px !important;
+          font-weight: 800 !important;
+          letter-spacing: 0.3px;
+        }
+
+        /* Modern Digital Wallet Grid */
+        .stats-grid {
+          grid-template-columns: 1fr !important;
+          gap: 12px !important;
+          margin-bottom: 18px !important;
+        }
+        .stat-card {
+          flex-direction: row !important;
+          text-align: left !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          padding: 14px 16px !important;
+          border-radius: 14px !important;
+          border-left-width: 4px !important;
+          box-shadow: 0 3px 12px rgba(0,0,0,0.04) !important;
+        }
+        .stat-card#cardSaldo {
+          flex-direction: column !important;
+          align-items: flex-start !important;
+          background: linear-gradient(135deg, #FFFDFB 0%, #FFF7ED 100%) !important;
+          border: 1.5px solid #FED7AA !important;
+          border-left: 5px solid var(--primary) !important;
+          padding: 16px !important;
+        }
+        .stat-card#cardSaldo .stat-info {
+          width: 100%;
+        }
+        .stat-card#cardSaldo .stat-info .value {
+          font-size: 24px !important;
+          font-weight: 800 !important;
+          color: var(--primary) !important;
+          margin: 4px 0 10px 0;
+        }
+        .stat-card#cardSaldo button {
+          width: 100% !important;
+          padding: 10px !important;
+          font-size: 13px !important;
+          border-radius: 10px !important;
+          background: var(--primary) !important;
+          justify-content: center !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+        }
+        .stat-info h3 {
+          font-size: 11px !important;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: #64748B;
+        }
+        .stat-info .value {
+          font-size: 18px !important;
+          font-weight: 700;
+        }
+        .stat-icon {
+          width: 40px !important;
+          height: 40px !important;
+          font-size: 18px !important;
+          border-radius: 10px !important;
+        }
+
+        /* Mobile Responsive Card Feed for Table */
+        .table-container {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          margin-bottom: 20px !important;
+        }
+        .table-container h3 {
+          font-size: 15px !important;
+          font-weight: 700;
+          color: #0F172A;
+          margin-bottom: 10px !important;
+        }
+        .table-container table,
+        .table-container tbody {
+          display: block !important;
+          width: 100% !important;
+        }
+        .table-container thead {
+          display: none !important;
+        }
+        .table-container tr {
+          display: flex !important;
+          flex-direction: column !important;
+          background: #FFFFFF !important;
+          border-radius: 14px !important;
+          padding: 14px !important;
+          margin-bottom: 10px !important;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.04) !important;
+          border: 1px solid #E2E8F0 !important;
+          gap: 6px !important;
+        }
+        .table-container td {
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          padding: 0 !important;
+          border: none !important;
+          white-space: normal !important;
+        }
+        .table-container td:first-child {
+          font-size: 11.5px !important;
+          color: #64748B !important;
+          border-bottom: 1px dashed #F1F5F9 !important;
+          padding-bottom: 6px !important;
+        }
+        .table-container td:nth-child(2) {
+          font-size: 14px !important;
+          font-weight: 700 !important;
+          color: #0F172A !important;
+        }
+        .table-container td:last-child {
+          font-size: 15px !important;
+          font-weight: 800 !important;
+          color: #10B981 !important;
+          margin-top: 4px !important;
+        }
+
+        /* Action Card (PDF) */
+        .action-card {
+          padding: 20px 14px !important;
+          border-radius: 16px !important;
+        }
+        .action-card h2 {
+          font-size: 17px !important;
+        }
+        .action-card p {
+          font-size: 12px !important;
+          margin-bottom: 14px !important;
+        }
+        .btn-action {
+          width: 100% !important;
+          padding: 12px !important;
+          font-size: 13.5px !important;
+        }
     }
     @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   </style>

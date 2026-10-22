@@ -55,6 +55,36 @@ import BottomNav from '../components/BottomNav.astro';
     .form-control { width: 100%; padding: 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 14px; outline: none; }
     .btn-admin { background: var(--primary); color: var(--white); border: none; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
     .btn-logout { background: #EF4444; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+    
+    /* Segmented Orange-White Pill Tabs */
+    .tabs-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .tabs-container button {
+      padding: 10px 18px;
+      border: 1.5px solid #FED7AA;
+      border-radius: 20px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #FFFFFF;
+      color: #475569;
+      font-size: 13px;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      outline: none;
+    }
+    .tabs-container button:hover {
+      background: #FFF7ED;
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+    .tabs-container button.active,
+    .tabs-container button.tab-active {
+      background: var(--primary) !important;
+      color: #FFFFFF !important;
+      border-color: var(--primary) !important;
+      box-shadow: 0 4px 14px rgba(255, 94, 31, 0.25) !important;
+    }
     /* Style untuk Tabel */
     table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; }
     th { background: #F3F4F6; padding: 12px; color: var(--text-dark); font-weight: 600; border-bottom: 2px solid #E5E7EB; }
@@ -93,53 +123,180 @@ import BottomNav from '../components/BottomNav.astro';
     }
     .btn-facility-tag i { font-size: 11px; }
 
-    /* RESPONSIVE DESIGN (MOBILE) */
+    /* RESPONSIVE DESIGN (MOBILE - OPSI 1 APP-FIRST & SEGMENTED PILLS) */
     @media (max-width: 768px) {
-        .navbar { padding: 8px 10px; flex-direction: row; justify-content: space-between; align-items: center; }
-        .logo { font-size: 18px; }
-        .logo span { font-size: 9px !important; padding: 2px 5px !important; }
-        .navbar div { display: flex; gap: 5px; align-items: center; }
-        .navbar div button { padding: 8px !important; font-size: 0 !important; margin-right: 0 !important; }
-        .navbar div button i { font-size: 14px !important; margin: 0 !important; }
+        .navbar { padding: 10px 14px; flex-direction: row; justify-content: space-between; align-items: center; }
+        .logo { font-size: 19px; }
+        .logo span { font-size: 11px !important; padding: 2px 7px !important; border-radius: 6px !important; }
+        .navbar div { display: flex; gap: 6px; align-items: center; }
+        .navbar div button { padding: 7px 12px !important; font-size: 12px !important; border-radius: 8px !important; margin-right: 0 !important; }
+        .navbar div button i { font-size: 13px !important; margin-right: 4px !important; }
         .navbar div span#adminName { display: none !important; }
         
-        .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
-        .stat-card { padding: 12px; }
-        .stat-title { font-size: 10px; }
-        .stat-value { font-size: 18px; }
+        .container { padding: 0 12px; margin: 12px auto; }
+        .admin-header { margin-bottom: 14px; }
+        .admin-header h1 { font-size: 18px; margin-bottom: 3px; font-weight: 800; }
+        .admin-header p { font-size: 11.5px !important; line-height: 1.35; color: #64748B; }
 
-        .container { padding: 0 10px; margin: 10px auto; }
-        .admin-header { margin-bottom: 15px; }
-        .admin-header h1 { font-size: 16px; margin-bottom: 2px; }
-        .admin-header p { font-size: 11px !important; line-height: 1.3; }
-        
-        .card-section { padding: 10px; margin-bottom: 15px; }
-        .card-section h3 { font-size: 14px !important; margin-bottom: 10px !important; }
-        table { display: block; overflow-x: auto; white-space: nowrap; font-size: 11px; }
-        th, td { padding: 8px; }
-        
-        /* Make tabs scrollable instead of stacking */
+        /* Segmented Orange-White Pill Tabs */
         .tabs-container {
             display: flex !important;
             flex-direction: row !important;
             flex-wrap: nowrap !important;
-            overflow-x: auto;
-            padding-bottom: 5px;
-            gap: 6px;
-            margin-bottom: 15px !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+            padding: 4px 2px 10px 2px !important;
+            gap: 8px !important;
+            margin-bottom: 16px !important;
+            scrollbar-width: none;
+        }
+        .tabs-container::-webkit-scrollbar {
+            display: none;
         }
         .tabs-container button {
-            white-space: nowrap;
+            white-space: nowrap !important;
             flex: 0 0 auto !important;
-            padding: 8px 12px !important;
-            font-size: 11px !important;
+            padding: 8px 15px !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            border-radius: 20px !important;
+            border: 1.5px solid #FED7AA !important;
+            background: #FFFFFF !important;
+            color: #475569 !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03) !important;
+            transition: all 0.2s ease !important;
+        }
+        .tabs-container button.active,
+        .tabs-container button[style*="background: var(--primary)"],
+        .tabs-container button[style*="background: rgb(255, 94, 31)"],
+        .tabs-container button[style*="background: #FF5E1F"] {
+            background: #FF5E1F !important;
+            color: #FFFFFF !important;
+            border-color: #FF5E1F !important;
+            box-shadow: 0 4px 12px rgba(255, 94, 31, 0.25) !important;
         }
 
-        /* Forms to 2 columns if possible, but 1 is okay. Let's make it more compact */
-        .form-group { margin-bottom: 8px; }
-        .form-group label { font-size: 11px; margin-bottom: 4px; }
-        .form-control { padding: 8px; font-size: 12px; }
-        .btn-admin { padding: 8px 15px; font-size: 12px; }
+        /* 2x2 Readable Summary Metrics Cards */
+        .stats-grid { 
+            grid-template-columns: repeat(2, 1fr) !important; 
+            gap: 10px !important; 
+            margin-bottom: 16px !important; 
+        }
+        .stat-card { 
+            padding: 14px 12px !important; 
+            border-radius: 12px !important;
+            border-left-width: 4px !important;
+            background: #FFFFFF !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
+        }
+        .stat-card:nth-child(3):last-child {
+            grid-column: span 2 !important;
+        }
+        .stat-title { 
+            font-size: 10.5px !important; 
+            color: #64748B !important;
+            margin-bottom: 4px !important;
+            font-weight: 600 !important;
+        }
+        .stat-value { 
+            font-size: 20px !important; 
+            font-weight: 800 !important;
+            color: #0F172A !important;
+        }
+
+        /* Card Section Styling */
+        .card-section { 
+            padding: 14px !important; 
+            margin-bottom: 14px !important; 
+            border-radius: 14px !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04) !important;
+        }
+        .card-section h3 { 
+            font-size: 15px !important; 
+            margin-bottom: 12px !important; 
+            font-weight: 700 !important;
+        }
+
+        /* 1-Column Responsive CMS & Settings Forms */
+        div[style*="grid-template-columns: 1fr 1fr"],
+        #tabCMS div[style*="grid-template-columns: 1fr 1fr"],
+        #tabComposer div[style*="grid-template-columns: 1fr 1fr"],
+        #tabPengaturan div[style*="grid-template-columns: 1fr 1fr"] {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+        }
+
+        .card-section div[style*="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end"] {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 10px !important;
+        }
+
+        .form-group { 
+            width: 100% !important; 
+            min-width: 0 !important; 
+            margin-bottom: 10px !important; 
+        }
+        .form-group label { 
+            font-size: 12px !important; 
+            margin-bottom: 5px !important; 
+            font-weight: 600 !important; 
+        }
+        .form-control { 
+            padding: 10px 12px !important; 
+            font-size: 13.5px !important; 
+            border-radius: 8px !important;
+            border: 1.5px solid #E2E8F0 !important;
+        }
+        .btn-admin { 
+            width: 100% !important; 
+            padding: 11px 16px !important; 
+            font-size: 13.5px !important; 
+            font-weight: 700 !important;
+            justify-content: center !important;
+            text-align: center !important;
+            border-radius: 10px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+        }
+
+        /* Responsive Mobile Tables with Warm Orange Headers */
+        .card-section > div[style*="overflow-x: auto"] {
+            border-radius: 10px !important;
+            border: 1px solid #FED7AA !important;
+            background: #FFFFFF !important;
+            -webkit-overflow-scrolling: touch !important;
+            padding-bottom: 2px !important;
+        }
+        table { 
+            min-width: 580px !important; 
+            font-size: 12px !important; 
+        }
+        th, td { 
+            padding: 10px 12px !important; 
+        }
+        th {
+            font-size: 11.5px !important;
+            font-weight: 700 !important;
+            background: #FFF7ED !important;
+            color: #9A3412 !important;
+        }
+
+        /* Mobile Filter Buttons Pill */
+        .card-section div[style*="overflow-x: auto; padding-bottom: 5px"] {
+            padding-bottom: 8px !important;
+            gap: 6px !important;
+        }
+        .card-section div[style*="overflow-x: auto; padding-bottom: 5px"] button {
+            font-size: 11.5px !important;
+            padding: 6px 12px !important;
+            border-radius: 20px !important;
+        }
+
+        body {
+            padding-bottom: 85px !important;
+        }
     }
 
   </style>
@@ -169,17 +326,17 @@ import BottomNav from '../components/BottomNav.astro';
       <p style="color: var(--text-gray); font-size: 14px;">Pantau performa platform dan kelola status langganan mitra secara real-time.</p>
     </div>
 
-    <!-- Navigasi Tabs -->
-    <div class="tabs-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
-      <button id="btnTabDashboard" onclick="switchTab('tabDashboard')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:var(--primary); color:white; transition: 0.3s;"><i class="fa-solid fa-chart-line"></i> Dasbor & Mitra</button>
-      <button id="btnTabCMS" onclick="switchTab('tabCMS')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-pen-to-square"></i> Konten (CMS PDP)</button>
-      <button id="btnTabPromo" onclick="switchTab('tabPromo')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-tags"></i> Voucher Promo</button>
-      <button id="btnTabTransaksi" onclick="switchTab('tabTransaksi')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-file-invoice-dollar"></i> Payout OTA</button>
-      <button id="btnTabKeuangan" onclick="switchTab('tabKeuangan')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-book-open"></i> Buku Kas & Laporan</button>
-      <button id="btnTabUsers" onclick="switchTab('tabUsers')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-users-gear"></i> Hak Akses Pengguna</button>
-      <button id="btnTabAds" onclick="switchTab('tabAds')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-rectangle-ad"></i> Ad Space</button>
-      <button id="btnTabComposer" onclick="switchTab('tabComposer')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-layer-group"></i> Desain Halaman (UI)</button>
-      <button id="btnTabPengaturan" onclick="switchTab('tabPengaturan')" style="flex:1; padding:12px; border:none; border-radius:8px; font-weight:600; cursor:pointer; background:#F3F4F6; color:var(--text-dark); transition: 0.3s;"><i class="fa-solid fa-gear"></i> Pengaturan</button>
+    <!-- Navigasi Tabs (Segmented Orange-White Pills) -->
+    <div class="tabs-container">
+      <button id="btnTabDashboard" onclick="switchTab('tabDashboard')" class="active"><i class="fa-solid fa-chart-line"></i> Dasbor & Mitra</button>
+      <button id="btnTabCMS" onclick="switchTab('tabCMS')"><i class="fa-solid fa-pen-to-square"></i> Konten (CMS PDP)</button>
+      <button id="btnTabPromo" onclick="switchTab('tabPromo')"><i class="fa-solid fa-tags"></i> Voucher Promo</button>
+      <button id="btnTabTransaksi" onclick="switchTab('tabTransaksi')"><i class="fa-solid fa-file-invoice-dollar"></i> Payout OTA</button>
+      <button id="btnTabKeuangan" onclick="switchTab('tabKeuangan')"><i class="fa-solid fa-book-open"></i> Buku Kas & Laporan</button>
+      <button id="btnTabUsers" onclick="switchTab('tabUsers')"><i class="fa-solid fa-users-gear"></i> Hak Akses Pengguna</button>
+      <button id="btnTabAds" onclick="switchTab('tabAds')"><i class="fa-solid fa-rectangle-ad"></i> Ad Space</button>
+      <button id="btnTabComposer" onclick="switchTab('tabComposer')"><i class="fa-solid fa-layer-group"></i> Desain Halaman (UI)</button>
+      <button id="btnTabPengaturan" onclick="switchTab('tabPengaturan')"><i class="fa-solid fa-gear"></i> Pengaturan</button>
     </div>
 
     <div id="tabDashboard">
@@ -1371,21 +1528,31 @@ const BASE_URL = "";
 window.switchTab = function(tabId) {
   document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
   
-  document.getElementById('tabDashboard').style.display = 'none';
-  document.getElementById('tabCMS').style.display = 'none';
-  if (document.getElementById('tabPromo')) document.getElementById('tabPromo').style.display = 'none';
-  document.getElementById('tabTransaksi').style.display = 'none';
-  document.getElementById('tabKeuangan').style.display = 'none';
-  document.getElementById('tabUsers').style.display = 'none';
-  document.getElementById('tabAds').style.display = 'none';
-  document.getElementById('tabComposer').style.display = 'none';
-  document.getElementById('tabPengaturan').style.display = 'none';
+  const allTabs = ['tabDashboard', 'tabCMS', 'tabPromo', 'tabTransaksi', 'tabKeuangan', 'tabUsers', 'tabAds', 'tabComposer', 'tabPengaturan'];
+  allTabs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
   
-  document.querySelectorAll('[id^="btnTab"]').forEach(b => { b.style.background = '#F3F4F6'; b.style.color = 'var(--text-dark)'; });
+  document.querySelectorAll('[id^="btnTab"]').forEach(b => { 
+    b.classList.remove('active', 'tab-active');
+    b.style.background = '#FFFFFF'; 
+    b.style.color = '#475569'; 
+    b.style.borderColor = '#FED7AA';
+    b.style.boxShadow = 'none';
+  });
   
-  document.getElementById(tabId).style.display = 'block';
-  document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).style.background = 'var(--primary)';
-  document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).style.color = 'white';
+  const targetContent = document.getElementById(tabId);
+  if (targetContent) targetContent.style.display = 'block';
+
+  const targetBtn = document.getElementById('btn' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+  if (targetBtn) {
+    targetBtn.classList.add('active', 'tab-active');
+    targetBtn.style.background = 'var(--primary)';
+    targetBtn.style.color = '#FFFFFF';
+    targetBtn.style.borderColor = 'var(--primary)';
+    targetBtn.style.boxShadow = '0 4px 14px rgba(255, 94, 31, 0.25)';
+  }
 
   if (tabId === 'tabCMS' && typeof muatDaftarWisataCMS === 'function') muatDaftarWisataCMS();
   if (tabId === 'tabPromo' && typeof muatDaftarPromo === 'function') muatDaftarPromo();
