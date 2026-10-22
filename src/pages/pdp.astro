@@ -1247,27 +1247,31 @@ import BottomNav from '../components/BottomNav.astro';
       
       (async () => {
         try {
-          const { data, error } = await supabase.from('wisata').select('*').eq('id', idProduk).single();
-          if (error) throw error;
-          if (data) {
-            // Sinkronkan metadata lokal jika kolom belum ada di database Supabase
+          let data = null;
+          if (idProduk.startsWith('local_')) {
             try {
-              let localMeta = JSON.parse(localStorage.getItem('kamawak_meta_' + idProduk) || 'null');
-              if (localMeta) {
-                if (!data.deskripsi && localMeta.deskripsi) data.deskripsi = localMeta.deskripsi;
-                if (!data.fasilitas && localMeta.fasilitas) data.fasilitas = localMeta.fasilitas;
-                if (!data.varian && localMeta.varian) data.varian = localMeta.varian;
-                if (!data.tags && localMeta.tags) data.tags = localMeta.tags;
-                if (!data.itinerary && localMeta.itinerary) data.itinerary = localMeta.itinerary;
-                if (!data.harga_coret && localMeta.harga_coret) data.harga_coret = localMeta.harga_coret;
-                if (!data.durasi && localMeta.durasi) data.durasi = localMeta.durasi;
-                if (!data.maps && localMeta.maps) data.maps = localMeta.maps;
-                if (!data.wa && localMeta.wa) data.wa = localMeta.wa;
-                if (!data.ig && localMeta.ig) data.ig = localMeta.ig;
-                if (!data.tiktok && localMeta.tiktok) data.tiktok = localMeta.tiktok;
-                if (!data.fb && localMeta.fb) data.fb = localMeta.fb;
-              }
+              data = JSON.parse(localStorage.getItem('kamawak_override_' + idProduk) || localStorage.getItem('kamawak_meta_' + idProduk) || 'null');
             } catch(e) {}
+          } else {
+            const { data: supaData, error } = await supabase.from('wisata').select('*').eq('id', idProduk).single();
+            if (error && !localStorage.getItem('kamawak_override_' + idProduk)) throw error;
+            data = supaData;
+          }
+
+          // Sinkronkan metadata lokal & override perubahan admin
+          try {
+            let localMeta = JSON.parse(localStorage.getItem('kamawak_override_' + idProduk) || localStorage.getItem('kamawak_meta_' + idProduk) || 'null');
+            if (localMeta) {
+              data = data || {};
+              Object.keys(localMeta).forEach(k => {
+                if (localMeta[k] !== undefined && localMeta[k] !== null && localMeta[k] !== '') {
+                  data[k] = localMeta[k];
+                }
+              });
+            }
+          } catch(e) {}
+
+          if (data && data.nama) {
             dataProduk = data;
             renderHalaman(dataProduk);
             muatTempatSekitar(dataProduk);
@@ -1659,8 +1663,21 @@ import BottomNav from '../components/BottomNav.astro';
 
         if (error || !allActive || allActive.length === 0) return;
 
-        // Filter produk yang berstatus aktif
-        const activeItems = allActive.filter(item => (item.status || '').toLowerCase() !== 'nonaktif');
+        let deletedList = [];
+        try { deletedList = JSON.parse(localStorage.getItem('kamawak_deleted_wisata') || '[]'); } catch(e){}
+        const activeItems = allActive.filter(item => !deletedList.includes(item.id)).map(item => {
+          try {
+            let localMeta = JSON.parse(localStorage.getItem('kamawak_override_' + item.id) || localStorage.getItem('kamawak_meta_' + item.id) || 'null');
+            if (localMeta) {
+              Object.keys(localMeta).forEach(k => {
+                if (localMeta[k] !== undefined && localMeta[k] !== null && localMeta[k] !== '') {
+                  item[k] = localMeta[k];
+                }
+              });
+            }
+          } catch(e) {}
+          return item;
+        }).filter(item => (item.status || '').toLowerCase() !== 'nonaktif');
         if (activeItems.length === 0) return;
 
         // Pisahkan produk yang satu wilayah/rute

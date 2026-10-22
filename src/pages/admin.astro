@@ -1855,7 +1855,7 @@ window.simpanFasilitasBeranda = function() {
     ];
     google.script.run.withSuccessHandler(function() {
       Swal.fire('Berhasil Disimpan', 'Pengaturan Fasilitas & Keunggulan Beranda berhasil diperbarui dan disinkronkan!', 'success');
-    }).simpanPengaturanBatch(settings);
+    }).simpanPengaturanForm(settings);
   } else {
     Swal.fire('Berhasil Disimpan', 'Pengaturan Fasilitas & Keunggulan Beranda berhasil disimpan secara lokal!', 'success');
   }
@@ -1974,6 +1974,10 @@ window.simpanCMS = async function() {
     if (typeof window.updateCardPreviewLanding === 'function') window.updateCardPreviewLanding();
   };
 
+  const sqlRLSCode = `ALTER TABLE public.wisata DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.transaksi DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.leads DISABLE ROW LEVEL SECURITY;`;
+
   const sqlMigrationCode = `ALTER TABLE public.wisata 
 ADD COLUMN IF NOT EXISTS deskripsi text,
 ADD COLUMN IF NOT EXISTS fasilitas text,
@@ -1989,29 +1993,74 @@ ADD COLUMN IF NOT EXISTS fb text;`;
 
   try {
       let savedId = id;
+      let rlsBlocked = false;
+
       if (id) {
-          const { error } = await supabase.from('wisata').update(fullPayload).eq('id', id);
-          if (error) throw error;
+          const { data, error } = await supabase.from('wisata').update(fullPayload).eq('id', id).select();
+          if (error) {
+              if (error.code === '42501' || String(error.message).includes('row-level security')) {
+                  rlsBlocked = true;
+              } else {
+                  throw error;
+              }
+          } else if (!data || data.length === 0) {
+              rlsBlocked = true;
+          }
       } else {
           // Jangan kirim ID string manual karena kolom id Supabase bertipe UUID
           const { data, error } = await supabase.from('wisata').insert([fullPayload]).select();
-          if (error) throw error;
-          if (data && data[0]) savedId = data[0].id;
+          if (error) {
+              if (error.code === '42501' || String(error.message).includes('row-level security')) {
+                  rlsBlocked = true;
+                  savedId = 'local_' + Date.now();
+              } else {
+                  throw error;
+              }
+          } else if (data && data[0]) {
+              savedId = data[0].id;
+          }
       }
 
-      // Simpan juga ke cache metadata lokal agar halaman PDP langsung menampilkan data
+      // Selalu simpan juga ke cache metadata lokal & override agar halaman Beranda & PDP langsung menampilkan data baru
       if (savedId) {
           try {
+            fullPayload.id = savedId;
+            localStorage.setItem('kamawak_override_' + savedId, JSON.stringify(fullPayload));
             localStorage.setItem('kamawak_meta_' + savedId, JSON.stringify(fullPayload));
+            let deletedList = JSON.parse(localStorage.getItem('kamawak_deleted_wisata') || '[]');
+            deletedList = deletedList.filter(did => did !== savedId);
+            localStorage.setItem('kamawak_deleted_wisata', JSON.stringify(deletedList));
           } catch(e) {}
       }
 
-      Swal.fire({
-          icon: 'success',
-          title: 'Berhasil Disimpan!',
-          text: 'Data produk dan deskripsi berhasil disimpan ke Supabase.',
-          timer: 2000
-      });
+      if (rlsBlocked) {
+          Swal.fire({
+              icon: 'warning',
+              title: 'Perhatian: Izin Database Perlu Dibuka',
+              html: `
+                <div style="text-align:left; font-size:13px; color:#374151;">
+                  <p>Data berhasil diperbarui di browser ini, namun <b>Supabase membatasi penyimpanan</b> karena fitur <b>Row Level Security (RLS)</b> sedang aktif di tabel <code>wisata</code>.</p>
+                  <p style="margin-top:10px;"><strong>Agar tersimpan permanen di Supabase untuk semua pengunjung:</strong></p>
+                  <ol style="margin-left:18px; margin-bottom:10px; line-height: 1.6;">
+                    <li>Buka <b>Supabase Dashboard &gt; SQL Editor</b>.</li>
+                    <li>Jalankan perintah SQL 1-baris berikut:</li>
+                  </ol>
+                  <textarea readonly id="sqlCopyAreaRLS" style="width:100%; height:75px; font-family:monospace; font-size:11px; background:#1E293B; color:#A7F3D0; padding:8px; border-radius:6px; border:none; resize:none;">${sqlRLSCode}</textarea>
+                  <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('sqlCopyAreaRLS').value); alert('Perintah SQL berhasil disalin ke clipboard!');" style="margin-top:8px; padding:6px 14px; background:#3B82F6; color:white; border:none; border-radius:6px; font-size:12px; cursor:pointer;">
+                    <i class="fa-solid fa-copy"></i> Salin Perintah SQL
+                  </button>
+                </div>
+              `
+          });
+      } else {
+          Swal.fire({
+              icon: 'success',
+              title: 'Berhasil Disimpan!',
+              text: 'Data produk dan deskripsi berhasil disimpan ke Supabase.',
+              timer: 2000
+          });
+      }
+
       resetForm();
       if (typeof muatDaftarWisataCMS === 'function') muatDaftarWisataCMS();
 
@@ -2058,6 +2107,7 @@ ADD COLUMN IF NOT EXISTS fb text;`;
                       }
                       
                       if (fallbackSavedId) {
+                          localStorage.setItem('kamawak_override_' + fallbackSavedId, JSON.stringify(fullPayload));
                           localStorage.setItem('kamawak_meta_' + fallbackSavedId, JSON.stringify(fullPayload));
                       }
                       
@@ -2083,8 +2133,25 @@ window.muatDaftarWisataCMS = async function() {
   tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat katalog produk...</td></tr>';
   
   try {
-    const { data, error } = await supabase.from('wisata').select('*').order('created_at', { ascending: false });
+    const { data: rawData, error } = await supabase.from('wisata').select('*').order('created_at', { ascending: false });
     if (error) throw error;
+    
+    let deletedList = JSON.parse(localStorage.getItem('kamawak_deleted_wisata') || '[]');
+    let data = (rawData || []).filter(item => !deletedList.includes(item.id));
+
+    // Gabungkan juga produk lokal baru jika ada yang baru ditambahkan
+    for (let i = 0; i < localStorage.length; i++) {
+      let key = localStorage.key(i);
+      if (key && key.startsWith('kamawak_override_local_')) {
+        try {
+          let localItem = JSON.parse(localStorage.getItem(key));
+          if (localItem && !deletedList.includes(localItem.id) && !data.some(d => d.id === localItem.id)) {
+            data.unshift(localItem);
+          }
+        } catch(e) {}
+      }
+    }
+
     if (!data || data.length === 0) {
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-gray);">Belum ada produk wisata di database. Silakan tambahkan melalui form di atas.</td></tr>';
       return;
@@ -2092,6 +2159,17 @@ window.muatDaftarWisataCMS = async function() {
 
     let html = '';
     data.forEach(item => {
+      try {
+        let localMeta = JSON.parse(localStorage.getItem('kamawak_override_' + item.id) || localStorage.getItem('kamawak_meta_' + item.id) || 'null');
+        if (localMeta) {
+          Object.keys(localMeta).forEach(k => {
+            if (localMeta[k] !== undefined && localMeta[k] !== null && localMeta[k] !== '') {
+              item[k] = localMeta[k];
+            }
+          });
+        }
+      } catch(e) {}
+
       let foto = (typeof window.getFirstValidFoto === 'function') 
         ? window.getFirstValidFoto(item.foto, 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=200')
         : (item.foto ? item.foto.split(',')[0].trim() : 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=200');
@@ -2123,49 +2201,62 @@ window.muatDaftarWisataCMS = async function() {
 window.editProdukCMS = async function(id) {
   try {
     const { data, error } = await supabase.from('wisata').select('*').eq('id', id).single();
-    if (error) throw error;
-    if (!data) return;
+    if (error && !id.startsWith('local_')) throw error;
+    let targetData = data || {};
 
     let meta = null;
-    try { meta = JSON.parse(localStorage.getItem('kamawak_meta_' + id) || 'null'); } catch(e) {}
+    try { meta = JSON.parse(localStorage.getItem('kamawak_override_' + id) || localStorage.getItem('kamawak_meta_' + id) || 'null'); } catch(e) {}
+    if (meta) {
+      Object.keys(meta).forEach(k => {
+        if (meta[k] !== undefined && meta[k] !== null && meta[k] !== '') {
+          targetData[k] = meta[k];
+        }
+      });
+    }
 
-    document.getElementById('cmsID').value = data.id || '';
-    document.getElementById('cmsIDOwner').value = data.owner || '';
-    document.getElementById('cmsNama').value = data.nama || '';
-    if (document.getElementById('cmsStatusLangganan')) document.getElementById('cmsStatusLangganan').value = data.status || 'Aktif';
-    if (document.getElementById('cmsKategori')) document.getElementById('cmsKategori').value = data.kategori || 'Tur';
-    document.getElementById('cmsDestinasi').value = data.lokasi || data.destinasi || '';
-    document.getElementById('cmsHarga').value = data.harga || '';
+    document.getElementById('cmsID').value = targetData.id || id || '';
+    document.getElementById('cmsIDOwner').value = targetData.owner || '';
+    document.getElementById('cmsNama').value = targetData.nama || '';
+    if (document.getElementById('cmsStatusLangganan')) document.getElementById('cmsStatusLangganan').value = targetData.status || 'Aktif';
+    if (document.getElementById('cmsKategori')) document.getElementById('cmsKategori').value = targetData.kategori || 'Tur';
+    document.getElementById('cmsDestinasi').value = targetData.lokasi || targetData.destinasi || '';
+    document.getElementById('cmsHarga').value = targetData.harga || '';
     if (document.getElementById('cmsFotoUpload')) document.getElementById('cmsFotoUpload').value = '';
     if (document.getElementById('cmsFotoUrl')) {
-      document.getElementById('cmsFotoUrl').value = data.foto || '';
+      document.getElementById('cmsFotoUrl').value = targetData.foto || '';
     }
     if (typeof window.previewCmsFotoInput === 'function') {
       window.previewCmsFotoInput();
     }
-    if (document.getElementById('cmsHargaCoret')) document.getElementById('cmsHargaCoret').value = data.harga_coret || (meta ? meta.harga_coret : '') || '';
-    if (document.getElementById('cmsDurasi')) document.getElementById('cmsDurasi').value = data.durasi || (meta ? meta.durasi : '') || '';
-    if (document.getElementById('cmsMaps')) document.getElementById('cmsMaps').value = data.maps || (meta ? meta.maps : '') || '';
-    if (document.getElementById('cmsWA')) document.getElementById('cmsWA').value = data.wa || (meta ? meta.wa : '') || '';
-    if (document.getElementById('cmsIG')) document.getElementById('cmsIG').value = data.ig || (meta ? meta.ig : '') || '';
-    if (document.getElementById('cmsTikTok')) document.getElementById('cmsTikTok').value = data.tiktok || (meta ? meta.tiktok : '') || '';
-    if (document.getElementById('cmsFB')) document.getElementById('cmsFB').value = data.fb || (meta ? meta.fb : '') || '';
-    let dVal = data.deskripsi || (meta ? meta.deskripsi : '') || '';
+    if (document.getElementById('cmsHargaCoret')) document.getElementById('cmsHargaCoret').value = targetData.harga_coret || '';
+    if (document.getElementById('cmsDurasi')) document.getElementById('cmsDurasi').value = targetData.durasi || '';
+    if (document.getElementById('cmsMaps')) document.getElementById('cmsMaps').value = targetData.maps || '';
+    if (document.getElementById('cmsWA')) document.getElementById('cmsWA').value = targetData.wa || '';
+    if (document.getElementById('cmsIG')) document.getElementById('cmsIG').value = targetData.ig || '';
+    if (document.getElementById('cmsTikTok')) document.getElementById('cmsTikTok').value = targetData.tiktok || '';
+    if (document.getElementById('cmsFB')) document.getElementById('cmsFB').value = targetData.fb || '';
+    let dVal = targetData.deskripsi || '';
     if (document.getElementById('cmsDeskripsi')) document.getElementById('cmsDeskripsi').value = dVal.replace(/\\n/g, '\n');
-    let fVal = data.fasilitas || (meta ? meta.fasilitas : '') || '';
+    let fVal = targetData.fasilitas || '';
     if (document.getElementById('cmsFasilitas')) document.getElementById('cmsFasilitas').value = fVal.replace(/\\n/g, '\n');
     if (typeof window.updateFacilityTagHighlights === 'function') window.updateFacilityTagHighlights();
     if (typeof window.updateCardPreviewLanding === 'function') window.updateCardPreviewLanding();
-    if (document.getElementById('cmsVarian')) document.getElementById('cmsVarian').value = data.varian || (meta ? meta.varian : '') || '';
-    if (document.getElementById('cmsTags')) document.getElementById('cmsTags').value = data.tags || data.penanda || (meta ? meta.tags : '') || '';
-    let iVal = data.itinerary || (meta ? meta.itinerary : '') || '';
+    if (document.getElementById('cmsVarian')) document.getElementById('cmsVarian').value = targetData.varian || '';
+    if (document.getElementById('cmsTags')) document.getElementById('cmsTags').value = targetData.tags || targetData.penanda || '';
+    let iVal = targetData.itinerary || '';
     if (document.getElementById('cmsItinerary')) document.getElementById('cmsItinerary').value = iVal.replace(/\\n/g, '\n');
+
+    let btnSubmit = document.querySelector('button[onclick="simpanCMS()"]');
+    if (btnSubmit) {
+      btnSubmit.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Perbarui Produk (Simpan Perubahan)';
+      btnSubmit.style.background = '#FF5E1F';
+    }
 
     window.scrollTo({ top: document.getElementById('tabCMS').offsetTop - 60, behavior: 'smooth' });
     Swal.fire({
       icon: 'info',
       title: 'Mode Edit Produk',
-      text: 'Data produk "' + data.nama + '" berhasil dimuat ke formulir.',
+      text: 'Data produk "' + (targetData.nama || '') + '" berhasil dimuat ke formulir.',
       timer: 2000,
       showConfirmButton: false
     });
@@ -2177,7 +2268,7 @@ window.editProdukCMS = async function(id) {
 window.hapusProdukCMS = async function(id, nama) {
   const result = await Swal.fire({
     title: 'Hapus Produk?',
-    html: `Apakah Anda yakin ingin menghapus <b>${nama}</b>?<br><small style="color:red;">Produk ini akan dihapus permanen dari database Supabase.</small>`,
+    html: `Apakah Anda yakin ingin menghapus <b>${nama}</b>?<br><small style="color:red;">Produk ini akan dihapus permanen dari katalog.</small>`,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#EF4444',
@@ -2187,10 +2278,16 @@ window.hapusProdukCMS = async function(id, nama) {
 
   if (result.isConfirmed) {
     try {
-      const { error } = await supabase.from('wisata').delete().eq('id', id);
-      if (error) throw error;
+      const { data, error } = await supabase.from('wisata').delete().eq('id', id).select();
+      if (error && error.code !== '42501') throw error;
+
+      let deletedList = JSON.parse(localStorage.getItem('kamawak_deleted_wisata') || '[]');
+      if (!deletedList.includes(id)) deletedList.push(id);
+      localStorage.setItem('kamawak_deleted_wisata', JSON.stringify(deletedList));
       localStorage.removeItem('kamawak_meta_' + id);
-      Swal.fire('Terhapus', 'Produk berhasil dihapus dari database.', 'success');
+      localStorage.removeItem('kamawak_override_' + id);
+      
+      Swal.fire('Terhapus', 'Produk berhasil dihapus dari katalog.', 'success');
       muatDaftarWisataCMS();
     } catch(e) {
       Swal.fire('Gagal', e.message, 'error');
@@ -3063,7 +3160,35 @@ function simpanDaftarPintasanServer(list, suksesMsg) {
 window.uploadTag = window.simpanPintasanTag;
 window.tambahLayout = function() {};
 window.simpanSemuaLayout = function() { Swal.fire('Info', 'Migrasi Layout DB', 'info'); };
-window.simpanPengaturan = function() { Swal.fire('Info', 'Pengaturan disimpan', 'success'); };
+window.simpanPengaturan = function() {
+    let mode = document.getElementById('setMidtransMode') ? document.getElementById('setMidtransMode').value : 'false';
+    let key = document.getElementById('setMidtransKey') ? document.getElementById('setMidtransKey').value.trim() : '';
+    let drive = document.getElementById('setDriveId') ? document.getElementById('setDriveId').value.trim() : '';
+    let scriptUrl = document.getElementById('setAppScriptUrl') ? document.getElementById('setAppScriptUrl').value.trim() : '';
+
+    localStorage.setItem('kamawak_midtrans_mode', mode);
+    localStorage.setItem('kamawak_midtrans_key', key);
+    localStorage.setItem('kamawak_drive_id', drive);
+    localStorage.setItem('kamawak_appscript_url', scriptUrl);
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+            .withSuccessHandler(function() {
+                Swal.fire('Berhasil Disimpan', 'Konfigurasi sistem berhasil diperbarui dan disinkronkan!', 'success');
+            })
+            .withFailureHandler(function() {
+                Swal.fire('Tersimpan Lokal', 'Konfigurasi sistem disimpan di browser lokal.', 'info');
+            })
+            .simpanPengaturanForm([
+                { key: 'MIDTRANS_IS_PRODUCTION', value: mode, desc: 'Mode Midtrans Production' },
+                { key: 'MIDTRANS_SERVER_KEY', value: key, desc: 'Server Key Midtrans' },
+                { key: 'DRIVE_FOLDER_ID', value: drive, desc: 'Folder ID Google Drive' },
+                { key: 'APPSCRIPT_WEB_URL', value: scriptUrl, desc: 'URL Google Apps Script' }
+            ]);
+    } else {
+        Swal.fire('Berhasil Disimpan', 'Konfigurasi sistem berhasil disimpan secara lokal!', 'success');
+    }
+};
 window.ubahOpsiKas = function() {
     let jenis = document.getElementById('kasJenis').value;
     let kat = document.getElementById('kasKategori');

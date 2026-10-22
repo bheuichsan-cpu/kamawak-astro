@@ -1682,25 +1682,36 @@ const INITIAL_CITIES = [
         }
         
         let rawData = wisataData || [];
-        let activeWisata = rawData.filter(item => item.status !== 'Nonaktif');
+        let deletedList = [];
+        try { deletedList = JSON.parse(localStorage.getItem('kamawak_deleted_wisata') || '[]'); } catch(e){}
+        let filteredWisata = rawData.filter(item => !deletedList.includes(item.id));
 
-        dataMaster = activeWisata.map(item => {
+        // Gabungkan juga produk lokal baru jika ada yang baru ditambahkan
+        try {
+          for (let i = 0; i < localStorage.length; i++) {
+            let key = localStorage.key(i);
+            if (key && key.startsWith('kamawak_override_local_')) {
+              let localItem = JSON.parse(localStorage.getItem(key));
+              if (localItem && !deletedList.includes(localItem.id) && !filteredWisata.some(d => d.id === localItem.id)) {
+                filteredWisata.unshift(localItem);
+              }
+            }
+          }
+        } catch(e) {}
+
+        dataMaster = filteredWisata.map(item => {
           try {
-            let localMeta = JSON.parse(localStorage.getItem('kamawak_meta_' + item.id) || 'null');
+            let localMeta = JSON.parse(localStorage.getItem('kamawak_override_' + item.id) || localStorage.getItem('kamawak_meta_' + item.id) || 'null');
             if (localMeta) {
-              if (!item.deskripsi && localMeta.deskripsi) item.deskripsi = localMeta.deskripsi;
-              if (!item.fasilitas && localMeta.fasilitas) item.fasilitas = localMeta.fasilitas;
-              if (!item.varian && localMeta.varian) item.varian = localMeta.varian;
-              if (!item.tags && localMeta.tags) item.tags = localMeta.tags;
-              if (!item.itinerary && localMeta.itinerary) item.itinerary = localMeta.itinerary;
-              if (!item.harga_coret && localMeta.harga_coret) item.harga_coret = localMeta.harga_coret;
-              if (!item.durasi && localMeta.durasi) item.durasi = localMeta.durasi;
-              if (!item.maps && localMeta.maps) item.maps = localMeta.maps;
-              if (!item.wa && localMeta.wa) item.wa = localMeta.wa;
+              Object.keys(localMeta).forEach(k => {
+                if (localMeta[k] !== undefined && localMeta[k] !== null && localMeta[k] !== '') {
+                  item[k] = localMeta[k];
+                }
+              });
             }
           } catch(e) {}
           return item;
-        });
+        }).filter(item => item.status !== 'Nonaktif');
 
         muatKoleksiTag();
         muatFasilitasTrustHome();
