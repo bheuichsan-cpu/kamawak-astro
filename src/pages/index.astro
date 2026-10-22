@@ -64,31 +64,45 @@ import BottomNav from '../components/BottomNav.astro';
     .btn-login-nav:hover { background: var(--primary); color: var(--white); }
 
     /* Hero Slider & Banner */
-    .hero-slider { position: relative; height: 480px; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; background: #1C2430; }
+    .hero-slider { position: relative; min-height: 520px; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; background: #0F172A; padding: 40px 0; }
     .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.5s ease-in-out; z-index: 1; }
     .slide.active { opacity: 1; }
     .slide.clickable { cursor: pointer; } 
     .slide.clickable:hover { transform: scale(1.02); transition: transform 5s linear; }
-    .hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(28,36,48,0.5), rgba(28,36,48,0.9)); z-index: 2; pointer-events: none; }
-    .hero-content { position: relative; z-index: 3; color: var(--white); padding: 0 5%; width: 100%; max-width: 800px; }
-    .hero-content h1 { font-family: 'Poppins', sans-serif; font-size: 42px; margin-bottom: 15px; line-height: 1.2; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
-    .hero-content p { font-size: 16px; margin-bottom: 30px; color: #E5E7EB; }
-    
-    
-    
-    
-    
-    
+    .hero-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, rgba(15,23,42,0.45) 0%, rgba(15,23,42,0.85) 100%); z-index: 2; pointer-events: none; }
+    .hero-content { position: relative; z-index: 3; color: var(--white); padding: 0 5%; width: 100%; max-width: 860px; display: flex; flex-direction: column; align-items: center; }
+    .hero-pill-badge { display: inline-flex; align-items: center; gap: 7px; background: rgba(255, 255, 255, 0.16); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.3); color: #FFFFFF; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; padding: 6px 16px; border-radius: 30px; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(0,0,0,0.15); }
+    .hero-pill-badge i { color: #FDE047; }
+    .hero-content h1 { font-family: 'Poppins', sans-serif; font-size: 44px; margin-bottom: 12px; line-height: 1.2; text-shadow: 0 2px 12px rgba(0,0,0,0.4); font-weight: 800; }
+    .hero-content p { font-size: 16px; margin-bottom: 10px; color: #E2E8F0; max-width: 650px; line-height: 1.5; }
+
+    /* SMART FLOATING SEARCH WIDGET (AIRBNB / TRAVELOKA STYLE) */
+    .smart-search-container { margin-top: 25px; width: 100%; max-width: 820px; }
+    .smart-search-widget { display: flex; align-items: center; background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(16px); border-radius: 50px; padding: 6px 8px 6px 18px; box-shadow: 0 14px 40px rgba(0, 0, 0, 0.25), 0 2px 10px rgba(0, 0, 0, 0.08); border: 1px solid rgba(255, 255, 255, 0.6); gap: 10px; box-sizing: border-box; transition: all 0.25s ease; }
+    .smart-search-widget:focus-within { box-shadow: 0 16px 45px rgba(255, 94, 31, 0.3), 0 0 0 2px var(--primary); }
+    .search-field-pill { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+    .search-field-pill.field-destinasi { flex: 1.5; }
+    .search-field-pill i { color: var(--primary); font-size: 16px; flex-shrink: 0; }
+    .search-input-modern { width: 100%; border: none; outline: none; background: transparent; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; color: #1E293B; padding: 6px 0; }
+    .search-input-modern::placeholder { color: #94A3B8; }
+    .search-select-modern { width: 100%; border: none; outline: none; background: transparent; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: #1E293B; cursor: pointer; padding: 6px 0; }
+    .search-divider { width: 1px; height: 28px; background: #E2E8F0; flex-shrink: 0; }
+    .smart-search-btn { height: 46px; padding: 0 26px; border-radius: 40px; background: linear-gradient(135deg, #FF6A28 0%, #EA580C 100%); color: #FFFFFF; border: none; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35); transition: all 0.2s ease; }
+    .smart-search-btn:hover { transform: scale(1.03); box-shadow: 0 6px 18px rgba(234, 88, 12, 0.45); }
+    .smart-search-btn:active { transform: scale(0.98); }
+
     .section-title { font-family: 'Poppins', sans-serif; font-size: 22px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
     
-    .city-scroll { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 15px; margin-bottom: 15px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+    .city-scroll { display: flex; overflow-x: auto; gap: 16px; padding-bottom: 12px; margin-bottom: 15px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
     .city-scroll::-webkit-scrollbar { display: none; }
-    .city-card { min-width: 160px; height: 120px; border-radius: 16px; position: relative; overflow: hidden; cursor: pointer; scroll-snap-align: start; box-shadow: var(--shadow); transition: 0.3s; }
-    .city-card:hover { transform: translateY(-5px); }
-    .city-card img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-    .city-card:hover img { transform: scale(1.1); }
-    .city-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%); display: flex; align-items: flex-end; padding: 15px; }
-    .city-name { color: white; font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 600; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+    .city-card { min-width: 160px; height: 125px; border-radius: 16px; position: relative; overflow: hidden; cursor: pointer; scroll-snap-align: start; box-shadow: 0 4px 14px rgba(0,0,0,0.08); transition: 0.3s; flex-shrink: 0; border: 2px solid transparent; }
+    .city-card:hover { transform: translateY(-4px); box-shadow: 0 10px 24px rgba(0,0,0,0.15); }
+    .city-card.city-active { border-color: var(--primary) !important; box-shadow: 0 6px 20px rgba(255, 94, 31, 0.35); }
+    .city-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+    .city-card:hover img { transform: scale(1.08); }
+    .city-badge { position: absolute; top: 10px; right: 10px; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(4px); color: #1E293B; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.16); z-index: 5; }
+    .city-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0.1) 60%, rgba(0,0,0,0) 100%); display: flex; align-items: flex-end; padding: 12px 14px; }
+    .city-name { color: white; font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 700; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
 
     .popular-scroll { display: flex; overflow-x: auto; gap: 20px; padding-bottom: 20px; margin-bottom: 10px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
     .popular-scroll::-webkit-scrollbar { height: 8px; }
@@ -98,19 +112,30 @@ import BottomNav from '../components/BottomNav.astro';
 
     .controls-wrapper { max-width: 1200px; margin: 40px auto 20px; padding: 0 5%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; border-top: 1px solid #E5E7EB; padding-top: 40px; }
     .category-tabs { display: flex; gap: 12px; flex-wrap: wrap; }
-    .tab-btn { background: var(--white); border: 1px solid #E5E7EB; padding: 10px 20px; border-radius: 30px; font-weight: 600; cursor: pointer; color: var(--text-dark); display: flex; align-items: center; gap: 8px; transition: 0.2s; }
-    .tab-btn.active, .tab-btn:hover { background: var(--text-dark); color: var(--white); border-color: var(--text-dark); }
+    .tab-btn { background: #F8FAFC; border: 1px solid #E2E8F0; padding: 8px 18px; border-radius: 30px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; color: #334155; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s ease; }
+    .tab-btn:hover { background: #F1F5F9; border-color: #CBD5E1; color: #0F172A; }
+    .tab-btn.active { background: var(--primary) !important; color: #FFFFFF !important; border-color: var(--primary) !important; box-shadow: 0 3px 12px rgba(255, 94, 31, 0.3); }
     .filter-group { display: flex; gap: 10px; flex-wrap: wrap; }
     .sort-select { padding: 10px 15px; border-radius: 30px; border: 1px solid #E5E7EB; outline: none; font-family: 'Inter'; font-size: 13px; font-weight: 600; cursor: pointer; background: var(--white); color: var(--text-dark); }
 
     .container { max-width: 1200px; margin: 0 auto; padding: 0 5%; flex: 1; width: 100%; margin-top: 40px; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; margin-bottom: 50px; }
-    .card { background: var(--white); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: 0.3s; display: flex; flex-direction: column; border: 1px solid #F3F4F6; height: 100%; }
-    .card:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.12); }
+    .card { background: var(--white); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.05); transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; flex-direction: column; border: 1px solid #F1F5F9; height: 100%; position: relative; }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 14px 30px rgba(0,0,0,0.1); border-color: #E2E8F0; }
     
     .card-clickable { cursor: pointer; text-decoration: none; color: inherit; flex: 1; display: flex; flex-direction: column; }
-    .card-img-wrapper { position: relative; }
-    .card-img { width: 100%; height: 200px; object-fit: cover; }
+    .card-img-wrapper { position: relative; overflow: hidden; background: #F1F5F9; }
+    .card-img { width: 100%; height: 200px; object-fit: cover; display: block; transition: transform 0.4s ease; }
+    .card:hover .card-img { transform: scale(1.05); }
+    .card-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(4px); padding: 3px 7px; border-radius: 12px; pointer-events: none; }
+    .card-dots .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, 0.6); transition: all 0.2s; }
+    .card-dots .dot.active { background: #FFFFFF; width: 14px; border-radius: 4px; }
+    .card-amenities { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .amenity-tag { background: #F1F5F9; color: #475569; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; }
+    .text-verified { color: #10B981; font-size: 14px; margin-left: 4px; }
+    .card-price-coret { text-decoration: line-through; color: #94A3B8; font-size: 11px; margin-right: 4px; display: block; }
+    .card-discount-badge { position: absolute; top: 10px; left: 10px; background: #EF4444; color: #FFFFFF; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4); z-index: 5; }
+
     .btn-wishlist-card {
       position: absolute;
       top: 10px;
@@ -135,10 +160,10 @@ import BottomNav from '../components/BottomNav.astro';
     .btn-wishlist-card.active { color: #EF4444; background: white; }
     .card-badge { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.95); padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; color: var(--text-dark); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     .card-badge-fire { position: absolute; top: 15px; right: 15px; background: #EF4444; color: white; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 10px rgba(239, 68, 68, 0.4); display: flex; align-items: center; gap: 5px; }
-    .card-content { padding: 20px; flex: 1; display: flex; flex-direction: column; }
-    .card-location { font-size: 13px; color: var(--text-gray); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
-    .card-title { font-family: 'Poppins', sans-serif; font-size: 18px; margin-bottom: 12px; color: var(--text-dark); line-height: 1.4; flex: 1; }
-    .card-price-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px; }
+    .card-content { padding: 18px; flex: 1; display: flex; flex-direction: column; }
+    .card-location { font-size: 12px; color: var(--text-gray); margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+    .card-title { font-family: 'Poppins', sans-serif; font-size: 17px; margin-bottom: 10px; color: var(--text-dark); line-height: 1.4; flex: 1; font-weight: 600; }
+    .card-price-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: auto; padding-top: 10px; border-top: 1px solid #F1F5F9; }
     .card-price-label { font-size: 11px; color: var(--text-gray); display: block; margin-bottom: 2px; }
     .card-price { font-size: 18px; font-weight: 700; color: var(--primary); }
     .card-rating { font-size: 13px; color: var(--text-dark); font-weight: 600; display: flex; align-items: center; gap: 5px; background: #FFFBEB; padding: 4px 8px; border-radius: 6px; }
@@ -158,6 +183,12 @@ import BottomNav from '../components/BottomNav.astro';
     .skeleton-text { height: 16px; background: #E5E7EB; margin: 20px; border-radius: 4px; animation: pulse 1.5s infinite; }
     .skeleton-text.short { width: 50%; margin-top: 10px; }
     @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+    .stats-row { max-width: 800px; margin: 0 auto 40px auto; display: flex; align-items: center; justify-content: space-around; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 16px; padding: 18px 25px; box-shadow: 0 4px 14px rgba(0,0,0,0.03); }
+    .stat-box { text-align: center; }
+    .stat-number { font-family: 'Poppins', sans-serif; font-size: 26px; font-weight: 800; color: var(--primary); display: block; line-height: 1.1; }
+    .stat-label { font-size: 13px; font-weight: 600; color: #64748B; margin-top: 4px; display: block; }
+    .stat-divider { width: 1px; height: 35px; background: #CBD5E1; }
 
     .trust-section { background: var(--white); padding: 50px 5%; margin-top: 20px; border-top: 1px solid #E5E7EB; }
     .trust-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; }
@@ -197,11 +228,6 @@ import BottomNav from '../components/BottomNav.astro';
     .ad-card img { width: 100%; height: 120px; object-fit: cover; display: block; }
     @media (max-width: 768px) { .ad-card { flex: 0 0 calc(50% - 7.5px); min-width: calc(50% - 7.5px); } }
 
-    .search-box { display: flex; align-items: center; background: var(--white); width: 100%; height: 56px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-top: 15px; box-sizing: border-box; padding: 6px; overflow: hidden; }
-    .search-box i { padding-left: 14px; color: var(--text-gray); font-size: 18px; flex-shrink: 0; }
-    .search-input { flex: 1; border: none; outline: none; background: transparent; font-size: 16px; color: var(--text-dark); padding: 0 12px; min-width: 0; }
-    .search-btn { height: 100%; padding: 0 25px; border-radius: 50px; background: var(--primary); color: var(--white); border: none; font-weight: 600; cursor: pointer; font-size: 16px; white-space: nowrap; flex-shrink: 0; }
-
     /* RESPONSIVE DESIGN (MOBILE) */
 
     @media (max-width: 768px) {
@@ -211,21 +237,25 @@ import BottomNav from '../components/BottomNav.astro';
         .btn-login-nav { padding: 6px 12px !important; font-size: 12px !important; border-radius: 20px !important; display: inline-flex !important; align-items: center; gap: 5px; text-decoration: none; }
         .btn-login-nav span { display: inline !important; font-size: 12px !important; }
         .btn-login-nav i { font-size: 12px !important; margin: 0 !important; }
-        .hero-slider { height: 240px; }
+        .hero-slider { min-height: 380px; height: auto; padding: 30px 0 25px; }
         .hero-content { padding: 0 15px; }
-        .hero-content h1 { font-size: 22px; margin-bottom: 5px; }
+        .hero-content h1 { font-size: 24px; margin-bottom: 6px; }
+        .hero-pill-badge { font-size: 11px; padding: 4px 12px; margin-bottom: 10px; }
         .hero-content p { display: none; }
         
-        .search-box { height: 44px; margin-top: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); padding: 4px; }
-        .search-box i { padding-left: 10px; font-size: 14px; }
-        .search-input { font-size: 13px; padding: 0 8px; }
-        .search-btn { padding: 0 15px; font-size: 12px; }
+        .smart-search-container { margin-top: 15px; }
+        .smart-search-widget { border-radius: 16px; flex-direction: column; padding: 10px; gap: 8px; align-items: stretch; }
+        .search-divider { display: none; }
+        .search-field-pill { background: #F8FAFC; padding: 8px 12px; border-radius: 10px; border: 1px solid #F1F5F9; }
+        .smart-search-btn { height: 42px; width: 100%; justify-content: center; border-radius: 10px; font-size: 13px; }
+        
         .category-tabs-top { top: 52px !important; padding: 10px 15px; gap: 8px; }
         .tab-btn { font-size: 12px; padding: 6px 12px; border-radius: 20px; }
         .container { padding: 0 15px; margin-top: 20px; }
         .section-title { font-size: 16px; margin-bottom: 12px; }
-        .city-card { min-width: 100px; height: 90px; border-radius: 10px; }
-        .city-name { font-size: 12px; padding: 8px; }
+        .city-card { min-width: 125px; height: 100px; border-radius: 12px; }
+        .city-name { font-size: 12px; padding: 8px 10px; }
+        .city-badge { font-size: 10px; padding: 2px 6px; top: 6px; right: 6px; }
         .popular-card { min-width: 220px; max-width: 220px; }
         
         /* 2-Column Grid like Traveloka/Klook */
@@ -235,12 +265,19 @@ import BottomNav from '../components/BottomNav.astro';
         .card-content { padding: 10px; }
         .card-title { font-size: 12px; margin-bottom: 6px; line-height: 1.3; }
         .card-location { font-size: 10px; margin-bottom: 6px; }
+        .card-amenities { display: none; }
         .card-price-label { font-size: 10px; }
         .card-price { font-size: 14px; }
         .card-rating { font-size: 11px; padding: 2px 6px; }
+        .card-dots { display: none; }
         .card-action { padding: 0 10px 10px 10px; padding-top: 8px; flex-direction: column; gap: 5px; }
         .btn-booking { padding: 6px; font-size: 11px; }
         
+        .stats-row { padding: 12px 10px; margin-bottom: 25px; }
+        .stat-number { font-size: 18px; }
+        .stat-label { font-size: 10px; }
+        .stat-divider { height: 25px; }
+
         .trust-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .trust-item { padding: 5px; }
         .trust-icon { width: 40px; height: 40px; font-size: 16px; margin: 0 auto 10px; }
@@ -347,12 +384,47 @@ import BottomNav from '../components/BottomNav.astro';
     <img src="https://images.unsplash.com/photo-1542640244-7e672d6cb469?q=80&w=1200&auto=format&fit=crop" class="slide" alt="Hero 3">
     <div class="hero-overlay"></div>
     <div class="hero-content">
+      <div class="hero-pill-badge">
+        <i class="fa-solid fa-sparkles"></i> #1 Platform Wisata Ranah Minang
+      </div>
       <h1>Jelajahi Keajaiban<br>Ranah Minang</h1>
       <p>Temukan ratusan destinasi wisata, penginapan eksklusif, dan rental kendaraan terbaik di Sumatera Barat dalam satu genggaman.</p>
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="searchInput" class="search-input" placeholder="Mau liburan kemana hari ini?" onkeypress="handleEnter(event)" oninput="if(window.terapkanFilterDanUrutan) window.terapkanFilterDanUrutan()">
-        <button class="search-btn" onclick="panggilDataServer()">Cari</button>
+      
+      <!-- SMART FLOATING SEARCH WIDGET (AIRBNB / TRAVELOKA STYLE) -->
+      <div class="smart-search-container">
+        <div class="smart-search-widget">
+          <div class="search-field-pill field-destinasi">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" class="search-input-modern" placeholder="Cari destinasi, hotel, atau tur..." onkeypress="handleEnter(event)" oninput="if(window.terapkanFilterDanUrutan) window.terapkanFilterDanUrutan()">
+          </div>
+          <div class="search-divider"></div>
+          <div class="search-field-pill">
+            <i class="fa-solid fa-shapes"></i>
+            <select id="smartCategorySelect" class="search-select-modern" onchange="syncCategorySelect(this.value)">
+              <option value="Semua">Semua Kategori</option>
+              <option value="Tur">Tur & Tiket</option>
+              <option value="Atraksi">Atraksi</option>
+              <option value="Penginapan">Penginapan</option>
+              <option value="Kuliner">Kuliner</option>
+              <option value="Rental">Rental</option>
+              <option value="Favorit">Favorit ❤️</option>
+            </select>
+          </div>
+          <div class="search-divider"></div>
+          <div class="search-field-pill">
+            <i class="fa-solid fa-wallet"></i>
+            <select id="smartBudgetSelect" class="search-select-modern" onchange="syncBudgetSelect(this.value)">
+              <option value="semua">Semua Budget</option>
+              <option value="under500">&lt; Rp 500rb</option>
+              <option value="500to1m">Rp 500rb - 1jt</option>
+              <option value="above1m">&gt; Rp 1jt</option>
+            </select>
+          </div>
+          <button class="smart-search-btn" onclick="panggilDataServer()">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Cari</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -405,6 +477,28 @@ import BottomNav from '../components/BottomNav.astro';
 
 
   <div class="trust-section">
+    <div class="stats-row">
+      <div class="stat-box">
+        <span class="stat-number">120+</span>
+        <span class="stat-label">Destinasi Terverifikasi</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-box">
+        <span class="stat-number">4.9★</span>
+        <span class="stat-label">Rating Pengunjung</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-box">
+        <span class="stat-number">100%</span>
+        <span class="stat-label">Langsung ke Mitra</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-box">
+        <span class="stat-number">0 Rp</span>
+        <span class="stat-label">Bebas Biaya Siluman</span>
+      </div>
+    </div>
+
     <div class="trust-grid">
       <div class="trust-item"><div class="trust-icon"><i class="fa-solid fa-handshake"></i></div><h4>Harga Jujur & Terbuka</h4><p>Tidak ada biaya tersembunyi. Dapatkan harga langsung terbaik dari pengelola usaha tanpa tambahan komisi siluman.</p></div>
       <div class="trust-item"><div class="trust-icon"><i class="fa-solid fa-comments"></i></div><h4>Langsung ke Owner</h4><p>Fitur "Tanya Owner" mengizinkan Anda berkonsultasi mengenai ketersediaan kamar langsung ke nomor WhatsApp pemilik.</p></div>
@@ -622,14 +716,30 @@ import BottomNav from '../components/BottomNav.astro';
       if (!list || list.length === 0) list = DAFTAR_KOTA_DEFAULT;
       list = list.filter(k => k.status !== 'Nonaktif');
 
-      let html = list.map((k, idx) => `
-        <div class="city-card ${idx === 0 ? 'city-active' : ''}" onclick="filterKota('${k.nama}', this)" title="Lihat wisata di ${k.label || k.nama}">
-          <img src="${k.img || k.foto || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400'}" alt="${k.label || k.nama}">
-          <div class="city-overlay">
-            <span class="city-name">${k.label || k.nama}</span>
+      let html = list.map((k, idx) => {
+        let count = 0;
+        if (dataMaster && dataMaster.length > 0) {
+          if (k.nama === 'Semua') {
+            count = dataMaster.length;
+          } else {
+            let cityNameLower = (k.nama || '').toLowerCase();
+            count = dataMaster.filter(item => {
+              let lok = ((item.destinasi || '') + ' ' + (item.lokasi || '') + ' ' + (item.nama || '')).toLowerCase();
+              return lok.includes(cityNameLower);
+            }).length;
+          }
+        }
+        let badgeHtml = count > 0 ? `<span class="city-badge">${count} tempat</span>` : '';
+        return `
+          <div class="city-card ${idx === 0 ? 'city-active' : ''}" onclick="filterKota('${k.nama}', this)" title="Lihat wisata di ${k.label || k.nama}">
+            <img src="${k.img || k.foto || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400'}" alt="${k.label || k.nama}">
+            ${badgeHtml}
+            <div class="city-overlay">
+              <span class="city-name">${k.label || k.nama}</span>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
       c.innerHTML = html;
     }
 
@@ -733,6 +843,7 @@ import BottomNav from '../components/BottomNav.astro';
           let layoutMaster = []; 
           
           dataMaster = wisataData || [];
+          muatKoleksiTag();
           if (layoutMaster.length > 0) {
              document.getElementById('sectionPopuler').style.display = "none";
           } else {
@@ -830,6 +941,15 @@ import BottomNav from '../components/BottomNav.astro';
         let tipeUrut = document.getElementById('sortSelect') ? document.getElementById('sortSelect').value : 'relevan';
         let wishlist = JSON.parse(localStorage.getItem('kamawak_wishlist') || '[]');
 
+        let smartBudget = document.getElementById('smartBudgetSelect');
+        if (smartBudget && document.getElementById('priceSelect')) {
+          smartBudget.value = document.getElementById('priceSelect').value;
+        }
+        let smartCat = document.getElementById('smartCategorySelect');
+        if (smartCat && smartCat.value !== kategoriAktif) {
+          smartCat.value = kategoriAktif;
+        }
+
         let filtered = dataMaster.filter(item => {
            let hrg = Number(item.harga || item.hargaJual || 0);
            let mHarga = (tipeHarga === 'under500') ? (hrg > 0 && hrg < 500000) : (tipeHarga === '500to1m') ? (hrg >= 500000 && hrg <= 1000000) : (tipeHarga === 'above1m') ? (hrg > 1000000) : true;
@@ -878,7 +998,8 @@ import BottomNav from '../components/BottomNav.astro';
       if(!data || data.length === 0) return '';
       let wishlist = JSON.parse(localStorage.getItem('kamawak_wishlist') || '[]');
       return data.map(item => {
-        let harga = Number(item.harga || item.hargaJual || 0).toLocaleString('id-ID');
+        let hargaNum = Number(item.harga || item.hargaJual || 0);
+        let harga = hargaNum.toLocaleString('id-ID');
         let fotoRaw = (item.foto || '').trim();
         let foto = 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500';
         if (fotoRaw) {
@@ -900,20 +1021,58 @@ import BottomNav from '../components/BottomNav.astro';
         let lokasi = item.destinasi || item.lokasi || 'Sumatera Barat';
         let rating = Number(item.rating || 5.0).toFixed(1);
 
+        // Diskon & Harga Coret
+        let coretNum = Number(item.harga_coret || 0);
+        let diskonBadgeHtml = '';
+        let coretPriceHtml = '';
+        if (coretNum > hargaNum && hargaNum > 0) {
+          let persenHemat = Math.round(((coretNum - hargaNum) / coretNum) * 100);
+          if (persenHemat > 0) {
+            diskonBadgeHtml = `<span class="card-discount-badge"><i class="fa-solid fa-tag"></i> Hemat ${persenHemat}%</span>`;
+            coretPriceHtml = `<span class="card-price-coret">Rp ${coretNum.toLocaleString('id-ID')}</span>`;
+          }
+        }
+
+        // Quick Amenity Pills
+        let katLower = String(item.kategori || '').toLowerCase();
+        let amenities = [];
+        if (katLower.includes('penginapan') || katLower.includes('hotel') || katLower.includes('homestay')) {
+          amenities = ['<i class="fa-solid fa-wifi"></i> WiFi', '<i class="fa-solid fa-snowflake"></i> AC', '<i class="fa-solid fa-utensils"></i> Sarapan'];
+        } else if (katLower.includes('tur') || katLower.includes('paket')) {
+          amenities = ['<i class="fa-solid fa-user-check"></i> Guide', '<i class="fa-solid fa-van-shuttle"></i> Transport', '<i class="fa-solid fa-ticket"></i> Tiket'];
+        } else if (katLower.includes('atraksi') || katLower.includes('tiket')) {
+          amenities = ['<i class="fa-solid fa-ticket"></i> Tiket Masuk', '<i class="fa-solid fa-bolt"></i> Bebas Antre'];
+        } else if (katLower.includes('rental') || katLower.includes('mobil') || katLower.includes('motor')) {
+          amenities = ['<i class="fa-solid fa-car"></i> Unit Bersih', '<i class="fa-solid fa-id-card"></i> Sopir/Lepas Kunci'];
+        } else if (katLower.includes('kuliner')) {
+          amenities = ['<i class="fa-solid fa-certificate"></i> 100% Halal', '<i class="fa-solid fa-chair"></i> Dine-in'];
+        } else {
+          amenities = ['<i class="fa-solid fa-circle-check"></i> Terverifikasi', '<i class="fa-solid fa-star"></i> Pilihan Favorit'];
+        }
+        let amenitiesHtml = `<div class="card-amenities">${amenities.map(a => `<span class="amenity-tag">${a}</span>`).join('')}</div>`;
+
         return `
           <a href="/pdp?id=${item.id || ''}" class="card card-clickable ${isPopular ? 'popular-card' : ''}">
             <div class="card-img-wrapper">
               <img src="${foto}" class="card-img" alt="${item.nama || ''}" onerror="this.src='https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500'">
+              ${diskonBadgeHtml}
               <button class="btn-wishlist-card ${favActiveClass}" onclick="toggleWishlistCard(event, '${item.id}')" title="${isFav ? 'Hapus dari Favorit' : 'Simpan ke Favorit'}">
                 <i class="${heartIcon} fa-heart"></i>
               </button>
+              <div class="card-dots">
+                <span class="dot active"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+              </div>
             </div>
             <div class="card-content">
               <div class="card-location"><i class="fa-solid fa-location-dot"></i> ${lokasi}</div>
-              <h3 class="card-title">${item.nama || 'Tanpa Nama'}</h3>
+              <h3 class="card-title">${item.nama || 'Tanpa Nama'} <i class="fa-solid fa-circle-check text-verified" title="Mitra Terverifikasi Kamawak"></i></h3>
+              ${amenitiesHtml}
               <div class="card-price-row">
                 <div>
                   <span class="card-price-label">Mulai dari</span>
+                  ${coretPriceHtml}
                   <span class="card-price">Rp ${harga}</span>
                 </div>
                 <div class="card-rating"><i class="fa-solid fa-star" style="color:#F59E0B;"></i> ${rating}</div>
@@ -981,12 +1140,36 @@ import BottomNav from '../components/BottomNav.astro';
 
     window.filterKategori = function(element, kategori) { 
       document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active')); 
-      element.classList.add('active'); 
+      if (element) element.classList.add('active'); 
       kategoriAktif = kategori; 
+      let catSelect = document.getElementById('smartCategorySelect');
+      if (catSelect) catSelect.value = kategori;
       window.terapkanFilterDanUrutan(); 
       let area = document.getElementById('areaKatalog');
       if (area) window.scrollTo({ top: area.offsetTop - 130, behavior: 'smooth' }); 
-    }
+    };
+
+    window.syncCategorySelect = function(val) {
+      kategoriAktif = val;
+      document.querySelectorAll('.category-tabs-top .tab-btn').forEach(btn => {
+        let text = btn.innerText.trim();
+        if (val === 'Semua' && text === 'Semua') btn.classList.add('active');
+        else if (val === 'Favorit' && text.includes('Favorit')) btn.classList.add('active');
+        else if (val !== 'Semua' && val !== 'Favorit' && text.toLowerCase().includes(val.toLowerCase())) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+      window.terapkanFilterDanUrutan();
+      let area = document.getElementById('areaKatalog');
+      if (area) window.scrollTo({ top: area.offsetTop - 130, behavior: 'smooth' });
+    };
+
+    window.syncBudgetSelect = function(val) {
+      let priceSelect = document.getElementById('priceSelect');
+      if (priceSelect) priceSelect.value = val;
+      window.terapkanFilterDanUrutan();
+      let area = document.getElementById('areaKatalog');
+      if (area) window.scrollTo({ top: area.offsetTop - 130, behavior: 'smooth' });
+    };
     
     window.trackAndGo = function(event, namaUsaha, jenisTombol, linkTarget) { 
       event.preventDefault(); event.stopPropagation(); 
