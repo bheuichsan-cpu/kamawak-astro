@@ -906,32 +906,32 @@ import BottomNav from '../components/BottomNav.astro';
 
 
   <div class="trust-section">
-    <div class="stats-row">
+    <div class="stats-row" id="statsRowContainer">
       <div class="stat-box">
-        <span class="stat-number">120+</span>
+        <span class="stat-number" id="homeStatDestinasi">120+</span>
         <span class="stat-label">Destinasi Terverifikasi</span>
       </div>
       <div class="stat-divider"></div>
       <div class="stat-box">
-        <span class="stat-number">4.9★</span>
+        <span class="stat-number" id="homeStatRating">4.9★</span>
         <span class="stat-label">Rating Pengunjung</span>
       </div>
       <div class="stat-divider"></div>
       <div class="stat-box">
-        <span class="stat-number">100%</span>
+        <span class="stat-number" id="homeStatMitra">100%</span>
         <span class="stat-label">Langsung ke Mitra</span>
       </div>
       <div class="stat-divider"></div>
       <div class="stat-box">
-        <span class="stat-number">0 Rp</span>
+        <span class="stat-number" id="homeStatBiaya">0 Rp</span>
         <span class="stat-label">Bebas Biaya Siluman</span>
       </div>
     </div>
 
-    <div class="trust-grid">
-      <div class="trust-item"><div class="trust-icon"><i class="fa-solid fa-handshake"></i></div><h4>Harga Jujur & Terbuka</h4><p>Tidak ada biaya tersembunyi. Dapatkan harga langsung terbaik dari pengelola usaha tanpa tambahan komisi siluman.</p></div>
-      <div class="trust-item"><div class="trust-icon"><i class="fa-solid fa-comments"></i></div><h4>Langsung ke Owner</h4><p>Fitur "Tanya Owner" mengizinkan Anda berkonsultasi mengenai ketersediaan kamar langsung ke nomor WhatsApp pemilik.</p></div>
-      <div class="trust-item"><div class="trust-icon"><i class="fa-solid fa-shield-halved"></i></div><h4>Transaksi Aman</h4><p>Seluruh mitra tur dan atraksi kami telah diverifikasi. Proses pemesanan tiket Anda dilindungi oleh sistem keamanan berlapis.</p></div>
+    <div class="trust-grid" id="trustGridContainer">
+      <div class="trust-item"><div class="trust-icon"><i class="fa-solid fa-handshake"></i></div><h4 id="homeTrustJudul1">Harga Jujur & Terbuka</h4><p id="homeTrustDesc1">Tidak ada biaya tersembunyi. Dapatkan harga langsung terbaik dari pengelola usaha tanpa tambahan komisi siluman.</p></div>
+      <div class="trust-item"><div class="trust-icon"><i class="fa-solid fa-comments"></i></div><h4 id="homeTrustJudul2">Langsung ke Owner</h4><p id="homeTrustDesc2">Fitur "Tanya Owner" mengizinkan Anda berkonsultasi mengenai ketersediaan kamar langsung ke nomor WhatsApp pemilik.</p></div>
+      <div class="trust-item"><div class="trust-icon"><i class="fa-solid fa-shield-halved"></i></div><h4 id="homeTrustJudul3">Transaksi Aman</h4><p id="homeTrustDesc3">Seluruh mitra tur dan atraksi kami telah diverifikasi. Proses pemesanan tiket Anda dilindungi oleh sistem keamanan berlapis.</p></div>
     </div>
   </div>
 
@@ -966,8 +966,29 @@ import BottomNav from '../components/BottomNav.astro';
       tampilkanSkeleton();
       muatIklanBanner();
       muatKoleksiTag();
+      muatFasilitasTrustHome();
       panggilDataServer();
     };
+
+    function muatFasilitasTrustHome() {
+      try {
+        let stats = JSON.parse(localStorage.getItem('kamawak_stats_row') || '{}');
+        if (stats.destinasi && document.getElementById('homeStatDestinasi')) document.getElementById('homeStatDestinasi').innerText = stats.destinasi;
+        if (stats.rating && document.getElementById('homeStatRating')) document.getElementById('homeStatRating').innerText = stats.rating;
+        if (stats.mitra && document.getElementById('homeStatMitra')) document.getElementById('homeStatMitra').innerText = stats.mitra;
+        if (stats.biaya && document.getElementById('homeStatBiaya')) document.getElementById('homeStatBiaya').innerText = stats.biaya;
+
+        let trust = JSON.parse(localStorage.getItem('kamawak_trust_section') || '[]');
+        if (Array.isArray(trust) && trust.length >= 3) {
+          if (document.getElementById('homeTrustJudul1')) document.getElementById('homeTrustJudul1').innerText = trust[0].judul || 'Harga Jujur & Terbuka';
+          if (document.getElementById('homeTrustDesc1')) document.getElementById('homeTrustDesc1').innerText = trust[0].desc || '';
+          if (document.getElementById('homeTrustJudul2')) document.getElementById('homeTrustJudul2').innerText = trust[1].judul || 'Langsung ke Owner';
+          if (document.getElementById('homeTrustDesc2')) document.getElementById('homeTrustDesc2').innerText = trust[1].desc || '';
+          if (document.getElementById('homeTrustJudul3')) document.getElementById('homeTrustJudul3').innerText = trust[2].judul || 'Transaksi Aman';
+          if (document.getElementById('homeTrustDesc3')) document.getElementById('homeTrustDesc3').innerText = trust[2].desc || '';
+        }
+      } catch(e) {}
+    }
 
     // ==========================================
     // FUNGSI BARU: CEK SESI LOGIN DI HALAMAN UTAMA
@@ -1059,6 +1080,15 @@ import BottomNav from '../components/BottomNav.astro';
             let cs = document.querySelector('.floating-cs');
             if(cs) cs.href = "https://wa.me/" + config.PROFIL_NO_WA + "?text=Halo%20Admin%20Kamawak,%20saya%20butuh%20bantuan.";
           }
+          if (config.STATS_ROW) {
+            let strVal = typeof config.STATS_ROW === 'string' ? config.STATS_ROW : JSON.stringify(config.STATS_ROW);
+            localStorage.setItem("kamawak_stats_row", strVal);
+          }
+          if (config.TRUST_SECTION) {
+            let strVal = typeof config.TRUST_SECTION === 'string' ? config.TRUST_SECTION : JSON.stringify(config.TRUST_SECTION);
+            localStorage.setItem("kamawak_trust_section", strVal);
+          }
+          muatFasilitasTrustHome();
         }).getPengaturan();
       }
 
@@ -1463,21 +1493,48 @@ import BottomNav from '../components/BottomNav.astro';
           }
         }
 
-        // Quick Amenity Pills
-        let katLower = String(item.kategori || '').toLowerCase();
+        // Quick Amenity Pills (Prioritaskan fasilitas yang diinput di Admin CMS)
         let amenities = [];
-        if (katLower.includes('penginapan') || katLower.includes('hotel') || katLower.includes('homestay')) {
-          amenities = ['<i class="fa-solid fa-wifi"></i> WiFi', '<i class="fa-solid fa-snowflake"></i> AC', '<i class="fa-solid fa-utensils"></i> Sarapan'];
-        } else if (katLower.includes('tur') || katLower.includes('paket')) {
-          amenities = ['<i class="fa-solid fa-user-check"></i> Guide', '<i class="fa-solid fa-van-shuttle"></i> Transport', '<i class="fa-solid fa-ticket"></i> Tiket'];
-        } else if (katLower.includes('atraksi') || katLower.includes('tiket')) {
-          amenities = ['<i class="fa-solid fa-ticket"></i> Tiket Masuk', '<i class="fa-solid fa-bolt"></i> Bebas Antre'];
-        } else if (katLower.includes('rental') || katLower.includes('mobil') || katLower.includes('motor')) {
-          amenities = ['<i class="fa-solid fa-car"></i> Unit Bersih', '<i class="fa-solid fa-id-card"></i> Sopir/Lepas Kunci'];
-        } else if (katLower.includes('kuliner')) {
-          amenities = ['<i class="fa-solid fa-certificate"></i> 100% Halal', '<i class="fa-solid fa-chair"></i> Dine-in'];
-        } else {
-          amenities = ['<i class="fa-solid fa-circle-check"></i> Terverifikasi', '<i class="fa-solid fa-star"></i> Pilihan Favorit'];
+        let rawFasilitas = item.fasilitas || '';
+        if (rawFasilitas) {
+          let listFas = rawFasilitas.split(',').map(f => f.trim()).filter(Boolean);
+          listFas.slice(0, 3).forEach(f => {
+            let fLower = f.toLowerCase();
+            let icon = 'fa-solid fa-check';
+            if (fLower.includes('wifi') || fLower.includes('internet')) icon = 'fa-solid fa-wifi';
+            else if (fLower.includes('ac') || fLower.includes('pendingin')) icon = 'fa-solid fa-snowflake';
+            else if (fLower.includes('sarapan') || fLower.includes('breakfast') || fLower.includes('makan')) icon = 'fa-solid fa-utensils';
+            else if (fLower.includes('kolam') || fLower.includes('pool')) icon = 'fa-solid fa-water-ladder';
+            else if (fLower.includes('parkir')) icon = 'fa-solid fa-square-parking';
+            else if (fLower.includes('tv')) icon = 'fa-solid fa-tv';
+            else if (fLower.includes('panas') || fLower.includes('heater')) icon = 'fa-solid fa-shower';
+            else if (fLower.includes('guide') || fLower.includes('pemandu')) icon = 'fa-solid fa-user-check';
+            else if (fLower.includes('tiket')) icon = 'fa-solid fa-ticket';
+            else if (fLower.includes('transport') || fLower.includes('mobil') || fLower.includes('van')) icon = 'fa-solid fa-van-shuttle';
+            else if (fLower.includes('antre') || fLower.includes('fast')) icon = 'fa-solid fa-bolt';
+            else if (fLower.includes('halal')) icon = 'fa-solid fa-certificate';
+            else if (fLower.includes('view') || fLower.includes('alam') || fLower.includes('gunung')) icon = 'fa-solid fa-mountain';
+            else if (fLower.includes('sopir') || fLower.includes('driver')) icon = 'fa-solid fa-id-card';
+            amenities.push(`<i class="${icon}"></i> ${f}`);
+          });
+        }
+
+        // Fallback cerdas berdasarkan kategori jika admin belum mengisi fasilitas khusus
+        if (amenities.length === 0) {
+          let katLower = String(item.kategori || '').toLowerCase();
+          if (katLower.includes('penginapan') || katLower.includes('hotel') || katLower.includes('homestay')) {
+            amenities = ['<i class="fa-solid fa-wifi"></i> WiFi', '<i class="fa-solid fa-snowflake"></i> AC', '<i class="fa-solid fa-utensils"></i> Sarapan'];
+          } else if (katLower.includes('tur') || katLower.includes('paket')) {
+            amenities = ['<i class="fa-solid fa-user-check"></i> Guide', '<i class="fa-solid fa-van-shuttle"></i> Transport', '<i class="fa-solid fa-ticket"></i> Tiket'];
+          } else if (katLower.includes('atraksi') || katLower.includes('tiket')) {
+            amenities = ['<i class="fa-solid fa-ticket"></i> Tiket Masuk', '<i class="fa-solid fa-bolt"></i> Bebas Antre'];
+          } else if (katLower.includes('rental') || katLower.includes('mobil') || katLower.includes('motor')) {
+            amenities = ['<i class="fa-solid fa-car"></i> Unit Bersih', '<i class="fa-solid fa-id-card"></i> Sopir/Lepas Kunci'];
+          } else if (katLower.includes('kuliner')) {
+            amenities = ['<i class="fa-solid fa-certificate"></i> 100% Halal', '<i class="fa-solid fa-chair"></i> Dine-in'];
+          } else {
+            amenities = ['<i class="fa-solid fa-circle-check"></i> Terverifikasi', '<i class="fa-solid fa-star"></i> Pilihan Favorit'];
+          }
         }
         let amenitiesHtml = `<div class="card-amenities">${amenities.map(a => `<span class="amenity-tag">${a}</span>`).join('')}</div>`;
 

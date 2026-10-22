@@ -62,6 +62,37 @@ import BottomNav from '../components/BottomNav.astro';
     .badge-aktif { background: #D1FAE5; color: #065F46; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
     .badge-nonaktif { background: #FEE2E2; color: #991B1B; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
   
+    /* STYLE FASILITAS CEPAT */
+    .btn-facility-tag {
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      color: #475569;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 11px;
+      border-radius: 20px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    .btn-facility-tag:hover {
+      background: #F1F5F9;
+      border-color: #94A3B8;
+      color: #0F172A;
+    }
+    .btn-facility-tag.active {
+      background: #ECFDF5 !important;
+      border-color: #10B981 !important;
+      color: #047857 !important;
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+    }
+    .btn-facility-tag i { font-size: 11px; }
+
     /* RESPONSIVE DESIGN (MOBILE) */
     @media (max-width: 768px) {
         .navbar { padding: 8px 10px; flex-direction: row; justify-content: space-between; align-items: center; }
@@ -233,7 +264,7 @@ import BottomNav from '../components/BottomNav.astro';
         </div>
         <div class="form-group">
           <label>Nama Produk / Usaha</label>
-          <input type="text" id="cmsNama" class="form-control" placeholder="Nama Lengkap">
+          <input type="text" id="cmsNama" class="form-control" placeholder="Nama Lengkap" oninput="if(window.updateCardPreviewLanding) window.updateCardPreviewLanding();">
         </div>
         
         <div class="form-group">
@@ -260,7 +291,7 @@ import BottomNav from '../components/BottomNav.astro';
         </div>
         <div class="form-group">
           <label>Harga Jual Dasar (Rp)</label>
-          <input type="number" id="cmsHarga" class="form-control" placeholder="Tanpa titik (Misal: 150000)">
+          <input type="number" id="cmsHarga" class="form-control" placeholder="Tanpa titik (Misal: 150000)" oninput="if(window.updateCardPreviewLanding) window.updateCardPreviewLanding();">
         </div>
         <div class="form-group full-width">
           <label>Galeri Foto Produk / Kamar (Maksimal 10 Foto - Pilih File atau Masukkan URL)</label>
@@ -321,8 +352,93 @@ import BottomNav from '../components/BottomNav.astro';
           <textarea id="cmsDeskripsi" class="form-control" rows="4" placeholder="Jelaskan daya tarik produk ini..."></textarea>
         </div>
         <div class="form-group full-width">
-          <label>Daftar Fasilitas (Pisahkan dengan koma)</label>
-          <textarea id="cmsFasilitas" class="form-control" rows="2" placeholder="Tiket masuk, Asuransi perjalanan, Guide lokal, Makan siang"></textarea>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:5px;">
+            <label style="margin:0; font-weight:700;"><i class="fa-solid fa-list-check" style="color:var(--primary);"></i> Daftar Fasilitas Produk (Tampil di Landing Page & PDP)</label>
+            <span style="font-size:11px; color:var(--text-gray);">Pilih cepat di bawah atau ketik manual (pisahkan dengan koma)</span>
+          </div>
+          <textarea id="cmsFasilitas" class="form-control" rows="2" placeholder="WiFi, AC, Sarapan, Kolam Renang, Parkir Gratis" oninput="if(window.updateFacilityTagHighlights) window.updateFacilityTagHighlights(); if(window.updateCardPreviewLanding) window.updateCardPreviewLanding();"></textarea>
+          
+          <!-- PINTASAN FASILITAS CEPAT (1-CLICK TOGGLE BADGES) -->
+          <div style="margin-top: 10px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 12px;">
+            <div style="font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+              <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary);"></i> PILIH FASILITAS SECARA INSTAN (KLIK UNTUK TAMBAH / HAPUS):
+            </div>
+
+            <!-- Kelompok Penginapan / Hotel -->
+            <div style="margin-bottom: 8px;">
+              <span style="font-size: 11px; color: #64748B; font-weight: 600; display: block; margin-bottom: 4px;">🏨 Penginapan & Villa:</span>
+              <div class="facility-preset-group" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('WiFi', this)"><i class="fa-solid fa-wifi"></i> WiFi</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('AC', this)"><i class="fa-solid fa-snowflake"></i> AC</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Sarapan', this)"><i class="fa-solid fa-utensils"></i> Sarapan</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Kolam Renang', this)"><i class="fa-solid fa-water-ladder"></i> Kolam Renang</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Parkir Gratis', this)"><i class="fa-solid fa-square-parking"></i> Parkir Gratis</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Air Panas', this)"><i class="fa-solid fa-shower"></i> Air Panas</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Smart TV', this)"><i class="fa-solid fa-tv"></i> Smart TV</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Restoran', this)"><i class="fa-solid fa-bowl-food"></i> Restoran</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Kamar Mandi Dalam', this)"><i class="fa-solid fa-bath"></i> Kamar Mandi Dalam</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('View Alam / Gunung', this)"><i class="fa-solid fa-mountain"></i> View Alam</button>
+              </div>
+            </div>
+
+            <!-- Kelompok Tur & Tiket -->
+            <div style="margin-bottom: 8px;">
+              <span style="font-size: 11px; color: #64748B; font-weight: 600; display: block; margin-bottom: 4px;">🎫 Tur & Atraksi:</span>
+              <div class="facility-preset-group" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Pemandu (Guide)', this)"><i class="fa-solid fa-user-check"></i> Pemandu (Guide)</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Transportasi AC', this)"><i class="fa-solid fa-van-shuttle"></i> Transportasi AC</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Tiket Masuk', this)"><i class="fa-solid fa-ticket"></i> Tiket Masuk</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Makan Siang', this)"><i class="fa-solid fa-plate-wheat"></i> Makan Siang</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Dokumentasi Foto/Drone', this)"><i class="fa-solid fa-camera"></i> Dokumentasi</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Asuransi Perjalanan', this)"><i class="fa-solid fa-shield-heart"></i> Asuransi</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Bebas Antre', this)"><i class="fa-solid fa-bolt"></i> Bebas Antre</button>
+              </div>
+            </div>
+
+            <!-- Kelompok Rental & Kuliner -->
+            <div>
+              <span style="font-size: 11px; color: #64748B; font-weight: 600; display: block; margin-bottom: 4px;">🚗 Rental & Kuliner:</span>
+              <div class="facility-preset-group" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Unit Bersih & Terawat', this)"><i class="fa-solid fa-car"></i> Unit Bersih</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Sopir Berpengalaman', this)"><i class="fa-solid fa-id-card"></i> Sopir</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('BBM Included', this)"><i class="fa-solid fa-gas-pump"></i> BBM</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('100% Halal', this)"><i class="fa-solid fa-certificate"></i> 100% Halal</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Dine-in Nyaman', this)"><i class="fa-solid fa-chair"></i> Dine-in</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- PRATINJAU KARTU LANDING PAGE REAL-TIME -->
+          <div style="margin-top: 14px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+            <span style="font-size: 11px; font-weight: 700; color: #1E293B; display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+              <i class="fa-solid fa-eye" style="color:var(--primary);"></i> PRATINJAU TAMPILAN KARTU DI HALAMAN BERANDA (LANDING PAGE):
+            </span>
+            <div style="max-width: 280px; margin: 0 auto; background: white; border-radius: 18px; border: 1px solid #F1F5F9; box-shadow: 0 4px 20px rgba(0,0,0,0.06); padding: 10px;">
+              <div style="position: relative; border-radius: 12px; overflow: hidden; height: 130px; background: #E2E8F0;">
+                <img id="cardPrevImg" src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500" style="width: 100%; height: 100%; object-fit: cover;">
+                <div style="position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 10px;">
+                  <span style="width: 10px; height: 5px; background: white; border-radius: 3px;"></span>
+                  <span style="width: 5px; height: 5px; background: rgba(255,255,255,0.6); border-radius: 50%;"></span>
+                  <span style="width: 5px; height: 5px; background: rgba(255,255,255,0.6); border-radius: 50%;"></span>
+                </div>
+              </div>
+              <div style="padding: 8px 4px 2px 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px;">
+                  <h4 id="cardPrevNama" style="font-family: 'Poppins'; font-size: 14px; font-weight: 700; margin: 0; color: #0F172A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Nama Produk</h4>
+                  <span style="font-size: 12px; font-weight: 700; color: #0F172A; display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0;"><i class="fa-solid fa-star" style="color: #F59E0B; font-size: 11px;"></i> 5.0</span>
+                </div>
+                <div id="cardPrevAmenities" style="display: flex; gap: 4px; flex-wrap: wrap; margin: 6px 0;">
+                  <span style="background: #F1F5F9; color: #475569; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px;">Fasilitas 1</span>
+                  <span style="background: #F1F5F9; color: #475569; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px;">Fasilitas 2</span>
+                  <span style="background: #F1F5F9; color: #475569; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px;">Fasilitas 3</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                  <span id="cardPrevHarga" style="font-family: 'Inter'; font-size: 14px; font-weight: 800; color: #0F172A;">IDR 0</span>
+                  <i class="fa-solid fa-circle-check" style="color: #10B981; font-size: 13px;"></i>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="form-group full-width" style="background: #FFF4ED; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary);">
           <label style="color:var(--primary); font-weight:600;"><i class="fa-solid fa-tags"></i> Variasi Paket & Split Payment Engine</label>
@@ -806,7 +922,61 @@ import BottomNav from '../components/BottomNav.astro';
             </tbody>
           </table>
         </div>
-        <button class="btn-admin" style="background: #10B981; width: 100%; margin-top: 15px;" onclick="simpanSemuaLayout()"><i class="fa-solid fa-save"></i> Simpan Susunan Halaman</button>
+        <button class="btn-admin" style="background: #8B5CF6; width: 100%; margin-top: 15px; margin-bottom: 25px;" onclick="simpanSemuaLayout()"><i class="fa-solid fa-save"></i> Simpan Susunan Halaman</button>
+
+        <!-- BAGIAN 3: KEUNGGULAN & FASILITAS PLATFORM KAMAWAK DI BERANDA -->
+        <h4 style="font-family: 'Poppins'; color: #10B981; border-bottom: 2px solid #ECFDF5; padding-bottom: 10px; margin-top: 30px; margin-bottom: 15px;">
+          <i class="fa-solid fa-shield-heart"></i> Bagian 3: Keunggulan & Nilai Fasilitas Layanan (Trust Section & Live Stats Beranda)
+        </h4>
+        <p style="color: var(--text-gray); font-size: 13px; margin-bottom: 20px;">
+          Sesuaikan poin-poin fasilitas keunggulan platform Kamawak serta indikator statistik yang tampil di atas footer halaman beranda.
+        </p>
+
+        <!-- PENGATURAN LIVE STATS ROW -->
+        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 18px; margin-bottom: 20px;">
+          <h5 style="margin:0 0 12px 0; font-family:'Poppins'; color:#0F172A; font-size:14px;"><i class="fa-solid fa-chart-simple" style="color:var(--primary);"></i> 4 Indikator Statistik (Live Stats Row)</h5>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+            <div>
+              <label style="font-size: 12px; font-weight:600; color:#475569;">Statistik 1 (Jumlah Destinasi)</label>
+              <input type="text" id="statDestinasi" class="form-control" placeholder="120+" value="120+">
+            </div>
+            <div>
+              <label style="font-size: 12px; font-weight:600; color:#475569;">Statistik 2 (Rating Pengunjung)</label>
+              <input type="text" id="statRating" class="form-control" placeholder="4.9★" value="4.9★">
+            </div>
+            <div>
+              <label style="font-size: 12px; font-weight:600; color:#475569;">Statistik 3 (Transparansi Mitra)</label>
+              <input type="text" id="statMitra" class="form-control" placeholder="100%" value="100%">
+            </div>
+            <div>
+              <label style="font-size: 12px; font-weight:600; color:#475569;">Statistik 4 (Bebas Biaya)</label>
+              <input type="text" id="statBiaya" class="form-control" placeholder="0 Rp" value="0 Rp">
+            </div>
+          </div>
+        </div>
+
+        <!-- PENGATURAN 3 KEUNGGULAN LAYANAN -->
+        <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 10px; padding: 18px; margin-bottom: 20px;">
+          <h5 style="margin:0 0 12px 0; font-family:'Poppins'; color:#166534; font-size:14px;"><i class="fa-solid fa-award" style="color:#10B981;"></i> 3 Fasilitas & Nilai Kepercayaan Layanan</h5>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px;">
+            <div style="background: white; padding: 14px; border-radius: 8px; border: 1px solid #DCFCE7;">
+              <label style="font-weight: 700; font-size: 13px; color: #166534; display:block; margin-bottom: 6px;">Keunggulan 1</label>
+              <input type="text" id="trustJudul1" class="form-control" placeholder="Harga Jujur & Terbuka" value="Harga Jujur & Terbuka" style="margin-bottom: 8px;">
+              <textarea id="trustDesc1" class="form-control" rows="2" placeholder="Deskripsi keunggulan...">Tidak ada biaya tersembunyi. Dapatkan harga langsung terbaik dari pengelola usaha tanpa tambahan komisi siluman.</textarea>
+            </div>
+            <div style="background: white; padding: 14px; border-radius: 8px; border: 1px solid #DCFCE7;">
+              <label style="font-weight: 700; font-size: 13px; color: #166534; display:block; margin-bottom: 6px;">Keunggulan 2</label>
+              <input type="text" id="trustJudul2" class="form-control" placeholder="Langsung ke Owner" value="Langsung ke Owner" style="margin-bottom: 8px;">
+              <textarea id="trustDesc2" class="form-control" rows="2" placeholder="Deskripsi keunggulan...">Fitur "Tanya Owner" mengizinkan Anda berkonsultasi mengenai ketersediaan kamar langsung ke nomor WhatsApp pemilik.</textarea>
+            </div>
+            <div style="background: white; padding: 14px; border-radius: 8px; border: 1px solid #DCFCE7;">
+              <label style="font-weight: 700; font-size: 13px; color: #166534; display:block; margin-bottom: 6px;">Keunggulan 3</label>
+              <input type="text" id="trustJudul3" class="form-control" placeholder="Transaksi Aman" value="Transaksi Aman" style="margin-bottom: 8px;">
+              <textarea id="trustDesc3" class="form-control" rows="2" placeholder="Deskripsi keunggulan...">Seluruh mitra tur dan atraksi kami telah diverifikasi. Proses pemesanan tiket Anda dilindungi oleh sistem keamanan berlapis.</textarea>
+            </div>
+          </div>
+        </div>
+        <button class="btn-admin" style="background: #10B981; width: 100%; margin-bottom: 15px;" onclick="simpanFasilitasBeranda()"><i class="fa-solid fa-save"></i> Simpan Fasilitas & Keunggulan Beranda</button>
       </div>
     </div>
     
@@ -1418,6 +1588,115 @@ window.prosesUpdateRole = async function() {
   }
 };
 
+// ==========================================
+// FASILITAS PRODUK & LANDING PAGE COMPOSER
+// ==========================================
+window.toggleFacilityTag = function(namaFasilitas, btn) {
+  let textarea = document.getElementById('cmsFasilitas');
+  if (!textarea) return;
+  let list = textarea.value.split(',').map(s => s.trim()).filter(Boolean);
+  let idx = list.findIndex(s => s.toLowerCase() === namaFasilitas.toLowerCase());
+  if (idx > -1) {
+    list.splice(idx, 1);
+    if (btn) btn.classList.remove('active');
+  } else {
+    list.push(namaFasilitas);
+    if (btn) btn.classList.add('active');
+  }
+  textarea.value = list.join(', ');
+  if (window.updateFacilityTagHighlights) window.updateFacilityTagHighlights();
+  if (window.updateCardPreviewLanding) window.updateCardPreviewLanding();
+};
+
+window.updateFacilityTagHighlights = function() {
+  let textarea = document.getElementById('cmsFasilitas');
+  if (!textarea) return;
+  let list = textarea.value.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+  document.querySelectorAll('.btn-facility-tag').forEach(btn => {
+    let txt = btn.innerText.trim().toLowerCase();
+    let isMatched = list.some(item => txt.includes(item) || item.includes(txt));
+    if (isMatched) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+};
+
+window.updateCardPreviewLanding = function() {
+  let nama = document.getElementById('cmsNama') ? document.getElementById('cmsNama').value.trim() : '';
+  let harga = document.getElementById('cmsHarga') ? document.getElementById('cmsHarga').value.trim() : '';
+  let foto = document.getElementById('cmsFotoUrl') ? document.getElementById('cmsFotoUrl').value.trim() : '';
+  let fasilitas = document.getElementById('cmsFasilitas') ? document.getElementById('cmsFasilitas').value.trim() : '';
+
+  let elNama = document.getElementById('cardPrevNama');
+  let elHarga = document.getElementById('cardPrevHarga');
+  let elImg = document.getElementById('cardPrevImg');
+  let elFas = document.getElementById('cardPrevAmenities');
+
+  if (elNama) elNama.innerText = nama || 'Nama Produk / Villa';
+  if (elHarga) {
+    let num = Number(harga.replace(/[^0-9]/g, '')) || 0;
+    elHarga.innerText = num > 0 ? 'IDR ' + num.toLocaleString('id-ID') : 'IDR 0';
+  }
+  if (elImg && foto) {
+    let f1 = foto.split('|||')[0].trim();
+    if (f1.startsWith('http') || f1.startsWith('data:image')) elImg.src = f1;
+  }
+  if (elFas) {
+    let list = fasilitas ? fasilitas.split(',').map(s => s.trim()).filter(Boolean) : [];
+    if (list.length === 0) list = ['WiFi', 'AC', 'Sarapan'];
+    elFas.innerHTML = list.slice(0, 3).map(f => `<span style="background: #F1F5F9; color: #475569; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px;">${f}</span>`).join('');
+  }
+};
+
+window.simpanFasilitasBeranda = function() {
+  let stats = {
+    destinasi: document.getElementById('statDestinasi') ? document.getElementById('statDestinasi').value.trim() : '120+',
+    rating: document.getElementById('statRating') ? document.getElementById('statRating').value.trim() : '4.9★',
+    mitra: document.getElementById('statMitra') ? document.getElementById('statMitra').value.trim() : '100%',
+    biaya: document.getElementById('statBiaya') ? document.getElementById('statBiaya').value.trim() : '0 Rp'
+  };
+  let trust = [
+    { judul: document.getElementById('trustJudul1') ? document.getElementById('trustJudul1').value.trim() : '', desc: document.getElementById('trustDesc1') ? document.getElementById('trustDesc1').value.trim() : '' },
+    { judul: document.getElementById('trustJudul2') ? document.getElementById('trustJudul2').value.trim() : '', desc: document.getElementById('trustDesc2') ? document.getElementById('trustDesc2').value.trim() : '' },
+    { judul: document.getElementById('trustJudul3') ? document.getElementById('trustJudul3').value.trim() : '', desc: document.getElementById('trustDesc3') ? document.getElementById('trustDesc3').value.trim() : '' }
+  ];
+  localStorage.setItem('kamawak_stats_row', JSON.stringify(stats));
+  localStorage.setItem('kamawak_trust_section', JSON.stringify(trust));
+
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    let settings = [
+      { key: "STATS_ROW", value: JSON.stringify(stats), desc: "Live Stats Beranda" },
+      { key: "TRUST_SECTION", value: JSON.stringify(trust), desc: "Trust Section Beranda" }
+    ];
+    google.script.run.withSuccessHandler(function() {
+      Swal.fire('Berhasil Disimpan', 'Pengaturan Fasilitas & Keunggulan Beranda berhasil diperbarui dan disinkronkan!', 'success');
+    }).simpanPengaturanBatch(settings);
+  } else {
+    Swal.fire('Berhasil Disimpan', 'Pengaturan Fasilitas & Keunggulan Beranda berhasil disimpan secara lokal!', 'success');
+  }
+};
+
+window.muatFasilitasBeranda = function() {
+  try {
+    let stats = JSON.parse(localStorage.getItem('kamawak_stats_row') || '{}');
+    if (stats.destinasi && document.getElementById('statDestinasi')) document.getElementById('statDestinasi').value = stats.destinasi;
+    if (stats.rating && document.getElementById('statRating')) document.getElementById('statRating').value = stats.rating;
+    if (stats.mitra && document.getElementById('statMitra')) document.getElementById('statMitra').value = stats.mitra;
+    if (stats.biaya && document.getElementById('statBiaya')) document.getElementById('statBiaya').value = stats.biaya;
+
+    let trust = JSON.parse(localStorage.getItem('kamawak_trust_section') || '[]');
+    if (Array.isArray(trust) && trust.length >= 3) {
+      if (document.getElementById('trustJudul1')) document.getElementById('trustJudul1').value = trust[0].judul || '';
+      if (document.getElementById('trustDesc1')) document.getElementById('trustDesc1').value = trust[0].desc || '';
+      if (document.getElementById('trustJudul2')) document.getElementById('trustJudul2').value = trust[1].judul || '';
+      if (document.getElementById('trustDesc2')) document.getElementById('trustDesc2').value = trust[1].desc || '';
+      if (document.getElementById('trustJudul3')) document.getElementById('trustJudul3').value = trust[2].judul || '';
+      if (document.getElementById('trustDesc3')) document.getElementById('trustDesc3').value = trust[2].desc || '';
+    }
+  } catch(e) {}
+};
 
 window.simpanCMS = async function() {
   let id = document.getElementById('cmsID').value.trim();
@@ -1508,6 +1787,8 @@ window.simpanCMS = async function() {
     let fi = document.getElementById('cmsFotoUpload');
     if (fi) fi.value = '';
     if (typeof window.resetCmsFotoPreview === 'function') window.resetCmsFotoPreview();
+    if (typeof window.updateFacilityTagHighlights === 'function') window.updateFacilityTagHighlights();
+    if (typeof window.updateCardPreviewLanding === 'function') window.updateCardPreviewLanding();
   };
 
   const sqlMigrationCode = `ALTER TABLE public.wisata 
@@ -1690,6 +1971,8 @@ window.editProdukCMS = async function(id) {
     if (document.getElementById('cmsDeskripsi')) document.getElementById('cmsDeskripsi').value = dVal.replace(/\\n/g, '\n');
     let fVal = data.fasilitas || (meta ? meta.fasilitas : '') || '';
     if (document.getElementById('cmsFasilitas')) document.getElementById('cmsFasilitas').value = fVal.replace(/\\n/g, '\n');
+    if (typeof window.updateFacilityTagHighlights === 'function') window.updateFacilityTagHighlights();
+    if (typeof window.updateCardPreviewLanding === 'function') window.updateCardPreviewLanding();
     if (document.getElementById('cmsVarian')) document.getElementById('cmsVarian').value = data.varian || (meta ? meta.varian : '') || '';
     if (document.getElementById('cmsTags')) document.getElementById('cmsTags').value = data.tags || data.penanda || (meta ? meta.tags : '') || '';
     let iVal = data.itinerary || (meta ? meta.itinerary : '') || '';
@@ -3102,6 +3385,7 @@ window.muatPengaturan = function() {
     }
 
     updateNavbarLogo();
+    if (typeof window.muatFasilitasBeranda === 'function') window.muatFasilitasBeranda();
 
     if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
@@ -3110,6 +3394,16 @@ window.muatPengaturan = function() {
                 if(config.HERO_BANNER_1 && document.getElementById('heroBanner1')) { document.getElementById('heroBanner1').value = config.HERO_BANNER_1; previewHero(1, config.HERO_BANNER_1); }
                 if(config.HERO_BANNER_2 && document.getElementById('heroBanner2')) { document.getElementById('heroBanner2').value = config.HERO_BANNER_2; previewHero(2, config.HERO_BANNER_2); }
                 if(config.HERO_BANNER_3 && document.getElementById('heroBanner3')) { document.getElementById('heroBanner3').value = config.HERO_BANNER_3; previewHero(3, config.HERO_BANNER_3); }
+
+                if (config.STATS_ROW) {
+                    let strVal = typeof config.STATS_ROW === 'string' ? config.STATS_ROW : JSON.stringify(config.STATS_ROW);
+                    localStorage.setItem("kamawak_stats_row", strVal);
+                }
+                if (config.TRUST_SECTION) {
+                    let strVal = typeof config.TRUST_SECTION === 'string' ? config.TRUST_SECTION : JSON.stringify(config.TRUST_SECTION);
+                    localStorage.setItem("kamawak_trust_section", strVal);
+                }
+                if (typeof window.muatFasilitasBeranda === 'function') window.muatFasilitasBeranda();
 
                 if(config.PROFIL_LOGO) {
                     if(document.getElementById('profLogoUrl')) {
