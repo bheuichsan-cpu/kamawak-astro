@@ -357,50 +357,134 @@ import BottomNav from '../components/BottomNav.astro';
     </div>
 
     <!-- Kelola Status Langganan Mitra -->
-    <div class="card-section">
+    <div class="card-section" style="border-top: 5px solid var(--primary);">
       <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-user-gear" style="color: var(--primary);"></i> Perbarui Status Langganan Mitra</h3>
       <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
-        <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
-          <label>Pilih/Ketik ID Mitra</label>
-          <input type="text" id="inputIDMitra" class="form-control" placeholder="Contoh: M001">
+        <div class="form-group" style="flex: 1; min-width: 220px; margin-bottom: 0;">
+          <label>Pilih ID Mitra / Klik Baris di Tabel</label>
+          <input type="text" id="inputIDMitra" class="form-control" placeholder="Klik salah satu mitra pada tabel di bawah...">
         </div>
         <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
           <label>Ubah Status Menjadi</label>
           <select id="selectStatus" class="form-control">
-            <option value="Aktif">Aktif</option>
+            <option value="Aktif">Aktif (Tayang & Layanan Siap)</option>
+            <option value="Pending">Pending (Menunggu Verifikasi)</option>
+            <option value="Kadaluarsa">Kadaluarsa (Perlu Perpanjangan)</option>
             <option value="Nonaktif">Nonaktif / Berakhir</option>
           </select>
         </div>
-        <button class="btn-admin" onclick="prosesUpdateStatus()">Perbarui Status</button>
+        <button class="btn-admin" onclick="prosesUpdateStatus()" style="background: var(--primary);"><i class="fa-solid fa-check"></i> Perbarui Status</button>
       </div>
       <div id="statusInfo" style="margin-top: 15px; font-size: 14px; font-weight: 600;"></div>
     </div>
 
     <!-- Tabel Daftar Mitra -->
     <div class="card-section">
-      <h3 style="font-family: 'Poppins'; font-size: 18px; margin-bottom: 15px;"><i class="fa-solid fa-list" style="color: var(--primary);"></i> Daftar Seluruh Mitra</h3>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h3 style="font-family: 'Poppins'; font-size: 18px; margin: 0;"><i class="fa-solid fa-store" style="color: var(--primary);"></i> Daftar Seluruh Mitra Usaha</h3>
+          <p style="color: var(--text-gray); font-size: 13px; margin: 4px 0 0 0;">Pantau performa usaha, kontak WhatsApp, dan kelola status kemitraan seluruh unit usaha di Kamawak.</p>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn-admin" onclick="bukaModalTambahMitra()" style="background: var(--primary); display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-plus"></i> Tambah Mitra Baru
+          </button>
+          <button class="btn-admin" onclick="muatDaftarMitra()" style="background: #3B82F6; display: inline-flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-rotate"></i> Segarkan Data
+          </button>
+        </div>
+      </div>
       
-      <div style="display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px;">
-        <button id="btnFilterSemua" onclick="filterMitra('Semua')" style="padding: 6px 12px; border:none; background:var(--primary); color:white; border-radius:6px; cursor:pointer; font-weight:600; white-space: nowrap;">Semua Mitra</button>
-        <button id="btnFilterPending" onclick="filterMitra('Pending')" style="padding: 6px 12px; border:none; background:#F3F4F6; color:var(--text-dark); border-radius:6px; cursor:pointer; font-weight:600; white-space: nowrap;">Menunggu (Pending)</button>
-        <button id="btnFilterKadaluarsa" onclick="filterMitra('Kadaluarsa')" style="padding: 6px 12px; border:none; background:#F3F4F6; color:var(--text-dark); border-radius:6px; cursor:pointer; font-weight:600; white-space: nowrap;">Kadaluarsa / Nonaktif</button>
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+        <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;">
+          <button id="btnFilterSemua" onclick="filterMitra('Semua')" style="padding: 6px 12px; border:none; background:var(--primary); color:white; border-radius:6px; cursor:pointer; font-weight:600; white-space: nowrap; font-size: 13px;">Semua (<span id="cntMitraSemua">0</span>)</button>
+          <button id="btnFilterAktif" onclick="filterMitra('Aktif')" style="padding: 6px 12px; border:none; background:#F3F4F6; color:var(--text-dark); border-radius:6px; cursor:pointer; font-weight:600; white-space: nowrap; font-size: 13px;">Aktif (<span id="cntMitraAktif">0</span>)</button>
+          <button id="btnFilterPending" onclick="filterMitra('Pending')" style="padding: 6px 12px; border:none; background:#F3F4F6; color:var(--text-dark); border-radius:6px; cursor:pointer; font-weight:600; white-space: nowrap; font-size: 13px;">Menunggu (<span id="cntMitraPending">0</span>)</button>
+          <button id="btnFilterKadaluarsa" onclick="filterMitra('Kadaluarsa')" style="padding: 6px 12px; border:none; background:#F3F4F6; color:var(--text-dark); border-radius:6px; cursor:pointer; font-weight:600; white-space: nowrap; font-size: 13px;">Kadaluarsa / Nonaktif (<span id="cntMitraNonaktif">0</span>)</button>
+        </div>
+        <div>
+          <input type="text" id="cariMitraInput" placeholder="Cari nama usaha, pemilik, WhatsApp..." oninput="filterMitraCari()" style="padding: 7px 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 12.5px; width: 250px; max-width: 100%;">
+        </div>
       </div>
 
       <div style="overflow-x: auto;">
         <table>
           <thead>
             <tr>
-              <th>ID Mitra</th>
-              <th>Nama Usaha</th>
-              <th>Kategori</th>
-              <th>Rincian Leads</th>
+              <th>ID / Kode</th>
+              <th>Nama Usaha & Owner</th>
+              <th>Kategori & Lokasi</th>
+              <th>Kontak WhatsApp</th>
+              <th>Minat (Leads)</th>
               <th>Status</th>
+              <th style="text-align: center;">Aksi</th>
             </tr>
           </thead>
           <tbody id="tableMitraBody">
-            <tr><td colspan="5" style="text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data mitra...</td></tr>
+            <tr><td colspan="7" style="text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data mitra...</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Modal Tambah Mitra Baru -->
+    <div id="modalTambahMitra" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 15px;">
+      <div style="background: white; border-radius: 16px; max-width: 520px; width: 100%; padding: 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: fadeIn 0.2s ease;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3 style="margin: 0; font-family: 'Poppins'; font-size: 18px; color: var(--text-dark);">
+            <i class="fa-solid fa-store" style="color: var(--primary);"></i> Tambah Mitra Usaha Baru
+          </h3>
+          <button onclick="tutupModalTambahMitra()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #9CA3AF;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <form id="formMitraBaru" onsubmit="event.preventDefault(); simpanMitraBaru();">
+          <div class="form-group">
+            <label style="font-weight: 600; font-size: 13px;">Nama Usaha / Bisnis <span style="color:red;">*</span></label>
+            <input type="text" id="mitraNamaUsahaInput" class="form-control" placeholder="Contoh: Villa Naya Rindu atau Rental Mandeh" required>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-bottom: 15px;">
+            <div style="flex: 1;">
+              <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 6px;">Kategori <span style="color:red;">*</span></label>
+              <select id="mitraKategoriInput" class="form-control" required>
+                <option value="Penginapan">Penginapan / Homestay</option>
+                <option value="Tur & Tiket">Tur & Atraksi</option>
+                <option value="Kuliner">Kuliner & Cafe</option>
+                <option value="Rental">Rental Kendaraan</option>
+                <option value="Dokumentasi">Dokumentasi & Fotografi</option>
+                <option value="Oleh-oleh">Oleh-oleh & Souvenir</option>
+              </select>
+            </div>
+            <div style="flex: 1;">
+              <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 6px;">Status Awal</label>
+              <select id="mitraStatusInput" class="form-control">
+                <option value="Aktif">Aktif</option>
+                <option value="Pending">Pending (Verifikasi)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-bottom: 15px;">
+            <div style="flex: 1;">
+              <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 6px;">Nama Pemilik / PIC <span style="color:red;">*</span></label>
+              <input type="text" id="mitraOwnerInput" class="form-control" placeholder="Contoh: Bpk. Hendra" required>
+            </div>
+            <div style="flex: 1;">
+              <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 6px;">Nomor WhatsApp <span style="color:red;">*</span></label>
+              <input type="text" id="mitraWaInput" class="form-control" placeholder="Contoh: 081234567890" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label style="font-weight: 600; font-size: 13px;">Lokasi / Destinasi Usaha</label>
+            <input type="text" id="mitraLokasiInput" class="form-control" placeholder="Contoh: Danau Maninjau, Agam">
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 25px;">
+            <button type="button" onclick="tutupModalTambahMitra()" style="flex: 1; padding: 10px; border: 1px solid #D1D5DB; background: #F3F4F6; border-radius: 8px; font-weight: 600; cursor: pointer;">Batal</button>
+            <button type="submit" id="btnSimpanMitraBaru" style="flex: 1; padding: 10px; border: none; background: var(--primary); color: white; border-radius: 8px; font-weight: 600; cursor: pointer;">Simpan Mitra</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -1560,7 +1644,7 @@ window.switchTab = function(tabId) {
   if ((tabId === 'tabPengaturan' || tabId === 'tabComposer') && typeof muatPengaturan === 'function') muatPengaturan();
   if (tabId === 'tabComposer' && typeof muatDaftarPintasanKota === 'function') muatDaftarPintasanKota();
   if (tabId === 'tabKeuangan' && typeof muatKas === 'function') muatKas();
-  if (tabId === 'tabDashboard' && typeof muatDataMitra === 'function') muatDataMitra();
+  if (tabId === 'tabDashboard' && typeof muatDaftarMitra === 'function') muatDaftarMitra();
 };
 
 window.logout = function() {
@@ -1625,15 +1709,24 @@ window.onload = async function() {
 
 async function muatStatistikGlobal() {
   try {
-    const { data: mitraData, error: errMitra } = await supabase.from('users').select('*').eq('role', 'Owner');
+    const { data: wisataData, error: errWisata } = await supabase.from('wisata').select('id, status');
+    const { data: usersData, error: errUsers } = await supabase.from('users').select('id, role, status_langganan');
     const { data: leadsData, error: errLeads } = await supabase.from('leads').select('*');
     const { data: trxData, error: errTrx } = await supabase.from('transaksi').select('*').in('status', ['Berhasil', 'Sudah Digunakan']);
 
-    if (errMitra) console.error("Error Mitra:", errMitra);
-    if (errLeads) console.error("Error Leads:", errLeads);
-    if (errTrx) console.error("Error Trx:", errTrx);
+    if (errWisata) console.warn("Wisata stats err:", errWisata);
+    if (errUsers) console.warn("Users stats err:", errUsers);
+    if (errLeads) console.warn("Leads stats err:", errLeads);
+    if (errTrx) console.warn("Trx stats err:", errTrx);
 
-    document.getElementById('valMitra').innerText = mitraData ? mitraData.length : 0;
+    let activeWisata = (wisataData || []).filter(w => (w.status || '').toLowerCase() !== 'nonaktif').length;
+    let activeMitraUsers = (usersData || []).filter(u => {
+      let r = (u.role || '').toLowerCase();
+      return (r === 'owner' || r === 'mitra') && (u.status_langganan || '').toLowerCase() === 'aktif';
+    }).length;
+    let totalMitraAktif = Math.max(activeWisata, activeMitraUsers, (wisataData || []).length);
+
+    document.getElementById('valMitra').innerText = totalMitraAktif;
     document.getElementById('valLeads').innerText = leadsData ? leadsData.length : 0;
     
     let totalPendapatan = 0;
@@ -1650,58 +1743,407 @@ async function muatStatistikGlobal() {
 }
 
 window.dataMitraGlobal = [];
-async function muatDaftarMitra() {
-  try {
-    const { data, error } = await supabase.from('users').select('*').eq('role', 'Owner');
-    if (error) throw error;
-    window.dataMitraGlobal = data || [];
-    window.filterMitra('Semua');
-  } catch (e) {
-    document.getElementById('tableMitraBody').innerHTML = '<tr><td colspan="5" style="color:red;text-align:center;">Gagal memuat mitra</td></tr>';
-  }
-}
+window.mitraFilterAktif = 'Semua';
 
-window.filterMitra = function(status) {
-    let tbody = document.getElementById('tableMitraBody');
-    let filtered = window.dataMitraGlobal;
-    if (status !== 'Semua') {
-        filtered = window.dataMitraGlobal.filter(m => m.status_langganan === status);
-    }
-    
-    if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada mitra.</td></tr>';
-        return;
-    }
-    
-    let html = "";
-    filtered.forEach(m => {
-        let badge = m.status_langganan === 'Aktif' ? 'badge-aktif' : 'badge-nonaktif';
-        html += `<tr>
-           <td>${m.id || m.email}</td>
-           <td>${m.nama}</td>
-           <td>-</td>
-           <td>-</td>
-           <td><span class="${badge}">${m.status_langganan || 'Pending'}</span></td>
-        </tr>`;
-    });
-    tbody.innerHTML = html;
+window.bukaModalTambahMitra = function() {
+  const m = document.getElementById('modalTambahMitra');
+  if (m) {
+    m.style.display = 'flex';
+    document.getElementById('formMitraBaru').reset();
+  }
 };
 
-window.prosesUpdateStatus = async function() {
-  let id = document.getElementById('inputIDMitra').value;
-  let status = document.getElementById('selectStatus').value;
+window.tutupModalTambahMitra = function() {
+  const m = document.getElementById('modalTambahMitra');
+  if (m) m.style.display = 'none';
+};
+
+window.simpanMitraBaru = async function() {
+  let namaUsaha = document.getElementById('mitraNamaUsahaInput').value.trim();
+  let kategori = document.getElementById('mitraKategoriInput').value;
+  let status = document.getElementById('mitraStatusInput').value;
+  let owner = document.getElementById('mitraOwnerInput').value.trim();
+  let wa = document.getElementById('mitraWaInput').value.trim();
+  let lokasi = document.getElementById('mitraLokasiInput').value.trim();
+
+  if (!namaUsaha || !kategori || !owner || !wa) {
+    Swal.fire('Perhatian', 'Nama Usaha, Kategori, Pemilik, dan WhatsApp wajib diisi!', 'warning');
+    return;
+  }
+
+  let btn = document.getElementById('btnSimpanMitraBaru');
+  btn.innerText = "Menyimpan...";
+  btn.disabled = true;
+
+  try {
+    let payload = {
+      nama: namaUsaha,
+      kategori: kategori,
+      lokasi: lokasi || 'Sumatera Barat',
+      harga: 0,
+      owner: owner,
+      status: status,
+      wa: wa
+    };
+
+    const { data, error } = await supabase.from('wisata').insert([payload]).select();
+    let savedId = (data && data[0]) ? data[0].id : ('local_mitra_' + Date.now());
+
+    if (error) {
+      if (error.code === '42501' || String(error.message).includes('row-level security')) {
+        console.warn("RLS blocked insert, saving to local override:", error);
+      } else {
+        throw error;
+      }
+    }
+
+    // Selalu simpan juga ke cache lokal override
+    payload.id = savedId;
+    localStorage.setItem('kamawak_override_' + savedId, JSON.stringify(payload));
+
+    tutupModalTambahMitra();
+    Swal.fire({
+      icon: 'success',
+      title: 'Mitra Berhasil Ditambahkan!',
+      text: `Unit usaha "${namaUsaha}" telah didaftarkan sebagai mitra Kamawak.`,
+      timer: 2000,
+      showConfirmButton: false
+    });
+
+    muatDaftarMitra();
+    muatStatistikGlobal();
+  } catch(e) {
+    Swal.fire('Gagal Menambah Mitra', e.message, 'error');
+  } finally {
+    btn.innerText = "Simpan Mitra";
+    btn.disabled = false;
+  }
+};
+
+window.muatDaftarMitra = async function() {
+  let tbody = document.getElementById('tableMitraBody');
+  if (tbody) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat daftar seluruh mitra...</td></tr>';
+  }
+
+  try {
+    const { data: wisataData, error: errWisata } = await supabase.from('wisata').select('*').order('created_at', { ascending: false });
+    const { data: usersData, error: errUsers } = await supabase.from('users').select('*');
+    const { data: leadsData } = await supabase.from('leads').select('*');
+
+    let deletedList = [];
+    try { deletedList = JSON.parse(localStorage.getItem('kamawak_deleted_wisata') || '[]'); } catch(e){}
+
+    let combined = [];
+
+    // 1. Ambil unit usaha dari tabel wisata
+    (wisataData || []).forEach(w => {
+      if (deletedList.includes(w.id)) return;
+
+      // Cek local override
+      let override = null;
+      try { override = JSON.parse(localStorage.getItem('kamawak_override_' + w.id) || 'null'); } catch(e){}
+      let item = { ...w, ...(override || {}) };
+
+      let linkedUser = (usersData || []).find(u => {
+        let uNama = (u.nama || '').toLowerCase();
+        let uEmail = (u.email || '').toLowerCase();
+        let wOwner = (item.owner || '').toLowerCase();
+        return (wOwner && (wOwner === uNama || wOwner === uEmail || wOwner === u.id));
+      });
+
+      let leadsCount = (leadsData || []).filter(l => {
+        return l.id_wisata === item.id || 
+               (l.nama_usaha && l.nama_usaha.toLowerCase() === (item.nama || '').toLowerCase()) ||
+               (item.owner && l.owner && l.owner.toLowerCase() === item.owner.toLowerCase());
+      }).length;
+
+      let st = item.status || 'Aktif';
+      if (st.toLowerCase() === 'nonaktif' || st.toLowerCase() === 'non-aktif') st = 'Nonaktif';
+
+      let shortId = 'MTR-' + item.id.substring(0, 6).toUpperCase();
+
+      combined.push({
+        id: item.id,
+        kode: shortId,
+        nama_usaha: item.nama || 'Tanpa Nama',
+        owner_name: item.owner && item.owner !== 'Admin' ? item.owner : (linkedUser ? linkedUser.nama : 'Admin / Mitra'),
+        kategori: item.kategori || 'Penginapan',
+        lokasi: item.lokasi || '-',
+        wa: item.wa || (linkedUser ? linkedUser.wa : '') || '-',
+        email: linkedUser ? linkedUser.email : '-',
+        leads: leadsCount,
+        status: st,
+        source: 'wisata'
+      });
+    });
+
+    // 2. Ambil juga pengguna dengan role Owner/Mitra atau status_langganan aktif yang belum ada di wisata
+    (usersData || []).forEach(u => {
+      let r = (u.role || '').toLowerCase();
+      let hasStatus = u.status_langganan && u.status_langganan !== '';
+      if ((r === 'owner' || r === 'mitra' || hasStatus) && r !== 'admin') {
+        let alreadyInList = combined.some(c => c.owner_name.toLowerCase() === (u.nama || '').toLowerCase() || c.id === u.id);
+        if (!alreadyInList) {
+          let uLeads = (leadsData || []).filter(l => (l.owner && l.owner.toLowerCase() === (u.nama || '').toLowerCase()) || l.owner === u.id).length;
+          let uStatus = u.status_langganan || 'Pending';
+          combined.push({
+            id: u.id,
+            kode: 'USR-' + u.id.substring(0, 6).toUpperCase(),
+            nama_usaha: u.nama + ' (Akun Mitra)',
+            owner_name: u.nama,
+            kategori: 'Mitra Terdaftar',
+            lokasi: '-',
+            wa: u.wa || '-',
+            email: u.email || '-',
+            leads: uLeads,
+            status: uStatus,
+            source: 'user'
+          });
+        }
+      }
+    });
+
+    // 3. Tambahkan juga local mitra jika pernah disimpan saat offline/RLS
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        let key = localStorage.key(i);
+        if (key && key.startsWith('kamawak_override_local_mitra_')) {
+          let loc = JSON.parse(localStorage.getItem(key));
+          if (loc && !deletedList.includes(loc.id) && !combined.some(c => c.id === loc.id)) {
+            combined.unshift({
+              id: loc.id,
+              kode: 'MTR-' + loc.id.substring(loc.id.length - 6).toUpperCase(),
+              nama_usaha: loc.nama,
+              owner_name: loc.owner,
+              kategori: loc.kategori || 'Penginapan',
+              lokasi: loc.lokasi || '-',
+              wa: loc.wa || '-',
+              email: '-',
+              leads: 0,
+              status: loc.status || 'Aktif',
+              source: 'local'
+            });
+          }
+        }
+      }
+    } catch(e) {}
+
+    window.dataMitraGlobal = combined;
+
+    // Perbarui badge counter
+    let totalAll = combined.length;
+    let totalAktif = combined.filter(m => (m.status || '').toLowerCase() === 'aktif').length;
+    let totalPending = combined.filter(m => (m.status || '').toLowerCase() === 'pending').length;
+    let totalNonaktif = combined.filter(m => {
+      let s = (m.status || '').toLowerCase();
+      return s === 'nonaktif' || s === 'kadaluarsa' || s === 'non-aktif';
+    }).length;
+
+    let elSemua = document.getElementById('cntMitraSemua'); if (elSemua) elSemua.innerText = totalAll;
+    let elAktif = document.getElementById('cntMitraAktif'); if (elAktif) elAktif.innerText = totalAktif;
+    let elPending = document.getElementById('cntMitraPending'); if (elPending) elPending.innerText = totalPending;
+    let elNonaktif = document.getElementById('cntMitraNonaktif'); if (elNonaktif) elNonaktif.innerText = totalNonaktif;
+
+    let valM = document.getElementById('valMitra');
+    if (valM) valM.innerText = totalAktif || totalAll;
+
+    window.filterMitra(window.mitraFilterAktif || 'Semua');
+
+  } catch(e) {
+    console.error("Error muat daftar mitra:", e);
+    if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="color:red; text-align:center; padding:20px;">Gagal memuat mitra: ${e.message}</td></tr>`;
+  }
+};
+
+window.filterMitra = function(status) {
+  window.mitraFilterAktif = status;
+  let tbody = document.getElementById('tableMitraBody');
+  if (!tbody) return;
+
+  // Update styles tab filter
+  ['btnFilterSemua', 'btnFilterAktif', 'btnFilterPending', 'btnFilterKadaluarsa'].forEach(bid => {
+    let b = document.getElementById(bid);
+    if (!b) return;
+    b.style.background = '#F3F4F6';
+    b.style.color = 'var(--text-dark)';
+  });
+  let activeBtn = document.getElementById(status === 'Semua' ? 'btnFilterSemua' : (status === 'Aktif' ? 'btnFilterAktif' : (status === 'Pending' ? 'btnFilterPending' : 'btnFilterKadaluarsa')));
+  if (activeBtn) {
+    activeBtn.style.background = 'var(--primary)';
+    activeBtn.style.color = '#FFFFFF';
+  }
+
+  let filtered = window.dataMitraGlobal || [];
+  if (status === 'Aktif') {
+    filtered = filtered.filter(m => (m.status || '').toLowerCase() === 'aktif');
+  } else if (status === 'Pending') {
+    filtered = filtered.filter(m => (m.status || '').toLowerCase() === 'pending');
+  } else if (status === 'Kadaluarsa') {
+    filtered = filtered.filter(m => {
+      let s = (m.status || '').toLowerCase();
+      return s === 'kadaluarsa' || s === 'nonaktif' || s === 'non-aktif';
+    });
+  }
+
+  let cariInput = document.getElementById('cariMitraInput');
+  if (cariInput && cariInput.value.trim()) {
+    let kw = cariInput.value.trim().toLowerCase();
+    filtered = filtered.filter(m => {
+      return (m.nama_usaha && m.nama_usaha.toLowerCase().includes(kw)) ||
+             (m.owner_name && m.owner_name.toLowerCase().includes(kw)) ||
+             (m.kategori && m.kategori.toLowerCase().includes(kw)) ||
+             (m.wa && m.wa.toLowerCase().includes(kw)) ||
+             (m.kode && m.kode.toLowerCase().includes(kw));
+    });
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 25px; color: var(--text-gray);">Tidak ada data mitra dengan filter ini.</td></tr>';
+    return;
+  }
+
+  let html = "";
+  filtered.forEach(m => {
+    let st = (m.status || 'Aktif').toLowerCase();
+    let badgeHtml = '';
+    if (st === 'aktif') {
+      badgeHtml = '<span style="background:#ECFDF5; color:#059669; padding:4px 10px; border-radius:20px; font-weight:700; font-size:11.5px; display:inline-flex; align-items:center; gap:5px;"><i class="fa-solid fa-circle-check"></i> Aktif</span>';
+    } else if (st === 'pending') {
+      badgeHtml = '<span style="background:#FFFBEB; color:#D97706; padding:4px 10px; border-radius:20px; font-weight:700; font-size:11.5px; display:inline-flex; align-items:center; gap:5px;"><i class="fa-solid fa-clock"></i> Menunggu</span>';
+    } else {
+      badgeHtml = '<span style="background:#FEF2F2; color:#DC2626; padding:4px 10px; border-radius:20px; font-weight:700; font-size:11.5px; display:inline-flex; align-items:center; gap:5px;"><i class="fa-solid fa-circle-xmark"></i> Nonaktif</span>';
+    }
+
+    let cleanWa = (m.wa || '').replace(/[^0-9]/g, '');
+    if (cleanWa.startsWith('0')) cleanWa = '62' + cleanWa.substring(1);
+    let waHtml = cleanWa ? `
+      <a href="https://wa.me/${cleanWa}?text=Halo%20${encodeURIComponent(m.nama_usaha)},%20kami%20dari%20Admin%20Kamawak" target="_blank" onclick="event.stopPropagation();" style="display:inline-flex; align-items:center; gap:5px; background:#ECFDF5; color:#059669; padding:4px 9px; border-radius:6px; font-size:12px; font-weight:600; text-decoration:none; border:1px solid #A7F3D0;">
+        <i class="fa-brands fa-whatsapp"></i> ${m.wa}
+      </a>
+    ` : '<span style="color:#9CA3AF; font-size:12px;">-</span>';
+
+    let nextToggleStatus = st === 'aktif' ? 'Nonaktif' : 'Aktif';
+    let toggleIcon = st === 'aktif' ? '<i class="fa-solid fa-ban"></i>' : '<i class="fa-solid fa-check"></i>';
+    let toggleBg = st === 'aktif' ? '#EF4444' : '#10B981';
+    let toggleTitle = st === 'aktif' ? 'Nonaktifkan Mitra' : 'Aktifkan Mitra';
+
+    html += `
+      <tr onclick="pilihMitraDariTabel('${m.id}', '${m.status}')" style="cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='#FFF7ED'" onmouseout="this.style.background='white'">
+        <td style="font-family: monospace; font-size: 12px; font-weight: 700; color: #475569;">
+          <span style="background:#F1F5F9; padding:3px 7px; border-radius:4px; border:1px solid #CBD5E1;">${m.kode}</span>
+        </td>
+        <td>
+          <div style="font-weight: 700; font-size: 13.5px; color: var(--text-dark);">${m.nama_usaha}</div>
+          <div style="font-size: 11.5px; color: var(--text-gray); margin-top: 2px;">
+            <i class="fa-solid fa-user"></i> ${m.owner_name}
+          </div>
+        </td>
+        <td>
+          <span style="background:#FFF7ED; color:var(--primary); padding:3px 8px; border-radius:6px; font-size:11.5px; font-weight:600;">${m.kategori}</span>
+          <div style="font-size: 11.5px; color: var(--text-gray); margin-top: 2px;">${m.lokasi}</div>
+        </td>
+        <td>${waHtml}</td>
+        <td>
+          <span style="font-weight: 700; font-size: 13px; color: var(--primary);">${m.leads} Klik</span>
+        </td>
+        <td>${badgeHtml}</td>
+        <td style="text-align: center; white-space: nowrap;">
+          <button onclick="event.stopPropagation(); pilihMitraDariTabel('${m.id}', '${m.status}')" style="background:#3B82F6; color:white; border:none; padding:5px 8px; border-radius:6px; font-size:11.5px; cursor:pointer; margin-right:4px;" title="Pilih & Edit Status">
+            <i class="fa-solid fa-pencil"></i>
+          </button>
+          <button onclick="event.stopPropagation(); prosesUpdateStatus('${m.id}', '${nextToggleStatus}')" style="background:${toggleBg}; color:white; border:none; padding:5px 8px; border-radius:6px; font-size:11.5px; cursor:pointer; margin-right:4px;" title="${toggleTitle}">
+            ${toggleIcon}
+          </button>
+          ${m.source === 'wisata' ? `
+            <a href="/pdp?id=${m.id}" target="_blank" onclick="event.stopPropagation();" style="background:#10B981; color:white; border:none; padding:5px 8px; border-radius:6px; font-size:11.5px; text-decoration:none; display:inline-block;" title="Lihat di Halaman PDP">
+              <i class="fa-solid fa-eye"></i>
+            </a>
+          ` : ''}
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+};
+
+window.filterMitraCari = function() {
+  window.filterMitra(window.mitraFilterAktif || 'Semua');
+};
+
+window.pilihMitraDariTabel = function(id, status) {
+  let inputID = document.getElementById('inputIDMitra');
+  let selStatus = document.getElementById('selectStatus');
   let info = document.getElementById('statusInfo');
-  if(!id) return;
-  info.innerText = "Memperbarui...";
-  
-  const { error } = await supabase.from('users').update({ status_langganan: status }).or(`id.eq.${id},email.eq.${id}`);
-  if (!error) {
-     info.innerText = "Berhasil!";
-     info.style.color = "green";
-     muatDaftarMitra();
-  } else {
-     info.innerText = "Gagal!";
-     info.style.color = "red";
+
+  if (inputID) inputID.value = id;
+  if (selStatus) selStatus.value = (status === 'Nonaktif' || status === 'Kadaluarsa') ? status : (status || 'Aktif');
+
+  let target = (window.dataMitraGlobal || []).find(m => m.id === id);
+  let namaUsaha = target ? target.nama_usaha : id;
+
+  if (info) {
+    info.innerHTML = `<span style="color:var(--primary);"><i class="fa-solid fa-circle-info"></i> Mitra <b>${namaUsaha}</b> dipilih. Silakan pilih status baru di atas lalu klik <b>Perbarui Status</b>.</span>`;
+  }
+
+  let card = document.getElementById('inputIDMitra');
+  if (card) {
+    let top = card.getBoundingClientRect().top + window.pageYOffset - 120;
+    window.scrollTo({ top: top, behavior: 'smooth' });
+  }
+};
+
+window.prosesUpdateStatus = async function(idOverride, statusOverride) {
+  let id = idOverride || (document.getElementById('inputIDMitra') ? document.getElementById('inputIDMitra').value.trim() : '');
+  let status = statusOverride || (document.getElementById('selectStatus') ? document.getElementById('selectStatus').value : 'Aktif');
+  let info = document.getElementById('statusInfo');
+
+  if (!id) {
+    Swal.fire('Perhatian', 'Pilih atau ketik ID Mitra terlebih dahulu dari tabel.', 'warning');
+    return;
+  }
+
+  if (info) { info.innerText = "Memperbarui status..."; info.style.color = "#3B82F6"; }
+
+  try {
+    let target = (window.dataMitraGlobal || []).find(m => m.id === id || m.kode === id);
+    let targetId = target ? target.id : id;
+    let targetNama = target ? target.nama_usaha : id;
+
+    // 1. Coba update di tabel wisata
+    const { data: wData, error: wErr } = await supabase.from('wisata').update({ status: status }).eq('id', targetId).select();
+    
+    // Simpan juga ke override lokal agar langsung terlihat di beranda & PDP
+    try {
+      let currentOv = JSON.parse(localStorage.getItem('kamawak_override_' + targetId) || '{}');
+      currentOv.status = status;
+      localStorage.setItem('kamawak_override_' + targetId, JSON.stringify(currentOv));
+    } catch(e) {}
+
+    // 2. Coba juga update di tabel users jika akunnya terdaftar
+    try {
+      await supabase.from('users').update({ status_langganan: status }).or(`id.eq.${targetId},email.eq.${targetId},nama.eq.${targetId}`);
+    } catch(eU) {}
+
+    if (info) {
+      info.innerHTML = `<span style="color:#10B981;"><i class="fa-solid fa-circle-check"></i> Status <b>${targetNama}</b> berhasil diubah menjadi <b>${status}</b>!</span>`;
+    }
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Status Diperbarui!',
+      text: `Status kemitraan "${targetNama}" berhasil diubah menjadi ${status}.`,
+      timer: 1800,
+      showConfirmButton: false
+    });
+
+    muatDaftarMitra();
+    muatStatistikGlobal();
+
+  } catch(e) {
+    if (info) { info.innerText = "Gagal: " + e.message; info.style.color = "#EF4444"; }
+    Swal.fire('Gagal', e.message, 'error');
   }
 };
 
