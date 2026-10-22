@@ -3239,7 +3239,15 @@ function renderTabelIklan(data) {
   let tbody = document.getElementById('tableAdsBody');
   if (!tbody) return;
   if (!data || data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-gray); padding: 30px;"><i class="fa-solid fa-info-circle" style="font-size: 20px; display:block; margin-bottom:8px;"></i>Belum ada spanduk iklan. Tambahkan spanduk baru di atas.</td></tr>';
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align:center; color:var(--text-gray); padding: 30px;">
+          <i class="fa-solid fa-rectangle-ad" style="font-size: 26px; color: #F59E0B; display:block; margin-bottom:8px;"></i>
+          <strong style="color:var(--text-dark); font-size:14px;">Belum ada spanduk iklan kustom yang diunggah.</strong>
+          <p style="font-size:12.5px; color:#6B7280; margin: 5px 0 0 0;">Seluruh slot kosong di beranda saat ini secara otomatis menampilkan banner interaktif <b>"Pasang Iklan Di Sini"</b> dengan tautan kontak langsung ke WhatsApp Anda.</p>
+        </td>
+      </tr>
+    `;
     return;
   }
 
