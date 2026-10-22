@@ -1233,9 +1233,15 @@ import BottomNav from '../components/BottomNav.astro';
         return;
       }
 
-      // Atur batas minimum tanggal (Hanya bisa pesan mulai hari ini)
-      let today = new Date().toISOString().split('T')[0];
-      document.getElementById("inputTanggal").setAttribute('min', today);
+      // Atur batas minimum tanggal & isi otomatis tanggal hari ini saat halaman diakses
+      const tNow = new Date();
+      const tzOffset = tNow.getTimezoneOffset() * 60000;
+      const today = (new Date(tNow.getTime() - tzOffset)).toISOString().split('T')[0];
+      const elInputTgl = document.getElementById("inputTanggal");
+      if (elInputTgl) {
+        elInputTgl.setAttribute('min', today);
+        if (!elInputTgl.value) elInputTgl.value = today;
+      }
 
       // Tarik data dari server
       
@@ -1482,6 +1488,9 @@ import BottomNav from '../components/BottomNav.astro';
         if(promoBox) promoBox.style.display = 'block';
 
         let isAtraksi = katStr.includes("atraksi") || katStr.includes("wahana") || katStr.includes("tiket");
+        let isDokumentasi = katStr.includes("dokumentasi") || katStr.includes("foto") || katStr.includes("drone");
+        let isOlehOleh = katStr.includes("oleh") || katStr.includes("souvenir");
+
         if (isAtraksi) {
           let labelTanggal = document.querySelector('label[for="inputTanggal"]') || document.getElementById('inputTanggal')?.previousElementSibling;
           if(labelTanggal) labelTanggal.innerHTML = 'Pilih Tanggal Kunjungan / Tiket <span style="color:red;">*</span>';
@@ -1506,6 +1515,54 @@ import BottomNav from '../components/BottomNav.astro';
 
           let mobPriceUnit = document.getElementById('mobilePriceUnit');
           if(mobPriceUnit) mobPriceUnit.innerText = '/ tiket';
+        } else if (isDokumentasi) {
+          let labelTanggal = document.querySelector('label[for="inputTanggal"]') || document.getElementById('inputTanggal')?.previousElementSibling;
+          if(labelTanggal) labelTanggal.innerHTML = 'Pilih Tanggal Sesi Foto / Liputan <span style="color:red;">*</span>';
+
+          let labelPax = document.getElementById('valPax')?.closest('.form-group')?.querySelector('label');
+          if(labelPax) labelPax.innerText = 'Jumlah Sesi / Tim';
+
+          let priceLabel = document.querySelector('.price-label');
+          if(priceLabel) priceLabel.innerText = 'Per Sesi / Trip';
+
+          let labelVarian = document.querySelector('.package-grid')?.previousElementSibling;
+          if(labelVarian) {
+            labelVarian.innerText = "Pilihan Paket Dokumentasi";
+          }
+
+          if(!data.varian || data.varian.trim() === "") {
+            let pkgReg = document.getElementById('pkgReguler');
+            let pkgVIP = document.getElementById('pkgVIP');
+            if(pkgReg && pkgReg.querySelector('.pkg-title')) pkgReg.querySelector('.pkg-title').innerText = "Paket Foto Standar";
+            if(pkgVIP && pkgVIP.querySelector('.pkg-title')) pkgVIP.querySelector('.pkg-title').innerText = "Paket Foto + Drone 4K";
+          }
+
+          let mobPriceUnit = document.getElementById('mobilePriceUnit');
+          if(mobPriceUnit) mobPriceUnit.innerText = '/ sesi';
+        } else if (isOlehOleh) {
+          let labelTanggal = document.querySelector('label[for="inputTanggal"]') || document.getElementById('inputTanggal')?.previousElementSibling;
+          if(labelTanggal) labelTanggal.innerHTML = 'Pilih Tanggal Pengiriman / Pengambilan <span style="color:red;">*</span>';
+
+          let labelPax = document.getElementById('valPax')?.closest('.form-group')?.querySelector('label');
+          if(labelPax) labelPax.innerText = 'Jumlah Paket / Kotak';
+
+          let priceLabel = document.querySelector('.price-label');
+          if(priceLabel) priceLabel.innerText = 'Per Paket';
+
+          let labelVarian = document.querySelector('.package-grid')?.previousElementSibling;
+          if(labelVarian) {
+            labelVarian.innerText = "Pilihan Paket Oleh-Oleh";
+          }
+
+          if(!data.varian || data.varian.trim() === "") {
+            let pkgReg = document.getElementById('pkgReguler');
+            let pkgVIP = document.getElementById('pkgVIP');
+            if(pkgReg && pkgReg.querySelector('.pkg-title')) pkgReg.querySelector('.pkg-title').innerText = "Paket Oleh-Oleh Standar";
+            if(pkgVIP && pkgVIP.querySelector('.pkg-title')) pkgVIP.querySelector('.pkg-title').innerText = "Paket Komplit Khas Minang";
+          }
+
+          let mobPriceUnit = document.getElementById('mobilePriceUnit');
+          if(mobPriceUnit) mobPriceUnit.innerText = '/ paket';
         } else {
           let mobPriceUnit = document.getElementById('mobilePriceUnit');
           if(mobPriceUnit) mobPriceUnit.innerText = '/ pax';

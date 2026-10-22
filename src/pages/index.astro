@@ -108,21 +108,28 @@ const INITIAL_CITIES = [
     .nav-center-categories {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .nav-center-categories::-webkit-scrollbar {
+      display: none;
     }
     .nav-cat-pill {
       background: transparent;
       border: none;
       font-family: 'Inter', sans-serif;
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 600;
       color: #475569;
-      padding: 8px 18px;
+      padding: 7px 13px;
       border-radius: 30px;
       cursor: pointer;
       transition: all 0.2s ease;
       white-space: nowrap;
+      flex-shrink: 0;
     }
     .nav-cat-pill:hover {
       background: #F8FAFC;
@@ -831,11 +838,14 @@ const INITIAL_CITIES = [
     <a href="/" class="logo"><i class="fa-solid fa-mountain-sun" style="color: var(--primary);"></i> Kamawak.</a>
     
     <div class="nav-center-categories" id="navCenterCategories">
-      <button class="nav-cat-pill tab-btn active" onclick="filterKategori(this, 'Semua')">Semua</button>
-      <button class="nav-cat-pill tab-btn" onclick="filterKategori(this, 'Penginapan')">Penginapan</button>
-      <button class="nav-cat-pill tab-btn" onclick="filterKategori(this, 'Tur')">Tur & Tiket</button>
-      <button class="nav-cat-pill tab-btn" onclick="filterKategori(this, 'Kuliner')">Kuliner</button>
-      <button class="nav-cat-pill tab-btn" onclick="filterKategori(this, 'Favorit')"><i class="fa-solid fa-heart" style="color: #EF4444;"></i> Favorit (<span id="wishlistCountBadge">0</span>)</button>
+      <button class="nav-cat-pill tab-btn" data-kategori="Penginapan" onclick="filterKategori(this, 'Penginapan')">Penginapan</button>
+      <button class="nav-cat-pill tab-btn" data-kategori="Tur" onclick="filterKategori(this, 'Tur')">Tur & Tiket</button>
+      <button class="nav-cat-pill tab-btn" data-kategori="Atraksi" onclick="filterKategori(this, 'Atraksi')">Atraksi</button>
+      <button class="nav-cat-pill tab-btn" data-kategori="Dokumentasi" onclick="filterKategori(this, 'Dokumentasi')">Dokumentasi</button>
+      <button class="nav-cat-pill tab-btn" data-kategori="Oleh-Oleh" onclick="filterKategori(this, 'Oleh-Oleh')">Oleh-Oleh</button>
+      <button class="nav-cat-pill tab-btn" data-kategori="Kuliner" onclick="filterKategori(this, 'Kuliner')">Kuliner</button>
+      <button class="nav-cat-pill tab-btn" data-kategori="Rental" onclick="filterKategori(this, 'Rental')">Rental</button>
+      <button class="nav-cat-pill tab-btn" data-kategori="Favorit" onclick="filterKategori(this, 'Favorit')"><i class="fa-solid fa-heart" style="color: #EF4444;"></i> Favorit (<span id="wishlistCountBadge">0</span>)</button>
     </div>
 
     <div id="navMenu">
@@ -845,12 +855,14 @@ const INITIAL_CITIES = [
 
   <!-- MOBILE CATEGORY SCROLL (HANYA MUNCUL DI LAYAR HP) -->
   <div class="category-tabs-mobile">
-    <button class="tab-btn active" onclick="filterKategori(this, 'Semua')">Semua</button>
-    <button class="tab-btn" onclick="filterKategori(this, 'Penginapan')">Penginapan</button>
-    <button class="tab-btn" onclick="filterKategori(this, 'Tur')">Tur & Tiket</button>
-    <button class="tab-btn" onclick="filterKategori(this, 'Kuliner')">Kuliner</button>
-    <button class="tab-btn" onclick="filterKategori(this, 'Atraksi')">Atraksi</button>
-    <button class="tab-btn" onclick="filterKategori(this, 'Rental')">Rental</button>
+    <button class="tab-btn" data-kategori="Penginapan" onclick="filterKategori(this, 'Penginapan')">Penginapan</button>
+    <button class="tab-btn" data-kategori="Tur" onclick="filterKategori(this, 'Tur')">Tur & Tiket</button>
+    <button class="tab-btn" data-kategori="Atraksi" onclick="filterKategori(this, 'Atraksi')">Atraksi</button>
+    <button class="tab-btn" data-kategori="Dokumentasi" onclick="filterKategori(this, 'Dokumentasi')">Dokumentasi</button>
+    <button class="tab-btn" data-kategori="Oleh-Oleh" onclick="filterKategori(this, 'Oleh-Oleh')">Oleh-Oleh</button>
+    <button class="tab-btn" data-kategori="Kuliner" onclick="filterKategori(this, 'Kuliner')">Kuliner</button>
+    <button class="tab-btn" data-kategori="Rental" onclick="filterKategori(this, 'Rental')">Rental</button>
+    <button class="tab-btn" data-kategori="Favorit" onclick="filterKategori(this, 'Favorit')"><i class="fa-solid fa-heart" style="color: #EF4444;"></i> Favorit</button>
   </div>
 
   <!-- RUNNING TEXT PROMO MARQUEE (HANYA MUNCUL JIKA STATUS VOUCHER DIAKTIFKAN) -->
@@ -881,10 +893,12 @@ const INITIAL_CITIES = [
       <div class="search-pill-box">
         <i class="fa-solid fa-tags"></i>
         <select id="smartCategorySelect" class="search-select-pill" onchange="syncCategorySelect(this.value)">
-          <option value="Semua">Kategori</option>
+          <option value="Semua">Semua Kategori</option>
           <option value="Penginapan">Penginapan</option>
           <option value="Tur">Tur & Tiket</option>
           <option value="Atraksi">Atraksi</option>
+          <option value="Dokumentasi">Dokumentasi</option>
+          <option value="Oleh-Oleh">Oleh-Oleh</option>
           <option value="Kuliner">Kuliner</option>
           <option value="Rental">Rental</option>
           <option value="Favorit">Favorit ❤️</option>
@@ -1555,7 +1569,23 @@ const INITIAL_CITIES = [
            if (kategoriAktif === 'Favorit') {
              mKat = wishlist.includes(String(item.id));
            } else if (kategoriAktif !== 'Semua') {
-             mKat = (kategoriAktif === 'Atraksi') ? (strKat.includes('atraksi') || strKat.includes('tiket')) : strKat.includes(kategoriAktif.toLowerCase());
+             if (kategoriAktif === 'Atraksi') {
+               mKat = strKat.includes('atraksi') || strKat.includes('wahana') || strKat.includes('tiket');
+             } else if (kategoriAktif === 'Dokumentasi') {
+               mKat = strKat.includes('dokumentasi') || strKat.includes('foto') || strKat.includes('video') || strKat.includes('drone');
+             } else if (kategoriAktif === 'Oleh-Oleh') {
+               mKat = strKat.includes('oleh') || strKat.includes('souvenir') || strKat.includes('buah tangan');
+             } else if (kategoriAktif === 'Kuliner') {
+               mKat = strKat.includes('kuliner') || strKat.includes('resto') || strKat.includes('kafe') || strKat.includes('makan');
+             } else if (kategoriAktif === 'Rental') {
+               mKat = strKat.includes('rental') || strKat.includes('mobil') || strKat.includes('motor') || strKat.includes('transport');
+             } else if (kategoriAktif === 'Tur') {
+               mKat = strKat.includes('tur') || strKat.includes('tour') || strKat.includes('trip') || strKat.includes('paket');
+             } else if (kategoriAktif === 'Penginapan') {
+               mKat = strKat.includes('penginapan') || strKat.includes('hotel') || strKat.includes('villa') || strKat.includes('cabin') || strKat.includes('homestay') || strKat.includes('resort');
+             } else {
+               mKat = strKat.includes(kategoriAktif.toLowerCase());
+             }
            }
 
            let teksUtama = [
@@ -1701,6 +1731,10 @@ const INITIAL_CITIES = [
             amenities = ['<i class="fa-solid fa-user-check"></i> Guide', '<i class="fa-solid fa-van-shuttle"></i> Transport', '<i class="fa-solid fa-ticket"></i> Tiket'];
           } else if (katLower.includes('atraksi') || katLower.includes('tiket')) {
             amenities = ['<i class="fa-solid fa-ticket"></i> Tiket Masuk', '<i class="fa-solid fa-bolt"></i> Bebas Antre'];
+          } else if (katLower.includes('dokumentasi') || katLower.includes('foto') || katLower.includes('drone')) {
+            amenities = ['<i class="fa-solid fa-camera"></i> Fotografer', '<i class="fa-solid fa-paper-plane"></i> Drone 4K', '<i class="fa-solid fa-images"></i> All Soft File'];
+          } else if (katLower.includes('oleh') || katLower.includes('souvenir')) {
+            amenities = ['<i class="fa-solid fa-box"></i> Kemasan Vakum', '<i class="fa-solid fa-certificate"></i> 100% Halal', '<i class="fa-solid fa-truck-fast"></i> Siap Kirim'];
           } else if (katLower.includes('rental') || katLower.includes('mobil') || katLower.includes('motor')) {
             amenities = ['<i class="fa-solid fa-car"></i> Unit Bersih', '<i class="fa-solid fa-id-card"></i> Sopir/Lepas Kunci'];
           } else if (katLower.includes('kuliner')) {
@@ -1716,6 +1750,8 @@ const INITIAL_CITIES = [
         let satuanHarga = '/ malam';
         if (katStr.includes('atraksi') || katStr.includes('tiket')) satuanHarga = '/ tiket';
         else if (katStr.includes('tur') || katStr.includes('paket')) satuanHarga = '/ pax';
+        else if (katStr.includes('dokumentasi') || katStr.includes('foto') || katStr.includes('drone')) satuanHarga = '/ sesi';
+        else if (katStr.includes('oleh') || katStr.includes('souvenir')) satuanHarga = '/ paket';
         else if (katStr.includes('rental')) satuanHarga = '/ hari';
 
         // Hitung dots foto jika produk memiliki banyak foto
@@ -1818,11 +1854,25 @@ const INITIAL_CITIES = [
     }
 
     window.filterKategori = function(element, kategori) { 
-      document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active')); 
-      if (element) element.classList.add('active'); 
-      kategoriAktif = kategori; 
-      let catSelect = document.getElementById('smartCategorySelect');
-      if (catSelect) catSelect.value = kategori;
+      // Smart Toggle: jika tab kategori yang aktif diklik lagi, lepas filter (tampilkan semua)
+      if (kategoriAktif === kategori) {
+        kategoriAktif = 'Semua';
+        document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+        let catSelect = document.getElementById('smartCategorySelect');
+        if (catSelect) catSelect.value = 'Semua';
+      } else {
+        kategoriAktif = kategori;
+        document.querySelectorAll('.tab-btn').forEach(t => {
+          let k = t.getAttribute('data-kategori');
+          if (k === kategori || (!k && t.innerText.toLowerCase().includes(kategori.toLowerCase()))) {
+            t.classList.add('active');
+          } else {
+            t.classList.remove('active');
+          }
+        });
+        let catSelect = document.getElementById('smartCategorySelect');
+        if (catSelect) catSelect.value = kategori;
+      }
       window.terapkanFilterDanUrutan(); 
       let area = document.getElementById('areaKatalog');
       if (area) window.scrollTo({ top: area.offsetTop - 130, behavior: 'smooth' }); 
@@ -1831,11 +1881,14 @@ const INITIAL_CITIES = [
     window.syncCategorySelect = function(val) {
       kategoriAktif = val;
       document.querySelectorAll('.tab-btn').forEach(btn => {
-        let text = btn.innerText.trim();
-        if (val === 'Semua' && text === 'Semua') btn.classList.add('active');
-        else if (val === 'Favorit' && text.includes('Favorit')) btn.classList.add('active');
-        else if (val !== 'Semua' && val !== 'Favorit' && text.toLowerCase().includes(val.toLowerCase())) btn.classList.add('active');
-        else btn.classList.remove('active');
+        let k = btn.getAttribute('data-kategori');
+        if (val === 'Semua') {
+          btn.classList.remove('active');
+        } else if (k === val || (!k && btn.innerText.toLowerCase().includes(val.toLowerCase()))) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
       });
       window.terapkanFilterDanUrutan();
       let area = document.getElementById('areaKatalog');

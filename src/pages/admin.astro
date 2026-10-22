@@ -277,12 +277,14 @@ import BottomNav from '../components/BottomNav.astro';
         </div>
         <div class="form-group">
           <label>Kategori</label>
-          <select id="cmsKategori" class="form-control">
+          <select id="cmsKategori" class="form-control" onchange="if(window.updateCardPreviewLanding) window.updateCardPreviewLanding();">
             <option value="Tur">Paket Tur</option>
             <option value="Penginapan">Penginapan / Hotel</option>
             <option value="Rental">Rental Kendaraan</option>
             <option value="Atraksi">Atraksi / Wahana</option>
-            <option value="Kuliner">Kuliner / Oleh-oleh</option>
+            <option value="Dokumentasi">Dokumentasi (Foto/Video/Drone)</option>
+            <option value="Oleh-Oleh">Oleh-Oleh Khas Minang</option>
+            <option value="Kuliner">Kuliner & Kafe</option>
           </select>
         </div>
         <div class="form-group">
@@ -381,7 +383,7 @@ import BottomNav from '../components/BottomNav.astro';
               </div>
             </div>
 
-            <!-- Kelompok Tur & Tiket -->
+            <!-- Kelompok Tur & Atraksi -->
             <div style="margin-bottom: 8px;">
               <span style="font-size: 11px; color: #64748B; font-weight: 600; display: block; margin-bottom: 4px;">🎫 Tur & Atraksi:</span>
               <div class="facility-preset-group" style="display: flex; gap: 6px; flex-wrap: wrap;">
@@ -392,6 +394,20 @@ import BottomNav from '../components/BottomNav.astro';
                 <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Dokumentasi Foto/Drone', this)"><i class="fa-solid fa-camera"></i> Dokumentasi</button>
                 <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Asuransi Perjalanan', this)"><i class="fa-solid fa-shield-heart"></i> Asuransi</button>
                 <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Bebas Antre', this)"><i class="fa-solid fa-bolt"></i> Bebas Antre</button>
+              </div>
+            </div>
+
+            <!-- Kelompok Dokumentasi & Oleh-Oleh -->
+            <div style="margin-bottom: 8px;">
+              <span style="font-size: 11px; color: #64748B; font-weight: 600; display: block; margin-bottom: 4px;">📷 Dokumentasi & 🎁 Oleh-Oleh:</span>
+              <div class="facility-preset-group" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Fotografer Ramah', this)"><i class="fa-solid fa-camera"></i> Fotografer</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Drone 4K Pilot', this)"><i class="fa-solid fa-paper-plane"></i> Drone 4K</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('All Soft File (Google Drive)', this)"><i class="fa-solid fa-images"></i> All Soft File</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Video Reels / TikTok Ready', this)"><i class="fa-solid fa-video"></i> Video Reels</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Kemasan Vakum Higienis', this)"><i class="fa-solid fa-box"></i> Kemasan Vakum</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Tahan Lama / Siap Kirim Luar Kota', this)"><i class="fa-solid fa-truck-fast"></i> Siap Kirim</button>
+                <button type="button" class="btn-facility-tag" onclick="toggleFacilityTag('Resep Autentik Minang', this)"><i class="fa-solid fa-fire-burner"></i> Resep Autentik</button>
               </div>
             </div>
 
