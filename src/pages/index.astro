@@ -701,82 +701,288 @@ const INITIAL_CITIES = [
     .ad-card img { width: 100%; height: 120px; object-fit: cover; display: block; }
     @media (max-width: 768px) { .ad-card { flex: 0 0 calc(50% - 7.5px); min-width: calc(50% - 7.5px); } }
 
-    /* RESPONSIVE DESIGN (MOBILE) */
+    /* RESPONSIVE DESIGN (MOBILE - KONSEP A NATIVE TRAVEL APP) */
     @media (max-width: 768px) {
-        .navbar { padding: 12px 15px; }
-        .logo { font-size: 20px; }
-        .nav-center-categories { display: none; } /* Show in horizontal scroll below navbar or bottom nav */
+        .navbar { padding: 10px 14px; }
+        .logo { font-size: 19px; }
+        .nav-center-categories { display: none; }
         .category-tabs-mobile { display: flex !important; }
-        .btn-login-nav { padding: 8px 16px !important; font-size: 12px !important; }
+        .btn-login-nav { padding: 7px 14px !important; font-size: 11.5px !important; }
 
-        .hero-slider { height: 280px; }
-        .hero-content { padding: 0 15px; margin-bottom: 15px; }
-        .hero-content h1 { font-size: 26px; margin-bottom: 6px; }
-        .hero-content p { font-size: 12px; line-height: 1.3; }
+        .hero-slider { height: 250px; }
+        .hero-content { padding: 0 14px; margin-bottom: 20px; }
+        .hero-content h1 { font-size: 23px; margin-bottom: 4px; font-weight: 800; }
+        .hero-content p { font-size: 11.5px; line-height: 1.35; }
 
-        .smart-search-floating-wrapper { margin-top: -24px; padding: 0 10px; margin-bottom: 20px; }
-        .smart-search-widget { border-radius: 18px; flex-direction: column; padding: 10px; gap: 8px; width: 100%; }
-        .search-pill-box { width: 100%; border-radius: 10px; padding: 8px 12px; }
-        .search-pill-box.pill-destinasi { min-width: 100%; }
-        .smart-search-btn { width: 100%; border-radius: 10px; padding: 10px; }
+        /* Modern 2-Row Compact Search Widget (Cuts height by 60%) */
+        .smart-search-floating-wrapper { margin-top: -32px; padding: 0 12px; margin-bottom: 18px; }
+        .smart-search-widget {
+          border-radius: 20px;
+          background: #FFFFFF;
+          padding: 10px;
+          gap: 8px;
+          width: 100%;
+          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+          border: 1px solid #E2E8F0;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
+        .search-pill-box.pill-destinasi {
+          grid-column: 1 / -1;
+          width: 100%;
+          background: #F8FAFC;
+          border-radius: 12px;
+          padding: 8px 12px;
+          border: 1px solid #E2E8F0;
+        }
+        .search-pill-box.pill-destinasi i {
+          color: var(--primary);
+          font-size: 15px;
+        }
+        .search-input-pill {
+          font-size: 13.5px;
+        }
+        .search-pill-box:not(.pill-destinasi) {
+          width: 100%;
+          background: #F8FAFC;
+          border-radius: 10px;
+          padding: 6px 8px;
+          border: 1px solid #E2E8F0;
+          min-width: 0;
+        }
+        .search-select-pill {
+          font-size: 11.5px;
+        }
+        .smart-search-btn {
+          grid-column: 1 / -1;
+          width: 100%;
+          border-radius: 12px;
+          padding: 10px;
+          font-size: 13.5px;
+          font-weight: 700;
+          margin-top: 2px;
+        }
 
-        .container { padding: 0 15px; }
-        .city-card { min-width: 125px; max-width: 125px; height: 160px; border-radius: 16px; }
-        .city-name { font-size: 13px; padding: 10px 8px; }
-        .city-badge { font-size: 10px; padding: 2px 6px; top: 6px; right: 6px; }
+        .container { padding: 0 14px; }
 
-        .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 30px; }
-        .card { padding: 8px; border-radius: 14px; }
-        .card-img-wrapper { height: 115px; border-radius: 10px; }
-        .card-title { font-size: 12px; }
-        .card-location-row { font-size: 10px; gap: 3px; margin-bottom: 2px; }
-        .card-cat-tag { font-size: 9px; padding: 1px 4px; }
-        .card-rating-simple { font-size: 11px; }
-        .card-amenities { display: none; }
-        .price-val { font-size: 13px; }
-        .text-verified { font-size: 12px; }
-        .btn-wishlist-card { width: 26px; height: 26px; font-size: 11px; top: 6px; right: 6px; }
+        /* City Cards (Landscape Edge-to-Edge Scroll) */
+        .city-card { min-width: 140px; max-width: 140px; height: 180px; border-radius: 18px; }
+        .city-name { font-size: 13.5px; padding: 12px 10px; font-weight: 700; }
+        .city-badge { font-size: 10px; padding: 3px 7px; top: 8px; right: 8px; }
+
+        /* Catalog Controls & View Toggle */
+        .controls-wrapper {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 12px;
+        }
+        .controls-wrapper .filter-group {
+          width: 100%;
+          display: flex;
+          gap: 8px;
+        }
+        .controls-wrapper .sort-select {
+          flex: 1;
+          min-width: 0;
+          font-size: 11.5px;
+          padding: 8px 10px;
+        }
+        .view-mode-toggle {
+          display: inline-flex !important;
+          background: #F1F5F9;
+          padding: 3px;
+          border-radius: 10px;
+          gap: 2px;
+          align-self: flex-end;
+        }
+        .btn-view-mode {
+          background: transparent;
+          border: none;
+          padding: 6px 10px;
+          border-radius: 7px;
+          font-size: 13px;
+          color: #64748B;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .btn-view-mode.active {
+          background: #FFFFFF;
+          color: var(--primary);
+          box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+          font-weight: 700;
+        }
+
+        /* 1-Column Native App Feed (Default Mobile) */
+        .grid {
+          grid-template-columns: 1fr;
+          gap: 18px;
+          margin-bottom: 30px;
+        }
+        .card {
+          padding: 12px;
+          border-radius: 18px;
+          box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+          border: 1px solid #E2E8F0;
+        }
+        .card-img-wrapper {
+          height: 190px;
+          border-radius: 14px;
+        }
+        .card-title {
+          font-size: 15px;
+          font-weight: 700;
+          line-height: 1.35;
+        }
+        .card-location-row {
+          font-size: 11.5px;
+          gap: 5px;
+          margin-bottom: 6px;
+        }
+        .card-cat-tag {
+          font-size: 10px;
+          padding: 2px 7px;
+          font-weight: 700;
+        }
+        .card-rating-simple {
+          font-size: 12.5px;
+        }
+        .card-amenities {
+          display: flex !important;
+          gap: 5px;
+          flex-wrap: wrap;
+          margin: 6px 0 10px 0;
+        }
+        .amenity-tag {
+          font-size: 10.5px;
+          padding: 3px 8px;
+        }
+        .price-val {
+          font-size: 16px;
+          font-weight: 800;
+        }
+        .price-unit {
+          font-size: 11.5px;
+        }
+        .text-verified {
+          font-size: 12.5px;
+        }
+        .btn-wishlist-card {
+          width: 34px;
+          height: 34px;
+          font-size: 14px;
+          top: 10px;
+          right: 10px;
+          background: rgba(255, 255, 255, 0.95);
+          box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+
+        /* Compact 2-Column Mode (via View Toggle) */
+        .grid.grid-compact-2col {
+          grid-template-columns: repeat(2, 1fr) !important;
+          gap: 12px !important;
+        }
+        .grid.grid-compact-2col .card {
+          padding: 8px !important;
+          border-radius: 14px !important;
+        }
+        .grid.grid-compact-2col .card-img-wrapper {
+          height: 115px !important;
+          border-radius: 10px !important;
+        }
+        .grid.grid-compact-2col .card-title {
+          font-size: 12px !important;
+        }
+        .grid.grid-compact-2col .card-amenities {
+          display: none !important;
+        }
+        .grid.grid-compact-2col .price-val {
+          font-size: 13px !important;
+        }
+        .grid.grid-compact-2col .btn-wishlist-card {
+          width: 26px !important;
+          height: 26px !important;
+          font-size: 11px !important;
+          top: 6px !important;
+          right: 6px !important;
+        }
 
         .stats-row { padding: 12px 10px; margin-bottom: 25px; }
         .stat-number { font-size: 18px; }
         .stat-label { font-size: 10px; }
         .stat-divider { height: 25px; }
 
-        .trust-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .trust-item { padding: 5px; }
-        .trust-icon { width: 40px; height: 40px; font-size: 16px; margin: 0 auto 10px; }
-        .trust-item h4 { font-size: 11px; margin-bottom: 5px; line-height: 1.2; }
-        .trust-item p { font-size: 9px; line-height: 1.3; }
+        /* Trust Grid Swipeable Carousel on Mobile */
+        .trust-grid {
+          display: flex;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          gap: 12px;
+          padding-bottom: 8px;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+        .trust-grid::-webkit-scrollbar { display: none; }
+        .trust-item {
+          flex: 0 0 82%;
+          min-width: 82%;
+          scroll-snap-align: center;
+          padding: 16px;
+          background: #FFFFFF;
+          border: 1px solid #E2E8F0;
+          border-radius: 14px;
+        }
+        .trust-icon { width: 44px; height: 44px; font-size: 18px; margin: 0 auto 10px; }
+        .trust-item h4 { font-size: 13.5px; margin-bottom: 6px; }
+        .trust-item p { font-size: 11.5px; line-height: 1.45; }
+
         .footer-content { grid-template-columns: repeat(2, 1fr); text-align: left; gap: 15px; padding-bottom: 15px; }
         .footer-logo { font-size: 16px; margin-bottom: 5px; }
         .footer-content p { font-size: 10px; line-height: 1.4; }
         .footer-bottom { font-size: 10px; }
     }
 
-    /* MOBILE HORIZONTAL CATEGORY TABS */
+    /* MOBILE STICKY CATEGORY ICON BUBBLE BAR */
     .category-tabs-mobile {
       display: none;
       background: #FFFFFF;
-      padding: 10px 15px;
+      padding: 10px 12px;
       gap: 8px;
       overflow-x: auto;
       white-space: nowrap;
       -webkit-overflow-scrolling: touch;
       border-bottom: 1px solid #F1F5F9;
+      position: sticky;
+      top: 50px;
+      z-index: 95;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
+    .category-tabs-mobile::-webkit-scrollbar { display: none; }
     .category-tabs-mobile .tab-btn {
-      font-size: 12px;
-      padding: 6px 14px;
-      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      padding: 7px 14px;
+      border-radius: 25px;
       background: #F8FAFC;
       border: 1px solid #E2E8F0;
       color: #334155;
       font-weight: 600;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+    .category-tabs-mobile .tab-btn i {
+      font-size: 13px;
+      color: #FF5E1F;
     }
     .category-tabs-mobile .tab-btn.active {
-      background: var(--primary) !important;
+      background: linear-gradient(135deg, #FF6A28 0%, #EA580C 100%) !important;
       color: #FFFFFF !important;
-      border-color: var(--primary) !important;
+      border-color: #EA580C !important;
+      box-shadow: 0 4px 12px rgba(255, 94, 31, 0.3);
+    }
+    .category-tabs-mobile .tab-btn.active i {
+      color: #FFFFFF !important;
     }
 
     /* RUNNING TEXT (MARQUEE) PROMO STYLES */
@@ -853,16 +1059,16 @@ const INITIAL_CITIES = [
     </div>
   </nav>
 
-  <!-- MOBILE CATEGORY SCROLL (HANYA MUNCUL DI LAYAR HP) -->
-  <div class="category-tabs-mobile">
-    <button class="tab-btn" data-kategori="Penginapan" onclick="filterKategori(this, 'Penginapan')">Penginapan</button>
-    <button class="tab-btn" data-kategori="Tur" onclick="filterKategori(this, 'Tur')">Tur & Tiket</button>
-    <button class="tab-btn" data-kategori="Atraksi" onclick="filterKategori(this, 'Atraksi')">Atraksi</button>
-    <button class="tab-btn" data-kategori="Dokumentasi" onclick="filterKategori(this, 'Dokumentasi')">Dokumentasi</button>
-    <button class="tab-btn" data-kategori="Oleh-Oleh" onclick="filterKategori(this, 'Oleh-Oleh')">Oleh-Oleh</button>
-    <button class="tab-btn" data-kategori="Kuliner" onclick="filterKategori(this, 'Kuliner')">Kuliner</button>
-    <button class="tab-btn" data-kategori="Rental" onclick="filterKategori(this, 'Rental')">Rental</button>
-    <button class="tab-btn" data-kategori="Favorit" onclick="filterKategori(this, 'Favorit')"><i class="fa-solid fa-heart" style="color: #EF4444;"></i> Favorit</button>
+  <!-- MOBILE CATEGORY SCROLL (HANYA MUNCUL DI LAYAR HP - NATIVE BUBBLE PILLS) -->
+  <div class="category-tabs-mobile" id="categoryTabsMobile">
+    <button class="tab-btn" data-kategori="Penginapan" onclick="filterKategori(this, 'Penginapan')"><i class="fa-solid fa-hotel"></i> Penginapan</button>
+    <button class="tab-btn" data-kategori="Tur" onclick="filterKategori(this, 'Tur')"><i class="fa-solid fa-ticket"></i> Tur & Tiket</button>
+    <button class="tab-btn" data-kategori="Atraksi" onclick="filterKategori(this, 'Atraksi')"><i class="fa-solid fa-mountain-sun"></i> Atraksi</button>
+    <button class="tab-btn" data-kategori="Dokumentasi" onclick="filterKategori(this, 'Dokumentasi')"><i class="fa-solid fa-camera-retro"></i> Dokumentasi</button>
+    <button class="tab-btn" data-kategori="Oleh-Oleh" onclick="filterKategori(this, 'Oleh-Oleh')"><i class="fa-solid fa-gift"></i> Oleh-Oleh</button>
+    <button class="tab-btn" data-kategori="Kuliner" onclick="filterKategori(this, 'Kuliner')"><i class="fa-solid fa-utensils"></i> Kuliner</button>
+    <button class="tab-btn" data-kategori="Rental" onclick="filterKategori(this, 'Rental')"><i class="fa-solid fa-car-side"></i> Rental</button>
+    <button class="tab-btn" data-kategori="Favorit" onclick="filterKategori(this, 'Favorit')"><i class="fa-solid fa-heart" style="color: #EF4444;"></i> Favorit (<span id="wishlistCountBadgeMobile">0</span>)</button>
   </div>
 
   <!-- RUNNING TEXT PROMO MARQUEE (HANYA MUNCUL JIKA STATUS VOUCHER DIAKTIFKAN) -->
@@ -950,7 +1156,14 @@ const INITIAL_CITIES = [
   </div>
 
   <div class="controls-wrapper" id="areaKatalog" style="justify-content: space-between; padding-top: 20px; margin-top: 20px;">
-    <h2 class="section-title" style="margin-bottom: 0; font-size: 20px;">Eksplorasi Katalog</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px;">
+      <h2 class="section-title" style="margin-bottom: 0; font-size: 20px;">Eksplorasi Katalog</h2>
+      <!-- Toggle Tampilan Mobile: 1 Kolom (Detail) vs 2 Kolom (Kompak) -->
+      <div class="view-mode-toggle" id="viewModeToggle" style="display: none;">
+        <button type="button" class="btn-view-mode active" id="btnView1Col" onclick="toggleViewMode('1col')" title="Tampilan Penuh (Detail)"><i class="fa-solid fa-square"></i></button>
+        <button type="button" class="btn-view-mode" id="btnView2Col" onclick="toggleViewMode('2col')" title="Tampilan Grid (Kompak)"><i class="fa-solid fa-table-cells-large"></i></button>
+      </div>
+    </div>
     <div class="filter-group">
       <select id="priceSelect" class="sort-select" onchange="terapkanFilterDanUrutan()">
         <option value="semua">Semua Harga (Budget)</option>
@@ -1851,7 +2064,39 @@ const INITIAL_CITIES = [
       let list = JSON.parse(localStorage.getItem('kamawak_wishlist') || '[]');
       let badge = document.getElementById('wishlistCountBadge');
       if (badge) badge.innerText = list.length;
+      let badgeMob = document.getElementById('wishlistCountBadgeMobile');
+      if (badgeMob) badgeMob.innerText = list.length;
     }
+
+    window.toggleViewMode = function(mode) {
+      const grid = document.getElementById('productGrid');
+      const b1 = document.getElementById('btnView1Col');
+      const b2 = document.getElementById('btnView2Col');
+      if (mode === '2col') {
+        if (grid) grid.classList.add('grid-compact-2col');
+        if (b2) b2.classList.add('active');
+        if (b1) b1.classList.remove('active');
+        localStorage.setItem('kamawak_mobile_view', '2col');
+      } else {
+        if (grid) grid.classList.remove('grid-compact-2col');
+        if (b1) b1.classList.add('active');
+        if (b2) b2.classList.remove('active');
+        localStorage.setItem('kamawak_mobile_view', '1col');
+      }
+    };
+
+    // Inisialisasi preferensi view mode mobile
+    try {
+      const savedView = localStorage.getItem('kamawak_mobile_view');
+      if (savedView === '2col') {
+        const grid = document.getElementById('productGrid');
+        if (grid) grid.classList.add('grid-compact-2col');
+        const b2 = document.getElementById('btnView2Col');
+        const b1 = document.getElementById('btnView1Col');
+        if (b2) b2.classList.add('active');
+        if (b1) b1.classList.remove('active');
+      }
+    } catch(e) {}
 
     window.filterKategori = function(element, kategori) { 
       // Smart Toggle: jika tab kategori yang aktif diklik lagi, lepas filter (tampilkan semua)

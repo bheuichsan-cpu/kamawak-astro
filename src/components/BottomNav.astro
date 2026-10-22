@@ -14,6 +14,10 @@ const { current = 'home' } = Astro.props;
     <i class="fa-solid fa-compass"></i>
     <span>Eksplor</span>
   </a>
+  <a href="/#areaKatalog" onclick="if(window.filterKategori) { window.filterKategori(document.querySelector('.tab-btn[data-kategori=\'Favorit\']'), 'Favorit'); } else { window.location.href='/?cat=Favorit#areaKatalog'; }" class={`bottom-nav-item ${current === 'wishlist' ? 'active' : ''}`} id="btnNavWishlist">
+    <i class="fa-solid fa-heart"></i>
+    <span>Favorit</span>
+  </a>
   <a href="/profil" class={`bottom-nav-item ${current === 'orders' ? 'active' : ''}`} id="btnNavTiket">
     <i class="fa-solid fa-ticket"></i>
     <span>Tiket Saya</span>
