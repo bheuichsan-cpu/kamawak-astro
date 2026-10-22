@@ -989,26 +989,13 @@ import BottomNav from '../components/BottomNav.astro';
     import { supabase } from '../lib/supabase.js';
 
     const BASE_URL = "";
-    let dataMaster = []; let layoutMaster = []; 
+    let dataMaster = []; 
+    let layoutMaster = []; 
     let kategoriAktif = 'Semua';
 
-    function initHomePage() {
-      if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
-      cekStatusLogin(); // <--- Fungsi Pintar Navigasi Dipanggil Disini
-      updateWishlistBadge();
-      tampilkanSkeleton();
-      muatIklanBanner();
-      muatKoleksiTag();
-      muatFasilitasTrustHome();
-      panggilDataServer();
-    }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initHomePage);
-    } else {
-      initHomePage();
-    }
-    window.onload = initHomePage;
+
+
 
     function muatFasilitasTrustHome() {
       try {
@@ -1185,17 +1172,7 @@ import BottomNav from '../components/BottomNav.astro';
       }, 3500);
     }
 
-    const DAFTAR_KOTA_DEFAULT = [
-      { nama: "Semua", label: "Semua Destinasi", subtag: "Seluruh Pilihan Wisata", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-      { nama: "Alahan Panjang", label: "Alahan Panjang", subtag: "Danau Diatas & Cabin Dingin", img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-      { nama: "Solok", label: "Solok", subtag: "Danau Kembar & Pesona Alam", img: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-      { nama: "Bukittinggi", label: "Bukittinggi", subtag: "Jam Gadang & Ngarai Sianok", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-      { nama: "Padang", label: "Kota Padang", subtag: "Pantai Padang & Kota Tua", img: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-      { nama: "Harau", label: "Lembah Harau", subtag: "Tebing Granit & Homestay", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-      { nama: "Mandeh", label: "Pesisir Mandeh", subtag: "Wisata Bahari & Pesisir", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-      { nama: "Mentawai", label: "Kep. Mentawai", subtag: "Surfing & Budaya Sikerei", img: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-      { nama: "Pariaman", label: "Pariaman", subtag: "Pantai Gandoriah, Budaya Tabuik", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=400&auto=format&fit=crop", status: "Aktif" }
-    ];
+
 
     function muatKoleksiTag() {
       let c = document.getElementById('tagScrollContainer');
@@ -1219,7 +1196,7 @@ import BottomNav from '../components/BottomNav.astro';
         }
       }
 
-      if (!list || list.length === 0) list = [...DAFTAR_KOTA_DEFAULT];
+      if (!Array.isArray(list) || list.length === 0) list = (typeof DAFTAR_KOTA_DEFAULT !== 'undefined' && Array.isArray(DAFTAR_KOTA_DEFAULT)) ? [...DAFTAR_KOTA_DEFAULT] : [];
       list = list.filter(k => k.status !== 'Nonaktif');
 
       // Pastikan 'Semua' ada di paling depan
@@ -1299,10 +1276,49 @@ import BottomNav from '../components/BottomNav.astro';
         window.scrollTo({ top: area.offsetTop - 120, behavior: 'smooth' });
       }
     };
-    window.panggilDataServer = function() {
+    window.panggilDataServer = async function() {
       tampilkanSkeleton();
-      muatIklanBanner();
-    }
+      try {
+        let query = supabase.from('wisata').select('*').order('created_at', { ascending: false });
+        const { data: wisataData, error: wisataErr } = await query;
+        if (wisataErr) {
+          console.warn("Supabase query error:", wisataErr);
+        }
+        
+        let rawData = wisataData || [];
+        let activeWisata = rawData.filter(item => item.status !== 'Nonaktif');
+
+        dataMaster = activeWisata.map(item => {
+          try {
+            let localMeta = JSON.parse(localStorage.getItem('kamawak_meta_' + item.id) || 'null');
+            if (localMeta) {
+              if (!item.deskripsi && localMeta.deskripsi) item.deskripsi = localMeta.deskripsi;
+              if (!item.fasilitas && localMeta.fasilitas) item.fasilitas = localMeta.fasilitas;
+              if (!item.varian && localMeta.varian) item.varian = localMeta.varian;
+              if (!item.tags && localMeta.tags) item.tags = localMeta.tags;
+              if (!item.itinerary && localMeta.itinerary) item.itinerary = localMeta.itinerary;
+              if (!item.harga_coret && localMeta.harga_coret) item.harga_coret = localMeta.harga_coret;
+              if (!item.durasi && localMeta.durasi) item.durasi = localMeta.durasi;
+              if (!item.maps && localMeta.maps) item.maps = localMeta.maps;
+              if (!item.wa && localMeta.wa) item.wa = localMeta.wa;
+            }
+          } catch(e) {}
+          return item;
+        });
+
+        muatKoleksiTag();
+        muatFasilitasTrustHome();
+        renderSeksiPopuler();
+
+        if (typeof window.terapkanFilterDanUrutan === 'function') {
+          window.terapkanFilterDanUrutan();
+        }
+      } catch(e) {
+        console.error("API Error:", e);
+        let pGrid = document.getElementById('productGrid');
+        if (pGrid) pGrid.innerHTML = '<p style="color:red;text-align:center;">Kesalahan API: ' + (e ? e.message : 'Unknown') + '</p>';
+      }
+    };
     window.handleEnter = function(e) {
       if (e.key === 'Enter') {
         if (window.terapkanFilterDanUrutan) window.terapkanFilterDanUrutan();
@@ -1359,51 +1375,7 @@ import BottomNav from '../components/BottomNav.astro';
         }
       }
 
-      (async () => {
-        try {
-          // Fetch wisata data dari Supabase diurutkan dari yang terbaru
-          let query = supabase.from('wisata').select('*').order('created_at', { ascending: false });
-          const { data: wisataData, error: wisataErr } = await query;
-          if (wisataErr) {
-            console.warn("Supabase query error:", wisataErr);
-          }
-          
-          let rawData = wisataData || [];
-          // Filter hanya produk yang aktif (sembunyikan yang berstatus Nonaktif)
-          let activeWisata = rawData.filter(item => item.status !== 'Nonaktif');
 
-          // Sinkronkan metadata lokal jika ada data terupdate di CMS
-          dataMaster = activeWisata.map(item => {
-            try {
-              let localMeta = JSON.parse(localStorage.getItem('kamawak_meta_' + item.id) || 'null');
-              if (localMeta) {
-                if (!item.deskripsi && localMeta.deskripsi) item.deskripsi = localMeta.deskripsi;
-                if (!item.fasilitas && localMeta.fasilitas) item.fasilitas = localMeta.fasilitas;
-                if (!item.varian && localMeta.varian) item.varian = localMeta.varian;
-                if (!item.tags && localMeta.tags) item.tags = localMeta.tags;
-                if (!item.itinerary && localMeta.itinerary) item.itinerary = localMeta.itinerary;
-                if (!item.harga_coret && localMeta.harga_coret) item.harga_coret = localMeta.harga_coret;
-                if (!item.durasi && localMeta.durasi) item.durasi = localMeta.durasi;
-                if (!item.maps && localMeta.maps) item.maps = localMeta.maps;
-                if (!item.wa && localMeta.wa) item.wa = localMeta.wa;
-              }
-            } catch(e) {}
-            return item;
-          });
-
-          // Muat ulang koleksi tag kota & live stats agar angka tersinkronisasi real-time
-          muatKoleksiTag();
-          muatFasilitasTrustHome();
-          renderSeksiPopuler();
-
-          if (typeof window.terapkanFilterDanUrutan === 'function') {
-            window.terapkanFilterDanUrutan();
-          }
-        } catch(e) {
-          console.error("API Error:", e);
-          document.getElementById('productGrid').innerHTML = '<p style="color:red;text-align:center;">Kesalahan API: ' + e.message + '</p>';
-        }
-      })();
  
     }
 
@@ -1940,7 +1912,28 @@ import BottomNav from '../components/BottomNav.astro';
         } catch(e) {}
       }
     };
-</script>
+    // ==========================================
+    // INITIALIZATION (DIJALANKAN DI AKHIR SCRIPT)
+    // ==========================================
+    function initHomePage() {
+      if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
+      cekStatusLogin();
+      updateWishlistBadge();
+      muatIklanBanner();
+      muatKoleksiTag();
+      muatFasilitasTrustHome();
+      if (typeof window.panggilDataServer === 'function') {
+        window.panggilDataServer();
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initHomePage);
+    } else {
+      initHomePage();
+    }
+    window.onload = initHomePage;
+  </script>
 
 <BottomNav current="home" />
 
