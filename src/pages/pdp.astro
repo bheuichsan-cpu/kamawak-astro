@@ -1529,51 +1529,103 @@ import BottomNav from '../components/BottomNav.astro';
     // FITUR: EKSPLORASI SEKITAR (SIDEBAR & BOTTOM SECTION)
     // ==========================================
     let daftarSekitarGlobal = [];
+    let areaSekitarTampilGlobal = "Sumatera Barat";
+
+    const DAFTAR_AREA_SUMBAR = [
+      { nama: "Alahan Panjang", aliases: ["alahanpanjang", "alahan panjang", "danaukembar", "danauatas", "danaubawah"] },
+      { nama: "Solok", aliases: ["solok", "kotasolok", "kabupatensolok"] },
+      { nama: "Lembah Harau", aliases: ["harau", "lembahharau"] },
+      { nama: "Kawasan Mandeh", aliases: ["mandeh", "kawasanmandeh", "tarusanmandeh"] },
+      { nama: "Bukittinggi", aliases: ["bukittinggi", "jamgadang", "ngaraisianok"] },
+      { nama: "Padang", aliases: ["padang", "kotapadang", "pantaimanins"] },
+      { nama: "Danau Maninjau", aliases: ["maninjau", "danaumaninjau", "kelok44"] },
+      { nama: "Kepulauan Mentawai", aliases: ["mentawai", "siberut"] },
+      { nama: "Payakumbuh", aliases: ["payakumbuh"] },
+      { nama: "Pariaman", aliases: ["pariaman"] },
+      { nama: "Batusangkar", aliases: ["batusangkar", "tanahdatar", "istanapagaruyung"] }
+    ];
+
+    function normalisasiTeks(str) {
+      return (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    }
+
+    function dapatkanFotoThumbnail(item, ukuran = 400) {
+      let foto = item.foto;
+      if (foto && typeof foto === 'string' && foto.trim() !== '') {
+        if (foto.includes('|||')) {
+          const parts = foto.split('|||').map(p => p.trim()).filter(Boolean);
+          if (parts.length > 0) return parts[0];
+        }
+        return foto.trim();
+      }
+      const kat = (item.kategori || '').toLowerCase();
+      if (kat.includes('hotel') || kat.includes('villa') || kat.includes('cabin') || kat.includes('penginapan') || kat.includes('homestay') || kat.includes('resort')) {
+        return 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=' + ukuran;
+      }
+      if (kat.includes('kuliner') || kat.includes('resto') || kat.includes('makan') || kat.includes('cafe')) {
+        return 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=' + ukuran;
+      }
+      return 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=' + ukuran;
+    }
+
+    function rapikanNamaLokasi(lokasiStr, areaFallback) {
+      if (!lokasiStr || lokasiStr.trim() === '') return areaFallback || 'Sumatera Barat';
+      const norm = normalisasiTeks(lokasiStr);
+      for (const area of DAFTAR_AREA_SUMBAR) {
+        if (area.aliases.some(alias => norm.includes(normalisasiTeks(alias)))) {
+          return area.nama;
+        }
+      }
+      return lokasiStr.trim();
+    }
 
     async function muatTempatSekitar(currentProduct) {
       try {
-        const rawLokasi = (currentProduct.destinasi || currentProduct.lokasi || "").trim();
         const currentId = currentProduct.id;
+        const currentText = (currentProduct.lokasi || '') + ' ' + (currentProduct.nama || '') + ' ' + (currentProduct.deskripsi || '');
+        const normCurrent = normalisasiTeks(currentText);
 
-        const keywords = ["Harau", "Mandeh", "Bukittinggi", "Padang", "Maninjau", "Mentawai", "Solok", "Payakumbuh", "Pariaman", "Batusangkar", "Tanah Datar", "Alahan Panjang"];
-        let matchedKw = "";
-        for (const kw of keywords) {
-          if (rawLokasi.toLowerCase().includes(kw.toLowerCase())) {
-            matchedKw = kw;
+        // Deteksi klaster wilayah utama
+        let detectedArea = null;
+        for (const area of DAFTAR_AREA_SUMBAR) {
+          if (area.aliases.some(alias => normCurrent.includes(normalisasiTeks(alias)))) {
+            detectedArea = area;
             break;
           }
         }
-        if (!matchedKw && rawLokasi.length > 2) {
-          matchedKw = rawLokasi.split(/[\s,]+/)[0];
-        }
 
+        // Ambil data aktif dari tabel wisata (tanpa kolom destinasi yang tidak ada di schema)
         const { data: allActive, error } = await supabase
           .from('wisata')
-          .select('id, nama, destinasi, lokasi, kategori, harga, harga_coret, foto, status')
-          .eq('status', 'Aktif')
+          .select('id, nama, lokasi, kategori, harga, harga_coret, foto, status')
           .neq('id', currentId);
 
         if (error || !allActive || allActive.length === 0) return;
 
-        // Pisahkan produk yang match lokasi
+        // Filter produk yang berstatus aktif
+        const activeItems = allActive.filter(item => (item.status || '').toLowerCase() !== 'nonaktif');
+        if (activeItems.length === 0) return;
+
+        // Pisahkan produk yang satu wilayah/rute
         let nearbyMatches = [];
-        if (matchedKw) {
-          nearbyMatches = allActive.filter(item => {
-            const itemLok = (item.destinasi || item.lokasi || "").toLowerCase();
-            return itemLok.includes(matchedKw.toLowerCase());
+        if (detectedArea) {
+          nearbyMatches = activeItems.filter(item => {
+            const itemText = normalisasiTeks((item.lokasi || '') + ' ' + (item.nama || ''));
+            return detectedArea.aliases.some(alias => itemText.includes(normalisasiTeks(alias)));
           });
         }
 
-        // Lengkapi dengan produk lain jika kurang dari 4
-        if (nearbyMatches.length < 4) {
-          const others = allActive.filter(item => !nearbyMatches.some(m => m.id === item.id));
+        // Lengkapi dengan produk lain jika destinasi searea kurang dari 6
+        if (nearbyMatches.length < 6) {
+          const others = activeItems.filter(item => !nearbyMatches.some(m => m.id === item.id));
           nearbyMatches = nearbyMatches.concat(others.slice(0, 8 - nearbyMatches.length));
         }
 
         daftarSekitarGlobal = nearbyMatches;
-        const namaLokasiTampil = matchedKw || rawLokasi || "Sumatera Barat";
+        const namaLokasiTampil = detectedArea ? detectedArea.nama : (currentProduct.lokasi ? rapikanNamaLokasi(currentProduct.lokasi, "Sumatera Barat") : "Sumatera Barat");
+        areaSekitarTampilGlobal = namaLokasiTampil;
 
-        // Render Sidebar Kanan (3 Item)
+        // Render Sidebar Kanan (3 Item teratas)
         renderSidebarSekitar(nearbyMatches.slice(0, 3), namaLokasiTampil);
 
         // Render Seksi Bawah Lebar Penuh
@@ -1595,7 +1647,7 @@ import BottomNav from '../components/BottomNav.astro';
 
       if (badge) badge.innerText = namaLokasi;
       list.innerHTML = items.map(item => {
-        let foto = (item.foto && item.foto.includes('|||')) ? item.foto.split('|||')[0].trim() : (item.foto || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=200');
+        let foto = dapatkanFotoThumbnail(item, 200);
         let harga = formatUang(item.harga || 0);
         let kat = item.kategori || "Wisata";
         return `
@@ -1622,10 +1674,10 @@ import BottomNav from '../components/BottomNav.astro';
       if (nameEl) nameEl.innerText = namaLokasi;
 
       track.innerHTML = items.map(item => {
-        let foto = (item.foto && item.foto.includes('|||')) ? item.foto.split('|||')[0].trim() : (item.foto || 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500');
+        let foto = dapatkanFotoThumbnail(item, 500);
         let harga = formatUang(item.harga || 0);
         let kat = item.kategori || "Wisata";
-        let lok = item.destinasi || item.lokasi || namaLokasi;
+        let lok = rapikanNamaLokasi(item.lokasi, namaLokasi);
         return `
           <a href="/pdp?id=${item.id}" class="nearby-card">
             <span class="nearby-badge"><i class="fa-solid fa-tag"></i> ${kat}</span>
@@ -1659,7 +1711,7 @@ import BottomNav from '../components/BottomNav.astro';
       if (cat === 'penginapan') {
         filtered = daftarSekitarGlobal.filter(i => {
           let k = (i.kategori || "").toLowerCase();
-          return k.includes('hotel') || k.includes('villa') || k.includes('cabin') || k.includes('homestay') || k.includes('penginapan');
+          return k.includes('hotel') || k.includes('villa') || k.includes('cabin') || k.includes('homestay') || k.includes('penginapan') || k.includes('resort');
         });
       } else if (cat === 'wisata') {
         filtered = daftarSekitarGlobal.filter(i => {
@@ -1674,7 +1726,7 @@ import BottomNav from '../components/BottomNav.astro';
       }
 
       const track = document.getElementById('nearbyItemsTrack');
-      const namaLok = document.getElementById('nearbyLocationName')?.innerText || "Sekitar";
+      const namaLok = areaSekitarTampilGlobal || document.getElementById('nearbyLocationName')?.innerText || "Sekitar";
       if (filtered.length > 0) {
         renderSeksiBawahSekitar(filtered, namaLok);
       } else {
