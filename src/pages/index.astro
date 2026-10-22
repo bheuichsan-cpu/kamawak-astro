@@ -360,6 +360,11 @@ import BottomNav from '../components/BottomNav.astro';
       gap: 4px;
       z-index: 5;
     }
+    .city-badge-soon {
+      background: rgba(15, 23, 42, 0.65) !important;
+      color: #F8FAFC !important;
+      font-weight: 500 !important;
+    }
     .city-overlay {
       position: absolute;
       bottom: 0;
@@ -545,6 +550,32 @@ import BottomNav from '../components/BottomNav.astro';
       gap: 8px;
       margin-top: 2px;
     }
+    .card-location-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: #64748B;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
+      margin-bottom: 2px;
+    }
+    .card-location-row i {
+      color: var(--primary);
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+    .card-cat-tag {
+      font-size: 11px;
+      background: #F1F5F9;
+      color: #475569;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
     .card-title {
       font-family: 'Poppins', sans-serif;
       font-size: 15px;
@@ -679,6 +710,8 @@ import BottomNav from '../components/BottomNav.astro';
         .card { padding: 8px; border-radius: 14px; }
         .card-img-wrapper { height: 115px; border-radius: 10px; }
         .card-title { font-size: 12px; }
+        .card-location-row { font-size: 10px; gap: 3px; margin-bottom: 2px; }
+        .card-cat-tag { font-size: 9px; padding: 1px 4px; }
         .card-rating-simple { font-size: 11px; }
         .card-amenities { display: none; }
         .price-val { font-size: 13px; }
@@ -854,7 +887,7 @@ import BottomNav from '../components/BottomNav.astro';
           <option value="above1m">&gt; 1jt</option>
         </select>
       </div>
-      <button class="smart-search-btn" onclick="panggilDataServer()">Cari</button>
+      <button class="smart-search-btn" onclick="if(window.terapkanFilterDanUrutan) window.terapkanFilterDanUrutan(); let a=document.getElementById('areaKatalog'); if(a) window.scrollTo({top:a.offsetTop-110, behavior:'smooth'});">Cari</button>
     </div>
   </div>
 
@@ -959,7 +992,7 @@ import BottomNav from '../components/BottomNav.astro';
     let dataMaster = []; let layoutMaster = []; 
     let kategoriAktif = 'Semua';
 
-    window.onload = function() {
+    function initHomePage() {
       if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
       cekStatusLogin(); // <--- Fungsi Pintar Navigasi Dipanggil Disini
       updateWishlistBadge();
@@ -968,12 +1001,26 @@ import BottomNav from '../components/BottomNav.astro';
       muatKoleksiTag();
       muatFasilitasTrustHome();
       panggilDataServer();
-    };
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initHomePage);
+    } else {
+      initHomePage();
+    }
+    window.onload = initHomePage;
 
     function muatFasilitasTrustHome() {
       try {
         let stats = JSON.parse(localStorage.getItem('kamawak_stats_row') || '{}');
-        if (stats.destinasi && document.getElementById('homeStatDestinasi')) document.getElementById('homeStatDestinasi').innerText = stats.destinasi;
+        let statDestinasiEl = document.getElementById('homeStatDestinasi');
+        if (statDestinasiEl) {
+          if (stats.destinasi) {
+            statDestinasiEl.innerText = stats.destinasi;
+          } else if (dataMaster && dataMaster.length > 0) {
+            statDestinasiEl.innerText = dataMaster.length + '+';
+          }
+        }
         if (stats.rating && document.getElementById('homeStatRating')) document.getElementById('homeStatRating').innerText = stats.rating;
         if (stats.mitra && document.getElementById('homeStatMitra')) document.getElementById('homeStatMitra').innerText = stats.mitra;
         if (stats.biaya && document.getElementById('homeStatBiaya')) document.getElementById('homeStatBiaya').innerText = stats.biaya;
@@ -1139,11 +1186,13 @@ import BottomNav from '../components/BottomNav.astro';
     }
 
     const DAFTAR_KOTA_DEFAULT = [
-      { nama: "Bukittinggi", label: "Bukittinggi", subtag: "Jam Gadang & Rumah Gadang", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-      { nama: "Padang", label: "Padang", subtag: "Pantai Padang & Kota Tua", img: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+      { nama: "Semua", label: "Semua Destinasi", subtag: "Seluruh Pilihan Wisata", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+      { nama: "Alahan Panjang", label: "Alahan Panjang", subtag: "Danau Diatas & Cabin Dingin", img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+      { nama: "Solok", label: "Solok", subtag: "Danau Kembar & Pesona Alam", img: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+      { nama: "Bukittinggi", label: "Bukittinggi", subtag: "Jam Gadang & Ngarai Sianok", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+      { nama: "Padang", label: "Kota Padang", subtag: "Pantai Padang & Kota Tua", img: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
       { nama: "Harau", label: "Lembah Harau", subtag: "Tebing Granit & Homestay", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-      { nama: "Mandeh", label: "Pesisir Mandeh", subtag: "Kawasan Wisata Bahari & Pesisir", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
-      { nama: "Semua", label: "Semua Kota", subtag: "Seluruh Destinasi Sumbar", img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
+      { nama: "Mandeh", label: "Pesisir Mandeh", subtag: "Wisata Bahari & Pesisir", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
       { nama: "Mentawai", label: "Kep. Mentawai", subtag: "Surfing & Budaya Sikerei", img: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=400&auto=format&fit=crop", status: "Aktif" },
       { nama: "Pariaman", label: "Pariaman", subtag: "Pantai Gandoriah, Budaya Tabuik", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=400&auto=format&fit=crop", status: "Aktif" }
     ];
@@ -1157,39 +1206,58 @@ import BottomNav from '../components/BottomNav.astro';
         if (saved) list = JSON.parse(saved);
       } catch(e) {}
 
-      // Sanitasi cache browser jika masih menyimpan link foto pulau/lembah lama
-      let updatedStorage = false;
+      // Jika memori lokal belum memiliki Alahan Panjang (lokasi utama database saat ini), tambahkan otomatis
       if (Array.isArray(list) && list.length > 0) {
-        list = list.map(item => {
-          if (item && item.img && (item.img.includes('1518509562904') || item.img.includes('1507525428034') || item.img.includes('1506744038136') || item.img.includes('1544551763'))) {
-            item.img = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop';
-            updatedStorage = true;
+        let hasAlahan = list.some(k => (k.nama || '').toLowerCase().includes('alahan panjang'));
+        if (!hasAlahan) {
+          list.splice(1, 0, { nama: "Alahan Panjang", label: "Alahan Panjang", subtag: "Danau Diatas & Cabin Dingin", img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400&auto=format&fit=crop", status: "Aktif" });
+          let hasSolok = list.some(k => (k.nama || '').toLowerCase().includes('solok'));
+          if (!hasSolok) {
+            list.splice(2, 0, { nama: "Solok", label: "Solok", subtag: "Danau Kembar & Pesona Alam", img: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=400&auto=format&fit=crop", status: "Aktif" });
           }
-          return item;
-        });
-        if (updatedStorage) {
-          localStorage.setItem("kamawak_kartu_kota", JSON.stringify(list));
+          try { localStorage.setItem("kamawak_kartu_kota", JSON.stringify(list)); } catch(e) {}
         }
       }
 
-      if (!list || list.length === 0) list = DAFTAR_KOTA_DEFAULT;
+      if (!list || list.length === 0) list = [...DAFTAR_KOTA_DEFAULT];
       list = list.filter(k => k.status !== 'Nonaktif');
+
+      // Pastikan 'Semua' ada di paling depan
+      let semuaIdx = list.findIndex(k => (k.nama || '').toLowerCase() === 'semua' || (k.nama || '').toLowerCase() === 'semua kota' || (k.nama || '').toLowerCase() === 'semua destinasi');
+      if (semuaIdx > 0) {
+        let semuaItem = list.splice(semuaIdx, 1)[0];
+        list.unshift(semuaItem);
+      }
 
       let html = list.map((k, idx) => {
         let count = 0;
+        let isSemua = (k.nama || '').toLowerCase() === 'semua' || (k.nama || '').toLowerCase() === 'semua kota' || (k.nama || '').toLowerCase() === 'semua destinasi';
         if (dataMaster && dataMaster.length > 0) {
-          if (k.nama === 'Semua') {
+          if (isSemua) {
             count = dataMaster.length;
           } else {
             let cityNameLower = (k.nama || '').toLowerCase();
             count = dataMaster.filter(item => {
-              let lok = ((item.destinasi || '') + ' ' + (item.lokasi || '') + ' ' + (item.nama || '')).toLowerCase();
+              let lok = [
+                item.destinasi || '',
+                item.lokasi || '',
+                item.nama || '',
+                item.tags || ''
+              ].join(' ').toLowerCase();
               return lok.includes(cityNameLower);
             }).length;
           }
         }
-        let countVal = count > 0 ? count : (idx === 0 ? 338 : idx === 1 ? 209 : idx === 2 ? 237 : 120);
-        let badgeHtml = `<span class="city-badge"><i class="fa-solid fa-camera"></i> ${countVal}</span>`;
+
+        let badgeHtml = '';
+        if (isSemua) {
+          badgeHtml = `<span class="city-badge"><i class="fa-solid fa-layer-group"></i> ${count > 0 ? count : (dataMaster ? dataMaster.length : 0)} Destinasi</span>`;
+        } else if (count > 0) {
+          badgeHtml = `<span class="city-badge"><i class="fa-solid fa-camera"></i> ${count} Tempat</span>`;
+        } else {
+          badgeHtml = `<span class="city-badge city-badge-soon"><i class="fa-solid fa-hourglass-start"></i> Segera</span>`;
+        }
+
         return `
           <div class="city-card ${idx === 0 ? 'city-active' : ''}" onclick="filterKota('${k.nama}', this)" title="Lihat wisata di ${k.label || k.nama}">
             <img src="${k.img || k.foto || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400'}" alt="${k.label || k.nama}">
@@ -1215,10 +1283,11 @@ import BottomNav from '../components/BottomNav.astro';
       }
 
       let searchInput = document.getElementById('searchInput');
-      if (namaKota === 'Semua' || !namaKota) {
+      let namaLower = (namaKota || '').trim().toLowerCase();
+      if (namaLower === 'semua' || namaLower === 'semua kota' || namaLower === 'semua destinasi' || !namaLower) {
         if (searchInput) searchInput.value = '';
       } else {
-        if (searchInput) searchInput.value = namaKota;
+        if (searchInput) searchInput.value = namaKota.trim();
       }
 
       if (window.terapkanFilterDanUrutan) {
@@ -1235,7 +1304,11 @@ import BottomNav from '../components/BottomNav.astro';
       muatIklanBanner();
     }
     window.handleEnter = function(e) {
-      if (e.key === 'Enter') window.panggilDataServer();
+      if (e.key === 'Enter') {
+        if (window.terapkanFilterDanUrutan) window.terapkanFilterDanUrutan();
+        let a = document.getElementById('areaKatalog');
+        if (a) window.scrollTo({ top: a.offsetTop - 110, behavior: 'smooth' });
+      }
     }
 
     function muatIklanBanner() {
@@ -1288,28 +1361,41 @@ import BottomNav from '../components/BottomNav.astro';
 
       (async () => {
         try {
-          // Fetch wisata data
-          let keywordEl = document.getElementById('searchInput');
-          let keyword = keywordEl ? keywordEl.value.toLowerCase().trim() : '';
-          
-          let query = supabase.from('wisata').select('*'); // Removed eq status to prevent crash if column missing
-          // if (keyword && keyword !== '') {
-          //    query = query.or(`nama.ilike.%${keyword}%,destinasi.ilike.%${keyword}%,lokasi.ilike.%${keyword}%,penanda.ilike.%${keyword}%`);
-          // }
+          // Fetch wisata data dari Supabase diurutkan dari yang terbaru
+          let query = supabase.from('wisata').select('*').order('created_at', { ascending: false });
           const { data: wisataData, error: wisataErr } = await query;
-          // Ignore error to let skeleton disappear smoothly if table doesn't exist
-          
-          // MOCK layout for now or fetch from a layouts table if it exists
-          let layoutMaster = []; 
-          
-          dataMaster = wisataData || [];
-          muatKoleksiTag();
-          if (layoutMaster.length > 0) {
-             document.getElementById('sectionPopuler').style.display = "none";
-          } else {
-             document.getElementById('sectionPopuler').style.display = "block";
-             renderSeksiPopuler();
+          if (wisataErr) {
+            console.warn("Supabase query error:", wisataErr);
           }
+          
+          let rawData = wisataData || [];
+          // Filter hanya produk yang aktif (sembunyikan yang berstatus Nonaktif)
+          let activeWisata = rawData.filter(item => item.status !== 'Nonaktif');
+
+          // Sinkronkan metadata lokal jika ada data terupdate di CMS
+          dataMaster = activeWisata.map(item => {
+            try {
+              let localMeta = JSON.parse(localStorage.getItem('kamawak_meta_' + item.id) || 'null');
+              if (localMeta) {
+                if (!item.deskripsi && localMeta.deskripsi) item.deskripsi = localMeta.deskripsi;
+                if (!item.fasilitas && localMeta.fasilitas) item.fasilitas = localMeta.fasilitas;
+                if (!item.varian && localMeta.varian) item.varian = localMeta.varian;
+                if (!item.tags && localMeta.tags) item.tags = localMeta.tags;
+                if (!item.itinerary && localMeta.itinerary) item.itinerary = localMeta.itinerary;
+                if (!item.harga_coret && localMeta.harga_coret) item.harga_coret = localMeta.harga_coret;
+                if (!item.durasi && localMeta.durasi) item.durasi = localMeta.durasi;
+                if (!item.maps && localMeta.maps) item.maps = localMeta.maps;
+                if (!item.wa && localMeta.wa) item.wa = localMeta.wa;
+              }
+            } catch(e) {}
+            return item;
+          });
+
+          // Muat ulang koleksi tag kota & live stats agar angka tersinkronisasi real-time
+          muatKoleksiTag();
+          muatFasilitasTrustHome();
+          renderSeksiPopuler();
+
           if (typeof window.terapkanFilterDanUrutan === 'function') {
             window.terapkanFilterDanUrutan();
           }
@@ -1322,9 +1408,24 @@ import BottomNav from '../components/BottomNav.astro';
     }
 
     function renderSeksiPopuler() {
-      let container = document.getElementById('popularGrid'); let section = document.getElementById('sectionPopuler');
-      let dataPopuler = [...dataMaster].sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0)).slice(0, 5);
-      if(dataPopuler.length > 0) { section.style.display = "block"; container.innerHTML = generateCardsHTML(dataPopuler, true); } else { section.style.display = "none"; }
+      let container = document.getElementById('popularGrid'); 
+      let section = document.getElementById('sectionPopuler');
+      if (!container || !section) return;
+
+      // Prioritaskan produk yang memiliki foto asli dan rating tertinggi
+      let dataPopuler = [...dataMaster].sort((a, b) => {
+        let aPhoto = (a.foto && a.foto.trim() !== '') ? 1 : 0;
+        let bPhoto = (b.foto && b.foto.trim() !== '') ? 1 : 0;
+        if (bPhoto !== aPhoto) return bPhoto - aPhoto;
+        return Number(b.rating || 5) - Number(a.rating || 5);
+      }).slice(0, 5);
+
+      if (dataPopuler.length > 0) { 
+        section.style.display = "block"; 
+        container.innerHTML = generateCardsHTML(dataPopuler, true); 
+      } else { 
+        section.style.display = "none"; 
+      }
     }
 
     function renderDynamicSections(layoutConfig) {
@@ -1422,7 +1523,15 @@ import BottomNav from '../components/BottomNav.astro';
              mKat = (kategoriAktif === 'Atraksi') ? (strKat.includes('atraksi') || strKat.includes('tiket')) : strKat.includes(kategoriAktif.toLowerCase());
            }
 
-           let teksUtama = (item.nama + " " + (item.destinasi || item.lokasi || "") + " " + (item.penanda || "")).toLowerCase();
+           let teksUtama = [
+             item.nama || '',
+             item.lokasi || item.destinasi || '',
+             item.kategori || '',
+             item.tags || item.penanda || '',
+             item.fasilitas || '',
+             item.deskripsi || ''
+           ].join(' ').toLowerCase();
+
            let mKeyword = (keyword === "") ? true : teksUtama.includes(keyword);
            return mKat && mHarga && mKeyword;
         });
@@ -1448,7 +1557,16 @@ import BottomNav from '../components/BottomNav.astro';
               </div>
             `;
           } else {
-            grid.innerHTML = '<div style="text-align:center; width:100%; color:var(--text-gray); grid-column:1/-1; padding:35px 20px;">Destinasi atau paket tidak ditemukan.</div>';
+            grid.innerHTML = `
+              <div style="text-align:center; width:100%; color:var(--text-gray); grid-column:1/-1; padding:40px 20px; background:#F8FAFC; border-radius:16px; border:1px dashed #CBD5E1;">
+                <i class="fa-solid fa-compass" style="font-size: 36px; color:var(--primary); margin-bottom: 12px; display:block;"></i>
+                <h3 style="font-family:'Poppins'; font-size:16px; font-weight:700; color:var(--text-dark); margin-bottom:6px;">Destinasi Tidak Ditemukan</h3>
+                <p style="font-size:13px; max-width:420px; margin:0 auto 16px; color:var(--text-gray);">Belum ada produk wisata untuk filter atau pencarian ini. Coba ubah kata kunci atau lihat seluruh destinasi yang tersedia di Sumatera Barat.</p>
+                <button onclick="if(window.filterKategori) window.filterKategori(document.querySelector('.tab-btn'), 'Semua'); if(document.getElementById('searchInput')) document.getElementById('searchInput').value='';" style="background:var(--primary); color:white; border:none; padding:8px 18px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer;">
+                  <i class="fa-solid fa-arrows-rotate"></i> Tampilkan Semua (${dataMaster.length})
+                </button>
+              </div>
+            `;
           }
         }
       }
@@ -1461,12 +1579,12 @@ import BottomNav from '../components/BottomNav.astro';
         let hargaNum = Number(item.harga || item.hargaJual || 0);
         let harga = hargaNum.toLocaleString('id-ID');
         let fotoRaw = (item.foto || '').trim();
-        let foto = 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500';
+        let foto = '';
         if (fotoRaw) {
           if (fotoRaw.includes('|||')) {
             foto = fotoRaw.split('|||')[0].trim();
           } else if (fotoRaw.startsWith('[') && fotoRaw.endsWith(']')) {
-            try { foto = JSON.parse(fotoRaw)[0] || foto; } catch(e) {}
+            try { foto = JSON.parse(fotoRaw)[0] || ''; } catch(e) {}
           } else if (fotoRaw.startsWith('data:image/') && fotoRaw.includes(',') && fotoRaw.split(',')[1].length > 20) {
             foto = fotoRaw.split(/,\s*(?=https?:\/\/|data:image\/)/i)[0].trim();
           } else if (fotoRaw.startsWith('http://') || fotoRaw.startsWith('https://')) {
@@ -1475,10 +1593,30 @@ import BottomNav from '../components/BottomNav.astro';
             foto = 'data:image/jpeg;base64,' + fotoRaw;
           }
         }
+        if (!foto) {
+          let katLower = String(item.kategori || '').toLowerCase();
+          if (katLower.includes('atraksi') || katLower.includes('tiket')) {
+            foto = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80';
+          } else if (katLower.includes('tur')) {
+            foto = 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&q=80';
+          } else {
+            foto = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80';
+          }
+        }
+
         let isFav = wishlist.includes(String(item.id));
         let heartIcon = isFav ? 'fa-solid' : 'fa-regular';
         let favActiveClass = isFav ? 'active' : '';
-        let lokasi = item.destinasi || item.lokasi || 'Sumatera Barat';
+
+        // Tentukan lokasi secara cerdas dari data database
+        let lokasi = (item.lokasi && item.lokasi.trim()) ? item.lokasi.trim() : (item.destinasi && item.destinasi.trim() ? item.destinasi.trim() : '');
+        if (!lokasi) {
+          let nLower = String(item.nama || '').toLowerCase();
+          if (nLower.includes('alahan panjang') || nLower.includes('alahanpanjang')) lokasi = 'Alahan Panjang, Solok';
+          else if (nLower.includes('solok')) lokasi = 'Solok';
+          else lokasi = 'Sumatera Barat';
+        }
+
         let rating = Number(item.rating || 5.0).toFixed(1);
 
         // Diskon & Harga Coret
@@ -1538,6 +1676,22 @@ import BottomNav from '../components/BottomNav.astro';
         }
         let amenitiesHtml = `<div class="card-amenities">${amenities.map(a => `<span class="amenity-tag">${a}</span>`).join('')}</div>`;
 
+        // Satuan unit harga
+        let katStr = String(item.kategori || '').toLowerCase();
+        let satuanHarga = '/ malam';
+        if (katStr.includes('atraksi') || katStr.includes('tiket')) satuanHarga = '/ tiket';
+        else if (katStr.includes('tur') || katStr.includes('paket')) satuanHarga = '/ pax';
+        else if (katStr.includes('rental')) satuanHarga = '/ hari';
+
+        // Hitung dots foto jika produk memiliki banyak foto
+        let photoCount = 1;
+        if (fotoRaw) {
+          if (fotoRaw.includes('|||')) photoCount = fotoRaw.split('|||').filter(Boolean).length;
+          else if (fotoRaw.includes(',')) photoCount = fotoRaw.split(/,\s*(?=https?:\/\/|data:image\/)/i).filter(Boolean).length;
+        }
+        photoCount = Math.min(Math.max(photoCount, 1), 5);
+        let dotsHtml = Array.from({ length: photoCount }, (_, i) => `<span class="dot ${i === 0 ? 'active' : ''}"></span>`).join('');
+
         return `
           <a href="/pdp?id=${item.id || ''}" class="card card-clickable ${isPopular ? 'popular-card' : ''}">
             <div class="card-img-wrapper">
@@ -1547,10 +1701,7 @@ import BottomNav from '../components/BottomNav.astro';
                 <i class="${heartIcon} fa-heart"></i>
               </button>
               <div class="card-dots">
-                <span class="dot active"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
+                ${dotsHtml}
               </div>
             </div>
             <div class="card-content">
@@ -1558,10 +1709,16 @@ import BottomNav from '../components/BottomNav.astro';
                 <h3 class="card-title" title="${item.nama || ''}">${item.nama || 'Tanpa Nama'}</h3>
                 <div class="card-rating-simple"><i class="fa-solid fa-star"></i> ${rating}</div>
               </div>
+              <div class="card-location-row">
+                <i class="fa-solid fa-location-dot"></i>
+                <span title="${lokasi}">${lokasi}</span>
+                <span style="color:#CBD5E1;">•</span>
+                <span class="card-cat-tag">${item.kategori || 'Wisata'}</span>
+              </div>
               ${amenitiesHtml}
               <div class="card-price-bottom">
                 ${coretPriceHtml}
-                <div class="price-val">IDR ${harga}</div>
+                <div class="price-val">IDR ${harga} <span style="font-size:11px; color:#64748B; font-weight:normal;">${satuanHarga}</span></div>
                 <i class="fa-solid fa-circle-check text-verified" title="Mitra Terverifikasi Kamawak"></i>
               </div>
             </div>
