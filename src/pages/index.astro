@@ -1,6 +1,18 @@
 ---
 import GASPolyfill from '../components/GASPolyfill.astro';
 import BottomNav from '../components/BottomNav.astro';
+
+const INITIAL_CITIES = [
+  { nama: "Semua", label: "Semua Destinasi", subtag: "Seluruh Pilihan Wisata", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", count: "7 Destinasi", icon: "fa-layer-group" },
+  { nama: "Alahan Panjang", label: "Alahan Panjang", subtag: "Danau Diatas & Cabin Dingin", img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400&auto=format&fit=crop", count: "6 Tempat", icon: "fa-camera" },
+  { nama: "Solok", label: "Solok", subtag: "Danau Kembar & Pesona Alam", img: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=400&auto=format&fit=crop", count: "1 Tempat", icon: "fa-camera" },
+  { nama: "Bukittinggi", label: "Bukittinggi", subtag: "Jam Gadang & Ngarai Sianok", img: "https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?q=80&w=400&auto=format&fit=crop", count: "Segera", icon: "fa-hourglass-start" },
+  { nama: "Padang", label: "Kota Padang", subtag: "Pantai Padang & Kota Tua", img: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?q=80&w=400&auto=format&fit=crop", count: "Segera", icon: "fa-hourglass-start" },
+  { nama: "Harau", label: "Lembah Harau", subtag: "Tebing Granit & Homestay", img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop", count: "Segera", icon: "fa-hourglass-start" },
+  { nama: "Mandeh", label: "Pesisir Mandeh", subtag: "Wisata Bahari & Pesisir", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=400&auto=format&fit=crop", count: "Segera", icon: "fa-hourglass-start" },
+  { nama: "Mentawai", label: "Kep. Mentawai", subtag: "Surfing & Budaya Sikerei", img: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=400&auto=format&fit=crop", count: "Segera", icon: "fa-hourglass-start" },
+  { nama: "Pariaman", label: "Pariaman", subtag: "Pantai Gandoriah, Budaya Tabuik", img: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=400&auto=format&fit=crop", count: "Segera", icon: "fa-hourglass-start" }
+];
 ---
 <!DOCTYPE html>
 <html lang="id">
@@ -903,8 +915,17 @@ import BottomNav from '../components/BottomNav.astro';
   <div class="container" style="margin-top: 30px; margin-bottom: 10px;">
     <h2 class="section-title">Jelajahi Kota <i class="fa-solid fa-tags" style="color: var(--primary);"></i></h2>
     <div class="city-scroll" id="tagScrollContainer">
-      <!-- Tag akan dimuat secara dinamis dari database -->
-      <div style="text-align:center; width:100%; color:var(--text-gray);"><i class="fa-solid fa-spinner fa-spin"></i> Memuat koleksi...</div>
+      {INITIAL_CITIES.map((c, idx) => (
+        <div class={`city-card ${idx === 0 ? 'city-active' : ''}`} onclick={`filterKota('${c.nama}', this)`} title={`Lihat wisata di ${c.label}`}>
+          <img src={c.img} alt={c.label} onerror="this.src='https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400'" />
+          <span class={`city-badge ${c.count === 'Segera' ? 'city-badge-soon' : ''}`}>
+            <i class={`fa-solid ${c.icon}`}></i> {c.count}
+          </span>
+          <div class="city-overlay">
+            <span class="city-name">{c.label}</span>
+          </div>
+        </div>
+      ))}
     </div>
   </div>
 
@@ -1187,77 +1208,103 @@ import BottomNav from '../components/BottomNav.astro';
 
 
     function muatKoleksiTag() {
-      let c = document.getElementById('tagScrollContainer');
-      if (!c) return;
-      let list = [];
       try {
-        let saved = localStorage.getItem("kamawak_kartu_kota");
-        if (saved) list = JSON.parse(saved);
-      } catch(e) {}
+        let c = document.getElementById('tagScrollContainer');
+        if (!c) return;
+        let list = [];
+        try {
+          let saved = localStorage.getItem("kamawak_kartu_kota");
+          if (saved) {
+            let parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) {
+              list = parsed.filter(item => item && typeof item === 'object');
+            }
+          }
+        } catch(e) {}
 
-      // Jika memori lokal belum memiliki Alahan Panjang (lokasi utama database saat ini), tambahkan otomatis
-      if (Array.isArray(list) && list.length > 0) {
-        let hasAlahan = list.some(k => (k.nama || '').toLowerCase().includes('alahan panjang'));
+        if (!Array.isArray(list) || list.length === 0) {
+          list = Array.isArray(DAFTAR_KOTA_DEFAULT) ? [...DAFTAR_KOTA_DEFAULT] : [];
+        }
+
+        // Sanitasi elemen: pastikan tiap item adalah object valid dengan minimal nama
+        list = list.filter(k => k && typeof k === 'object' && k.status !== 'Nonaktif').map(k => {
+          return {
+            nama: k.nama || k.label || 'Destinasi',
+            label: k.label || k.nama || 'Destinasi',
+            subtag: k.subtag || '',
+            img: k.img || k.foto || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400',
+            status: k.status || 'Aktif'
+          };
+        });
+
+        // Jika memori lokal belum memiliki Alahan Panjang, tambahkan otomatis
+        let hasAlahan = list.some(k => String(k.nama || '').toLowerCase().includes('alahan panjang'));
         if (!hasAlahan) {
           list.splice(1, 0, { nama: "Alahan Panjang", label: "Alahan Panjang", subtag: "Danau Diatas & Cabin Dingin", img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=400&auto=format&fit=crop", status: "Aktif" });
-          let hasSolok = list.some(k => (k.nama || '').toLowerCase().includes('solok'));
-          if (!hasSolok) {
-            list.splice(2, 0, { nama: "Solok", label: "Solok", subtag: "Danau Kembar & Pesona Alam", img: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=400&auto=format&fit=crop", status: "Aktif" });
-          }
-          try { localStorage.setItem("kamawak_kartu_kota", JSON.stringify(list)); } catch(e) {}
         }
-      }
+        let hasSolok = list.some(k => String(k.nama || '').toLowerCase().includes('solok'));
+        if (!hasSolok) {
+          list.splice(2, 0, { nama: "Solok", label: "Solok", subtag: "Danau Kembar & Pesona Alam", img: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=400&auto=format&fit=crop", status: "Aktif" });
+        }
 
-      if (!Array.isArray(list) || list.length === 0) list = [...DAFTAR_KOTA_DEFAULT];
-      list = list.filter(k => k.status !== 'Nonaktif');
+        // Pastikan 'Semua' ada di paling depan
+        let semuaIdx = list.findIndex(k => {
+          let n = String(k.nama || '').toLowerCase();
+          return n === 'semua' || n === 'semua kota' || n === 'semua destinasi';
+        });
+        if (semuaIdx > 0) {
+          let semuaItem = list.splice(semuaIdx, 1)[0];
+          list.unshift(semuaItem);
+        }
 
-      // Pastikan 'Semua' ada di paling depan
-      let semuaIdx = list.findIndex(k => (k.nama || '').toLowerCase() === 'semua' || (k.nama || '').toLowerCase() === 'semua kota' || (k.nama || '').toLowerCase() === 'semua destinasi');
-      if (semuaIdx > 0) {
-        let semuaItem = list.splice(semuaIdx, 1)[0];
-        list.unshift(semuaItem);
-      }
+        let safeMaster = Array.isArray(dataMaster) ? dataMaster : [];
 
-      let html = list.map((k, idx) => {
-        let count = 0;
-        let isSemua = (k.nama || '').toLowerCase() === 'semua' || (k.nama || '').toLowerCase() === 'semua kota' || (k.nama || '').toLowerCase() === 'semua destinasi';
-        if (dataMaster && dataMaster.length > 0) {
+        let html = list.map((k, idx) => {
+          let count = 0;
+          let nClean = String(k.nama || '').toLowerCase();
+          let isSemua = nClean === 'semua' || nClean === 'semua kota' || nClean === 'semua destinasi';
+
+          if (safeMaster.length > 0) {
+            if (isSemua) {
+              count = safeMaster.length;
+            } else {
+              count = safeMaster.filter(item => {
+                if (!item) return false;
+                let lok = [
+                  item.destinasi || '',
+                  item.lokasi || '',
+                  item.nama || '',
+                  item.tags || ''
+                ].join(' ').toLowerCase();
+                return lok.includes(nClean);
+              }).length;
+            }
+          }
+
+          let badgeHtml = '';
           if (isSemua) {
-            count = dataMaster.length;
+            badgeHtml = `<span class="city-badge"><i class="fa-solid fa-layer-group"></i> ${count > 0 ? count : safeMaster.length} Destinasi</span>`;
+          } else if (count > 0) {
+            badgeHtml = `<span class="city-badge"><i class="fa-solid fa-camera"></i> ${count} Tempat</span>`;
           } else {
-            let cityNameLower = (k.nama || '').toLowerCase();
-            count = dataMaster.filter(item => {
-              let lok = [
-                item.destinasi || '',
-                item.lokasi || '',
-                item.nama || '',
-                item.tags || ''
-              ].join(' ').toLowerCase();
-              return lok.includes(cityNameLower);
-            }).length;
+            badgeHtml = `<span class="city-badge city-badge-soon"><i class="fa-solid fa-hourglass-start"></i> Segera</span>`;
           }
-        }
 
-        let badgeHtml = '';
-        if (isSemua) {
-          badgeHtml = `<span class="city-badge"><i class="fa-solid fa-layer-group"></i> ${count > 0 ? count : (dataMaster ? dataMaster.length : 0)} Destinasi</span>`;
-        } else if (count > 0) {
-          badgeHtml = `<span class="city-badge"><i class="fa-solid fa-camera"></i> ${count} Tempat</span>`;
-        } else {
-          badgeHtml = `<span class="city-badge city-badge-soon"><i class="fa-solid fa-hourglass-start"></i> Segera</span>`;
-        }
-
-        return `
-          <div class="city-card ${idx === 0 ? 'city-active' : ''}" onclick="filterKota('${k.nama}', this)" title="Lihat wisata di ${k.label || k.nama}">
-            <img src="${k.img || k.foto || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400'}" alt="${k.label || k.nama}">
-            ${badgeHtml}
-            <div class="city-overlay">
-              <span class="city-name">${k.label || k.nama}</span>
+          return `
+            <div class="city-card ${idx === 0 ? 'city-active' : ''}" onclick="filterKota('${k.nama}', this)" title="Lihat wisata di ${k.label || k.nama}">
+              <img src="${k.img || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400'}" alt="${k.label || k.nama}" onerror="this.src='https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400'">
+              ${badgeHtml}
+              <div class="city-overlay">
+                <span class="city-name">${k.label || k.nama}</span>
+              </div>
             </div>
-          </div>
-        `;
-      }).join('');
-      c.innerHTML = html;
+          `;
+        }).join('');
+
+        c.innerHTML = html;
+      } catch (err) {
+        console.error("Gagal memuat kartu kota:", err);
+      }
     }
 
     window.filterKota = function(namaKota, el) {
@@ -1932,14 +1979,18 @@ import BottomNav from '../components/BottomNav.astro';
     // INITIALIZATION (DIJALANKAN DI AKHIR SCRIPT)
     // ==========================================
     function initHomePage() {
-      if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
-      cekStatusLogin();
-      updateWishlistBadge();
-      muatIklanBanner();
-      muatKoleksiTag();
-      muatFasilitasTrustHome();
-      if (typeof window.panggilDataServer === 'function') {
-        window.panggilDataServer();
+      try { if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo(); } catch(e) {}
+      try { cekStatusLogin(); } catch(e) {}
+      try { updateWishlistBadge(); } catch(e) {}
+      try { muatIklanBanner(); } catch(e) {}
+      try { muatKoleksiTag(); } catch(e) {}
+      try { muatFasilitasTrustHome(); } catch(e) {}
+      try {
+        if (typeof window.panggilDataServer === 'function') {
+          window.panggilDataServer();
+        }
+      } catch(e) {
+        console.error("panggilDataServer init error:", e);
       }
     }
 
