@@ -132,13 +132,17 @@ const INITIAL_CITIES = [
       flex-shrink: 0;
     }
     .nav-cat-pill:hover {
-      background: #F8FAFC;
-      color: #0F172A;
+      background: #FFF7ED;
+      color: #FF5E1F;
     }
     .nav-cat-pill.active {
-      background: #F1F5F9;
-      color: #0F172A;
+      background: #FF5E1F;
+      color: #FFFFFF;
       font-weight: 700;
+      box-shadow: 0 4px 12px rgba(255, 94, 31, 0.25);
+    }
+    .nav-cat-pill.active i {
+      color: #FFFFFF !important;
     }
     .btn-login-nav {
       background: linear-gradient(135deg, #FF6A28 0%, #EA580C 100%) !important;
@@ -538,20 +542,21 @@ const INITIAL_CITIES = [
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
       z-index: 10;
     }
-    .btn-wishlist-card:hover { transform: scale(1.15); color: #EF4444; background: white; }
-    .btn-wishlist-card.active { color: #EF4444; background: white; }
+    .btn-wishlist-card:hover { transform: scale(1.15); color: #FF5E1F; background: white; }
+    .btn-wishlist-card.active { color: #FFFFFF; background: #FF5E1F; box-shadow: 0 4px 12px rgba(255, 94, 31, 0.35); }
+    .btn-wishlist-card.active i { color: #FFFFFF !important; }
 
     .card-discount-badge {
       position: absolute;
       top: 10px;
       left: 10px;
-      background: #EF4444;
+      background: linear-gradient(135deg, #FF6A28 0%, #EA580C 100%);
       color: #FFFFFF;
       font-size: 11px;
       font-weight: 800;
       padding: 3px 8px;
       border-radius: 6px;
-      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+      box-shadow: 0 2px 8px rgba(255, 94, 31, 0.4);
       z-index: 5;
     }
 
@@ -628,12 +633,13 @@ const INITIAL_CITIES = [
       margin: 2px 0;
     }
     .amenity-tag {
-      background: #F1F5F9;
-      color: #475569;
+      background: #FFF7ED;
+      color: #EA580C;
       font-size: 11px;
       font-weight: 600;
       padding: 3px 8px;
       border-radius: 6px;
+      border: 1px solid #FFEDD5;
     }
 
     .card-price-bottom {
@@ -722,21 +728,21 @@ const INITIAL_CITIES = [
           padding: 10px;
           gap: 8px;
           width: 100%;
-          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-          border: 1px solid #E2E8F0;
+          box-shadow: 0 8px 30px rgba(255, 94, 31, 0.12);
+          border: 1.5px solid #FFEDD5;
           display: grid;
           grid-template-columns: 1fr 1fr;
         }
         .search-pill-box.pill-destinasi {
           grid-column: 1 / -1;
           width: 100%;
-          background: #F8FAFC;
+          background: #FFFFFF;
           border-radius: 12px;
           padding: 8px 12px;
-          border: 1px solid #E2E8F0;
+          border: 1.5px solid #FED7AA;
         }
         .search-pill-box.pill-destinasi i {
-          color: var(--primary);
+          color: #FF5E1F;
           font-size: 15px;
         }
         .search-input-pill {
@@ -744,10 +750,10 @@ const INITIAL_CITIES = [
         }
         .search-pill-box:not(.pill-destinasi) {
           width: 100%;
-          background: #F8FAFC;
+          background: #FFFFFF;
           border-radius: 10px;
           padding: 6px 8px;
-          border: 1px solid #E2E8F0;
+          border: 1.5px solid #FED7AA;
           min-width: 0;
         }
         .search-select-pill {
@@ -757,10 +763,13 @@ const INITIAL_CITIES = [
           grid-column: 1 / -1;
           width: 100%;
           border-radius: 12px;
-          padding: 10px;
+          padding: 11px;
           font-size: 13.5px;
           font-weight: 700;
           margin-top: 2px;
+          background: #FF5E1F;
+          color: #FFFFFF;
+          box-shadow: 0 4px 15px rgba(255, 94, 31, 0.3);
         }
 
         .container { padding: 0 14px; }
@@ -768,7 +777,20 @@ const INITIAL_CITIES = [
         /* City Cards (Landscape Edge-to-Edge Scroll) */
         .city-card { min-width: 140px; max-width: 140px; height: 180px; border-radius: 18px; }
         .city-name { font-size: 13.5px; padding: 12px 10px; font-weight: 700; }
-        .city-badge { font-size: 10px; padding: 3px 7px; top: 8px; right: 8px; }
+        .city-badge {
+          font-size: 10px;
+          padding: 3px 8px;
+          top: 8px;
+          right: 8px;
+          background: #FFFFFF;
+          color: #FF5E1F;
+          border: 1px solid #FFEDD5;
+          font-weight: 700;
+        }
+        .city-card.city-active {
+          outline: 2.5px solid #FF5E1F !important;
+          outline-offset: 2px;
+        }
 
         /* Catalog Controls & View Toggle */
         .controls-wrapper {
@@ -786,13 +808,17 @@ const INITIAL_CITIES = [
           min-width: 0;
           font-size: 11.5px;
           padding: 8px 10px;
+          border: 1.5px solid #FED7AA;
+          border-radius: 10px;
+          background: #FFFFFF;
         }
         .view-mode-toggle {
           display: inline-flex !important;
-          background: #F1F5F9;
+          background: #FFF7ED;
           padding: 3px;
           border-radius: 10px;
           gap: 2px;
+          border: 1px solid #FED7AA;
           align-self: flex-end;
         }
         .btn-view-mode {
@@ -801,14 +827,14 @@ const INITIAL_CITIES = [
           padding: 6px 10px;
           border-radius: 7px;
           font-size: 13px;
-          color: #64748B;
+          color: #EA580C;
           cursor: pointer;
           transition: all 0.2s ease;
         }
         .btn-view-mode.active {
-          background: #FFFFFF;
-          color: var(--primary);
-          box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+          background: #FF5E1F;
+          color: #FFFFFF;
+          box-shadow: 0 2px 6px rgba(255, 94, 31, 0.3);
           font-weight: 700;
         }
 
@@ -941,7 +967,7 @@ const INITIAL_CITIES = [
         .footer-bottom { font-size: 10px; }
     }
 
-    /* MOBILE STICKY CATEGORY ICON BUBBLE BAR */
+    /* MOBILE STICKY CATEGORY ICON BUBBLE BAR (CLEAN ORANGE & WHITE THEME) */
     .category-tabs-mobile {
       display: none;
       background: #FFFFFF;
@@ -950,11 +976,11 @@ const INITIAL_CITIES = [
       overflow-x: auto;
       white-space: nowrap;
       -webkit-overflow-scrolling: touch;
-      border-bottom: 1px solid #F1F5F9;
+      border-bottom: 1.5px solid #FFEDD5;
       position: sticky;
       top: 50px;
       z-index: 95;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      box-shadow: 0 4px 12px rgba(255, 94, 31, 0.05);
     }
     .category-tabs-mobile::-webkit-scrollbar { display: none; }
     .category-tabs-mobile .tab-btn {
@@ -962,24 +988,25 @@ const INITIAL_CITIES = [
       align-items: center;
       gap: 6px;
       font-size: 12.5px;
-      padding: 7px 14px;
+      padding: 7px 15px;
       border-radius: 25px;
-      background: #F8FAFC;
-      border: 1px solid #E2E8F0;
+      background: #FFFFFF;
+      border: 1.5px solid #FED7AA;
       color: #334155;
       font-weight: 600;
       flex-shrink: 0;
       transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
     .category-tabs-mobile .tab-btn i {
       font-size: 13px;
       color: #FF5E1F;
     }
     .category-tabs-mobile .tab-btn.active {
-      background: linear-gradient(135deg, #FF6A28 0%, #EA580C 100%) !important;
+      background: #FF5E1F !important;
       color: #FFFFFF !important;
-      border-color: #EA580C !important;
-      box-shadow: 0 4px 12px rgba(255, 94, 31, 0.3);
+      border-color: #FF5E1F !important;
+      box-shadow: 0 4px 14px rgba(255, 94, 31, 0.35);
     }
     .category-tabs-mobile .tab-btn.active i {
       color: #FFFFFF !important;
@@ -1051,7 +1078,7 @@ const INITIAL_CITIES = [
       <button class="nav-cat-pill tab-btn" data-kategori="Oleh-Oleh" onclick="filterKategori(this, 'Oleh-Oleh')">Oleh-Oleh</button>
       <button class="nav-cat-pill tab-btn" data-kategori="Kuliner" onclick="filterKategori(this, 'Kuliner')">Kuliner</button>
       <button class="nav-cat-pill tab-btn" data-kategori="Rental" onclick="filterKategori(this, 'Rental')">Rental</button>
-      <button class="nav-cat-pill tab-btn" data-kategori="Favorit" onclick="filterKategori(this, 'Favorit')"><i class="fa-solid fa-heart" style="color: #EF4444;"></i> Favorit (<span id="wishlistCountBadge">0</span>)</button>
+      <button class="nav-cat-pill tab-btn" data-kategori="Favorit" onclick="filterKategori(this, 'Favorit')"><i class="fa-solid fa-heart" style="color: #FF5E1F;"></i> Favorit (<span id="wishlistCountBadge">0</span>)</button>
     </div>
 
     <div id="navMenu">
@@ -1068,7 +1095,7 @@ const INITIAL_CITIES = [
     <button class="tab-btn" data-kategori="Oleh-Oleh" onclick="filterKategori(this, 'Oleh-Oleh')"><i class="fa-solid fa-gift"></i> Oleh-Oleh</button>
     <button class="tab-btn" data-kategori="Kuliner" onclick="filterKategori(this, 'Kuliner')"><i class="fa-solid fa-utensils"></i> Kuliner</button>
     <button class="tab-btn" data-kategori="Rental" onclick="filterKategori(this, 'Rental')"><i class="fa-solid fa-car-side"></i> Rental</button>
-    <button class="tab-btn" data-kategori="Favorit" onclick="filterKategori(this, 'Favorit')"><i class="fa-solid fa-heart" style="color: #EF4444;"></i> Favorit (<span id="wishlistCountBadgeMobile">0</span>)</button>
+    <button class="tab-btn" data-kategori="Favorit" onclick="filterKategori(this, 'Favorit')"><i class="fa-solid fa-heart" style="color: #FF5E1F;"></i> Favorit (<span id="wishlistCountBadgeMobile">0</span>)</button>
   </div>
 
   <!-- RUNNING TEXT PROMO MARQUEE (HANYA MUNCUL JIKA STATUS VOUCHER DIAKTIFKAN) -->
