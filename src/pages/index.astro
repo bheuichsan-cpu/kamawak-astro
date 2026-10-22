@@ -712,7 +712,7 @@ const INITIAL_CITIES = [
         .navbar { padding: 10px 14px; }
         .logo { font-size: 19px; }
         .nav-center-categories { display: none; }
-        .category-tabs-mobile { display: flex !important; }
+        .category-bubbles-mobile-section { display: block !important; }
         .btn-login-nav { padding: 7px 14px !important; font-size: 11.5px !important; }
 
         .hero-slider { height: 250px; }
@@ -967,49 +967,103 @@ const INITIAL_CITIES = [
         .footer-bottom { font-size: 10px; }
     }
 
-    /* MOBILE STICKY CATEGORY ICON BUBBLE BAR (CLEAN ORANGE & WHITE THEME) */
-    .category-tabs-mobile {
+    /* MOBILE CATEGORY BUBBLES SECTION (4x2 NATIVE TRAVEL APP GRID) */
+    .category-bubbles-mobile-section {
       display: none;
-      background: #FFFFFF;
-      padding: 10px 12px;
-      gap: 8px;
-      overflow-x: auto;
-      white-space: nowrap;
-      -webkit-overflow-scrolling: touch;
-      border-bottom: 1.5px solid #FFEDD5;
-      position: sticky;
-      top: 50px;
-      z-index: 95;
-      box-shadow: 0 4px 12px rgba(255, 94, 31, 0.05);
     }
-    .category-tabs-mobile::-webkit-scrollbar { display: none; }
-    .category-tabs-mobile .tab-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12.5px;
-      padding: 7px 15px;
-      border-radius: 25px;
-      background: #FFFFFF;
-      border: 1.5px solid #FED7AA;
-      color: #334155;
-      font-weight: 600;
-      flex-shrink: 0;
-      transition: all 0.2s ease;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-    }
-    .category-tabs-mobile .tab-btn i {
-      font-size: 13px;
-      color: #FF5E1F;
-    }
-    .category-tabs-mobile .tab-btn.active {
-      background: #FF5E1F !important;
-      color: #FFFFFF !important;
-      border-color: #FF5E1F !important;
-      box-shadow: 0 4px 14px rgba(255, 94, 31, 0.35);
-    }
-    .category-tabs-mobile .tab-btn.active i {
-      color: #FFFFFF !important;
+    @media (max-width: 768px) {
+      .category-bubbles-mobile-section {
+        display: block !important;
+        padding: 0 14px;
+        margin-top: 10px;
+        margin-bottom: 22px;
+      }
+      .category-bubbles-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px 6px;
+        background: #FFFFFF;
+        padding: 16px 8px 14px 8px;
+        border-radius: 22px;
+        box-shadow: 0 4px 20px rgba(255, 94, 31, 0.06);
+        border: 1.5px solid #FFEDD5;
+      }
+      .cat-bubble-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 2px;
+        text-decoration: none;
+        -webkit-tap-highlight-color: transparent;
+        transition: transform 0.2s ease;
+      }
+      .cat-bubble-btn:active {
+        transform: scale(0.92);
+      }
+      .cat-bubble-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #FFFDFB 0%, #FFF7ED 100%);
+        border: 1.5px solid #FED7AA;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: #FF5E1F;
+        box-shadow: 0 3px 10px rgba(255, 94, 31, 0.08);
+        transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+      }
+      .cat-bubble-icon i {
+        transition: transform 0.2s ease;
+      }
+      .cat-bubble-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #334155;
+        margin-top: 6px;
+        text-align: center;
+        line-height: 1.2;
+        transition: color 0.2s ease;
+      }
+      /* Active Glowing State (Orange & White) */
+      .cat-bubble-btn.active .cat-bubble-icon {
+        background: linear-gradient(135deg, #FF5E1F 0%, #FF8A00 100%) !important;
+        border-color: #FF5E1F !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 6px 18px rgba(255, 94, 31, 0.4) !important;
+        transform: translateY(-3px) scale(1.08);
+      }
+      .cat-bubble-btn.active .cat-bubble-icon i {
+        color: #FFFFFF !important;
+      }
+      .cat-bubble-btn.active .cat-bubble-label {
+        color: #FF5E1F !important;
+        font-weight: 800 !important;
+      }
+      /* Wishlist counter badge */
+      .cat-bubble-badge {
+        position: absolute;
+        top: -3px;
+        right: -3px;
+        background: #EF4444;
+        color: #FFFFFF;
+        font-size: 9.5px;
+        font-weight: 800;
+        border-radius: 10px;
+        padding: 1px 5px;
+        min-width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1.5px solid #FFFFFF;
+        box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+      }
     }
 
     /* RUNNING TEXT (MARQUEE) PROMO STYLES */
@@ -1086,18 +1140,6 @@ const INITIAL_CITIES = [
     </div>
   </nav>
 
-  <!-- MOBILE CATEGORY SCROLL (HANYA MUNCUL DI LAYAR HP - NATIVE BUBBLE PILLS) -->
-  <div class="category-tabs-mobile" id="categoryTabsMobile">
-    <button class="tab-btn" data-kategori="Penginapan" onclick="filterKategori(this, 'Penginapan')"><i class="fa-solid fa-hotel"></i> Penginapan</button>
-    <button class="tab-btn" data-kategori="Tur" onclick="filterKategori(this, 'Tur')"><i class="fa-solid fa-ticket"></i> Tur & Tiket</button>
-    <button class="tab-btn" data-kategori="Atraksi" onclick="filterKategori(this, 'Atraksi')"><i class="fa-solid fa-mountain-sun"></i> Atraksi</button>
-    <button class="tab-btn" data-kategori="Dokumentasi" onclick="filterKategori(this, 'Dokumentasi')"><i class="fa-solid fa-camera-retro"></i> Dokumentasi</button>
-    <button class="tab-btn" data-kategori="Oleh-Oleh" onclick="filterKategori(this, 'Oleh-Oleh')"><i class="fa-solid fa-gift"></i> Oleh-Oleh</button>
-    <button class="tab-btn" data-kategori="Kuliner" onclick="filterKategori(this, 'Kuliner')"><i class="fa-solid fa-utensils"></i> Kuliner</button>
-    <button class="tab-btn" data-kategori="Rental" onclick="filterKategori(this, 'Rental')"><i class="fa-solid fa-car-side"></i> Rental</button>
-    <button class="tab-btn" data-kategori="Favorit" onclick="filterKategori(this, 'Favorit')"><i class="fa-solid fa-heart" style="color: #FF5E1F;"></i> Favorit (<span id="wishlistCountBadgeMobile">0</span>)</button>
-  </div>
-
   <!-- RUNNING TEXT PROMO MARQUEE (HANYA MUNCUL JIKA STATUS VOUCHER DIAKTIFKAN) -->
   <div id="promoBannerStrip" class="promo-marquee-container" style="display: none; background: linear-gradient(90deg, #FF5E1F 0%, #EA580C 50%, #C2410C 100%); color: white; padding: 10px 0; border-bottom: 2px solid #FB923C; box-shadow: 0 2px 10px rgba(255, 94, 31, 0.25);" title="Arahkan kursor untuk jeda, klik kupon untuk menyalin">
     <div class="promo-marquee-track" id="promoMarqueeTrack">
@@ -1121,7 +1163,7 @@ const INITIAL_CITIES = [
     <div class="smart-search-widget">
       <div class="search-pill-box pill-destinasi">
         <i class="fa-solid fa-location-dot"></i>
-        <input type="text" id="searchInput" class="search-input-pill" placeholder="Destinasi" onkeypress="handleEnter(event)" oninput="if(window.terapkanFilterDanUrutan) window.terapkanFilterDanUrutan()">
+        <input type="text" id="searchInput" class="search-input-pill" placeholder="Mau liburan ke mana di Sumbar?" onkeypress="handleEnter(event)" oninput="if(window.terapkanFilterDanUrutan) window.terapkanFilterDanUrutan()">
       </div>
       <div class="search-pill-box">
         <i class="fa-solid fa-tags"></i>
@@ -1146,7 +1188,48 @@ const INITIAL_CITIES = [
           <option value="above1m">&gt; 1jt</option>
         </select>
       </div>
-      <button class="smart-search-btn" onclick="if(window.terapkanFilterDanUrutan) window.terapkanFilterDanUrutan(); let a=document.getElementById('areaKatalog'); if(a) window.scrollTo({top:a.offsetTop-110, behavior:'smooth'});">Cari</button>
+      <button class="smart-search-btn" onclick="if(window.terapkanFilterDanUrutan) window.terapkanFilterDanUrutan(); let a=document.getElementById('areaKatalog'); if(a) window.scrollTo({top:a.offsetTop-110, behavior:'smooth'});"><i class="fa-solid fa-magnifying-glass"></i> Cari</button>
+    </div>
+  </div>
+
+  <!-- MOBILE CATEGORY BUBBLES SECTION (4x2 NATIVE TRAVEL APP GRID) -->
+  <div class="category-bubbles-mobile-section" id="categoryBubblesMobile">
+    <div class="category-bubbles-grid">
+      <button class="cat-bubble-btn tab-btn" data-kategori="Penginapan" onclick="filterKategori(this, 'Penginapan')">
+        <div class="cat-bubble-icon"><i class="fa-solid fa-hotel"></i></div>
+        <span class="cat-bubble-label">Penginapan</span>
+      </button>
+      <button class="cat-bubble-btn tab-btn" data-kategori="Tur" onclick="filterKategori(this, 'Tur')">
+        <div class="cat-bubble-icon"><i class="fa-solid fa-ticket"></i></div>
+        <span class="cat-bubble-label">Tur & Tiket</span>
+      </button>
+      <button class="cat-bubble-btn tab-btn" data-kategori="Atraksi" onclick="filterKategori(this, 'Atraksi')">
+        <div class="cat-bubble-icon"><i class="fa-solid fa-mountain-sun"></i></div>
+        <span class="cat-bubble-label">Atraksi</span>
+      </button>
+      <button class="cat-bubble-btn tab-btn" data-kategori="Dokumentasi" onclick="filterKategori(this, 'Dokumentasi')">
+        <div class="cat-bubble-icon"><i class="fa-solid fa-camera-retro"></i></div>
+        <span class="cat-bubble-label">Dokumentasi</span>
+      </button>
+      <button class="cat-bubble-btn tab-btn" data-kategori="Oleh-Oleh" onclick="filterKategori(this, 'Oleh-Oleh')">
+        <div class="cat-bubble-icon"><i class="fa-solid fa-gift"></i></div>
+        <span class="cat-bubble-label">Oleh-Oleh</span>
+      </button>
+      <button class="cat-bubble-btn tab-btn" data-kategori="Kuliner" onclick="filterKategori(this, 'Kuliner')">
+        <div class="cat-bubble-icon"><i class="fa-solid fa-utensils"></i></div>
+        <span class="cat-bubble-label">Kuliner</span>
+      </button>
+      <button class="cat-bubble-btn tab-btn" data-kategori="Rental" onclick="filterKategori(this, 'Rental')">
+        <div class="cat-bubble-icon"><i class="fa-solid fa-car-side"></i></div>
+        <span class="cat-bubble-label">Rental</span>
+      </button>
+      <button class="cat-bubble-btn tab-btn" data-kategori="Favorit" onclick="filterKategori(this, 'Favorit')">
+        <div class="cat-bubble-icon" style="position:relative;">
+          <i class="fa-solid fa-heart" style="color: #FF5E1F;"></i>
+          <span class="cat-bubble-badge" id="wishlistCountBadgeMobile">0</span>
+        </div>
+        <span class="cat-bubble-label">Favorit</span>
+      </button>
     </div>
   </div>
 
