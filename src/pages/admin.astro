@@ -2476,24 +2476,46 @@ ADD COLUMN IF NOT EXISTS fb text;`;
       }
 
       if (rlsBlocked) {
-          Swal.fire({
-              icon: 'warning',
-              title: 'Perhatian: Izin Database Perlu Dibuka',
-              html: `
-                <div style="text-align:left; font-size:13px; color:#374151;">
-                  <p>Data berhasil diperbarui di browser ini, namun <b>Supabase membatasi penyimpanan</b> karena fitur <b>Row Level Security (RLS)</b> sedang aktif di tabel <code>wisata</code>.</p>
-                  <p style="margin-top:10px;"><strong>Agar tersimpan permanen di Supabase untuk semua pengunjung:</strong></p>
-                  <ol style="margin-left:18px; margin-bottom:10px; line-height: 1.6;">
-                    <li>Buka <b>Supabase Dashboard &gt; SQL Editor</b>.</li>
-                    <li>Jalankan perintah SQL 1-baris berikut:</li>
-                  </ol>
-                  <textarea readonly id="sqlCopyAreaRLS" style="width:100%; height:75px; font-family:monospace; font-size:11px; background:#1E293B; color:#A7F3D0; padding:8px; border-radius:6px; border:none; resize:none;">${sqlRLSCode}</textarea>
-                  <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('sqlCopyAreaRLS').value); alert('Perintah SQL berhasil disalin ke clipboard!');" style="margin-top:8px; padding:6px 14px; background:#3B82F6; color:white; border:none; border-radius:6px; font-size:12px; cursor:pointer;">
-                    <i class="fa-solid fa-copy"></i> Salin Perintah SQL
-                  </button>
-                </div>
-              `
-          });
+          let hideWarning = localStorage.getItem('kamawak_hide_rls_warning') === 'true';
+          if (!hideWarning) {
+              Swal.fire({
+                  icon: 'warning',
+                  title: 'Izin Database Perlu Dibuka',
+                  html: `
+                    <div style="text-align:left; font-size:13px; color:#374151;">
+                      <p>Data berhasil diperbarui di browser Anda, namun <b>belum tersimpan ke server Supabase</b> karena proteksi <b>Row Level Security (RLS)</b> di Supabase masih aktif.</p>
+                      <p style="margin-top:10px;"><strong>Agar tersimpan permanen dan pesan ini tidak muncul lagi:</strong></p>
+                      <ol style="margin-left:18px; margin-bottom:10px; line-height: 1.6;">
+                        <li>Klik tautan langsung ini: <a href="https://supabase.com/dashboard/project/pppmjyjravztlsdnagte/sql/new" target="_blank" style="color:#FF5E1F; font-weight:700; text-decoration:underline;">Buka SQL Editor Supabase Anda</a></li>
+                        <li>Tempelkan perintah berikut lalu klik tombol <b>Run</b>:</li>
+                      </ol>
+                      <textarea readonly id="sqlCopyAreaRLS" style="width:100%; height:75px; font-family:monospace; font-size:11px; background:#1E293B; color:#A7F3D0; padding:8px; border-radius:6px; border:none; resize:none;">${sqlRLSCode}</textarea>
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; flex-wrap:wrap; gap:8px;">
+                        <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('sqlCopyAreaRLS').value); alert('Perintah SQL berhasil disalin ke clipboard!');" style="padding:6px 14px; background:#3B82F6; color:white; border:none; border-radius:6px; font-size:12px; cursor:pointer;">
+                          <i class="fa-solid fa-copy"></i> Salin Perintah SQL
+                        </button>
+                        <a href="https://supabase.com/dashboard/project/pppmjyjravztlsdnagte/sql/new" target="_blank" style="padding:6px 14px; background:#10B981; color:white; border-radius:6px; font-size:12px; text-decoration:none; font-weight:600;">
+                          <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka SQL Editor
+                        </a>
+                      </div>
+                      <div style="margin-top:14px; padding-top:10px; border-top:1px solid #E5E7EB; text-align:right;">
+                        <label style="font-size:12px; color:#6B7280; cursor:pointer;">
+                          <input type="checkbox" id="chkDontShowRLS" onchange="localStorage.setItem('kamawak_hide_rls_warning', this.checked ? 'true' : 'false')" style="vertical-align:middle; margin-right:5px;">
+                          Jangan tampilkan peringatan ini lagi
+                        </label>
+                      </div>
+                    </div>
+                  `
+              });
+          } else {
+              Swal.fire({
+                  icon: 'success',
+                  title: 'Perubahan Disimpan!',
+                  text: 'Perubahan produk berhasil disimpan di browser Anda.',
+                  timer: 1800,
+                  showConfirmButton: false
+              });
+          }
       } else {
           Swal.fire({
               icon: 'success',
