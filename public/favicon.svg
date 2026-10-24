@@ -1,19 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <defs>
-    <linearGradient id="kwkGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="kwkGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FF5E1F" />
       <stop offset="100%" stop-color="#E14800" />
     </linearGradient>
   </defs>
   <!-- Background Squircle -->
-  <rect width="128" height="128" rx="28" fill="url(#kwkGrad1)" />
+  <rect width="128" height="128" rx="28" fill="url(#kwkGrad2)" />
   
-  <!-- Rising Sun -->
-  <circle cx="88" cy="38" r="14" fill="#FFFFFF" />
+  <!-- Monogram K Minimalist Bold -->
+  <!-- Left Pillar -->
+  <rect x="26" y="24" width="18" height="80" rx="9" fill="#FFFFFF" />
   
-  <!-- Mountain Range -->
-  <path d="M16 94 L46 44 C48.5 40 53.5 40 56 44 L78 78 L88 62 C90.5 58 95.5 58 98 62 L112 85 C114 88.5 111.5 94 107 94 L21 94 C17.5 94 15 89.5 16 94 Z" fill="#FFFFFF" />
+  <!-- Upper Gonjong Wing -->
+  <path d="M50 68 L82 28 C84.5 25 89.5 25 92 28 C94.5 31 94 36 90.5 39.5 L58 76 Z" fill="#FFFFFF" />
   
-  <!-- Horizon Line -->
-  <rect x="18" y="97" width="92" height="5" rx="2.5" fill="#FFFFFF" opacity="0.85" />
+  <!-- Lower Stride -->
+  <path d="M52 62 L87 98 C90 101 88 104 84 104 C82 104 80 103 78 101 L45 68 Z" fill="#FFFFFF" />
+  
+  <!-- Accent Dot (The .id / Sunrise) -->
+  <circle cx="100" cy="24" r="8" fill="#FFF" />
 </svg>
