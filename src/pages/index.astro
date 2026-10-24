@@ -701,26 +701,47 @@ const INITIAL_CITIES = [
     .footer-content { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; border-bottom: 1px solid #1E293B; padding-bottom: 40px; margin-bottom: 20px; }
     .footer-logo { font-family: 'Poppins'; font-size: 24px; color: var(--white); font-weight: 700; margin-bottom: 15px; display: block; text-decoration: none; }
     .footer-bottom { text-align: center; font-size: 13px; }
-    .ad-carousel { width: 100%; overflow: hidden; border-radius: 12px; position: relative; }
-    .ad-carousel-track { display: flex; transition: transform 0.5s ease; gap: 15px; }
-    .ad-card { flex: 0 0 calc(33.333% - 10px); min-width: calc(33.333% - 10px); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
-    .ad-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
-    .ad-card img { width: 100%; height: 120px; object-fit: cover; display: block; border-radius: 12px; }
-    @media (max-width: 768px) { .ad-card { flex: 0 0 calc(50% - 7.5px); min-width: calc(50% - 7.5px); } }
-
-    /* Desain Banner Pasang Iklan Disini (Slot Kosong) */
-    .ad-card-placeholder {
-      border: 1.5px dashed rgba(255, 94, 31, 0.6);
-      background: #0F172A;
+    .ad-carousel { width: 100%; overflow: hidden; border-radius: 16px; position: relative; padding: 4px 0; }
+    .ad-carousel-track { display: flex; transition: transform 0.5s ease; gap: 16px; }
+    .ad-card { 
+      flex: 0 0 calc(33.333% - 11px); 
+      min-width: calc(33.333% - 11px); 
+      border-radius: 16px; 
+      overflow: hidden; 
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08); 
+      cursor: pointer; 
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
     }
-    .ad-card-placeholder:hover {
-      border-color: #FF5E1F;
-      box-shadow: 0 8px 25px rgba(255, 94, 31, 0.25);
+    .ad-card:hover { 
+      transform: translateY(-4px) scale(1.01); 
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16); 
+    }
+    .ad-card img { width: 100%; height: 135px; object-fit: cover; display: block; border-radius: 16px; }
+    @media (max-width: 900px) { 
+      .ad-card { flex: 0 0 calc(50% - 8px); min-width: calc(50% - 8px); } 
+    }
+    @media (max-width: 640px) { 
+      .ad-card { flex: 0 0 calc(78% - 10px); min-width: calc(78% - 10px); } 
+      .ad-card img { height: 125px; }
+    }
+
+    /* Desain Banner Pasang Iklan Disini (Slot Eksklusif & Modern) */
+    .ad-card-placeholder {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .ad-card-placeholder:hover .ad-decor-watermark {
+      transform: rotate(0deg) scale(1.15);
+      opacity: 0.28;
+    }
+    .ad-card-placeholder:hover .ad-slot-cta {
+      transform: scale(1.06);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
     }
     .ad-placeholder-inner {
       width: 100%;
-      height: 120px;
-      padding: 12px 14px;
+      height: 135px;
+      padding: 14px 16px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -728,65 +749,119 @@ const INITIAL_CITIES = [
       position: relative;
       overflow: hidden;
       box-sizing: border-box;
-      border-radius: 12px;
+      border-radius: 16px;
+    }
+    /* Animasi Kilau Cahaya (Shimmer Light Effect) */
+    .ad-placeholder-inner::after {
+      content: '';
+      position: absolute;
+      top: -60%;
+      left: -70%;
+      width: 45%;
+      height: 220%;
+      background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0) 100%);
+      transform: rotate(25deg);
+      pointer-events: none;
+      animation: adShimmer 5s infinite ease-in-out;
+    }
+    @keyframes adShimmer {
+      0%, 75% { left: -70%; opacity: 0; }
+      80% { opacity: 1; }
+      100% { left: 150%; opacity: 0; }
+    }
+    .ad-decor-watermark {
+      position: absolute;
+      right: -6px;
+      bottom: -10px;
+      font-size: 76px;
+      opacity: 0.16;
+      color: #FFFFFF;
+      transform: rotate(-12deg);
+      pointer-events: none;
+      transition: all 0.3s ease;
+      line-height: 1;
     }
     .ad-placeholder-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+      position: relative;
+      z-index: 2;
     }
     .ad-slot-badge {
       font-size: 10px;
-      font-weight: 700;
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 2px 7px;
-      border-radius: 4px;
-      border: 1px solid;
-      background: rgba(0, 0, 0, 0.4);
+      letter-spacing: 0.6px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      color: #FFFFFF;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
+    }
+    .ad-pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      box-shadow: 0 0 6px #FFFFFF;
+      display: inline-block;
+      animation: adPulse 1.6s infinite;
+    }
+    @keyframes adPulse {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 10px #FFFFFF; }
+      100% { transform: scale(0.9); opacity: 0.7; }
     }
     .ad-slot-cta {
       font-size: 11px;
       font-weight: 700;
-      color: white;
-      padding: 3px 8px;
-      border-radius: 6px;
+      color: #0F172A;
+      background: #FFFFFF;
+      padding: 4px 11px;
+      border-radius: 20px;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      gap: 5px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+      transition: all 0.2s ease;
+    }
+    .ad-slot-cta i {
+      color: #25D366;
+      font-size: 13px;
     }
     .ad-placeholder-body {
-      margin-top: 4px;
+      position: relative;
+      z-index: 2;
+      margin-top: auto;
     }
     .ad-placeholder-title {
       font-family: 'Poppins', sans-serif;
-      font-weight: 700;
-      font-size: 13px;
-      line-height: 1.3;
+      font-weight: 800;
+      font-size: 13.5px;
+      line-height: 1.25;
       color: #FFFFFF;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      margin-bottom: 2px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.25);
     }
     .ad-placeholder-sub {
       font-size: 11px;
-      color: #CBD5E1;
-      margin-top: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.3;
+      font-weight: 500;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.15);
     }
     @media (max-width: 768px) {
-      .ad-card img, .ad-placeholder-inner { height: 110px; padding: 10px 11px; }
-      .ad-placeholder-title { font-size: 11.5px; }
+      .ad-placeholder-inner { height: 125px; padding: 12px 14px; }
+      .ad-placeholder-title { font-size: 12px; }
       .ad-placeholder-sub { font-size: 10px; }
-      .ad-slot-badge { font-size: 9px; padding: 1px 5px; }
-      .ad-slot-cta { font-size: 10px; padding: 2px 6px; }
+      .ad-decor-watermark { font-size: 60px; right: -4px; bottom: -6px; }
     }
 
     /* RESPONSIVE DESIGN (MOBILE - KONSEP A NATIVE TRAVEL APP) */
@@ -1613,7 +1688,7 @@ const INITIAL_CITIES = [
     };
 
     function jalankanCarouselIklan(totalAds) {
-      let minThreshold = window.innerWidth < 768 ? 2 : 3;
+      let minThreshold = window.innerWidth < 640 ? 1 : (window.innerWidth < 900 ? 2 : 3);
       if (totalAds <= minThreshold) return;
       let track = document.getElementById('adCarouselTrack');
       if (!track || !track.children || track.children.length === 0) return;
@@ -1621,8 +1696,8 @@ const INITIAL_CITIES = [
       
       setInterval(() => {
          currentShift++;
-         let itemWidth = (track.children[0] ? track.children[0].offsetWidth : 280) + 15;
-         let visibleCount = window.innerWidth < 768 ? 2 : 3;
+         let itemWidth = (track.children[0] ? track.children[0].offsetWidth : 280) + 16;
+         let visibleCount = window.innerWidth < 640 ? 1 : (window.innerWidth < 900 ? 2 : 3);
          if (currentShift > totalAds - visibleCount) {
             currentShift = 0;
             track.style.transition = 'none';
@@ -1631,7 +1706,7 @@ const INITIAL_CITIES = [
          } else {
             track.style.transform = `translateX(-${currentShift * itemWidth}px)`;
          }
-      }, 3500);
+      }, 4000);
     }
 
 
@@ -1832,35 +1907,39 @@ const INITIAL_CITIES = [
       const placeholderBanners = [
         {
           nama: 'Pasang Iklan Usaha Anda di Sini',
-          sub: 'Jangkau ribuan wisatawan & calon pembeli di Sumbar',
-          badge: 'Slot Iklan Beranda 1',
-          bg: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
-          accent: '#FF5E1F',
-          icon: 'fa-bullhorn'
+          sub: 'Jangkau 10.000+ wisatawan & calon pembeli se-Sumbar!',
+          badge: 'Slot Sponsor Utama',
+          bg: 'linear-gradient(135deg, #FF5E1F 0%, #EA580C 50%, #C2410C 100%)',
+          accent: '#FFD700',
+          icon: 'fa-bullhorn',
+          cta: 'Pasang Sekarang'
         },
         {
-          nama: 'Promosikan Hotel, Tur & Bisnis Anda',
-          sub: 'Tingkatkan omset dan booking usaha Anda lewat Kamawak',
-          badge: 'Slot Iklan Beranda 2',
-          bg: 'linear-gradient(135deg, #7C2D12 0%, #431407 100%)',
-          accent: '#F59E0B',
-          icon: 'fa-rocket'
+          nama: 'Promosikan Hotel, Villa & Homestay',
+          sub: 'Dapatkan booking langsung dari wisatawan tanpa ribet komisi.',
+          badge: 'Mitra Penginapan',
+          bg: 'linear-gradient(135deg, #059669 0%, #047857 50%, #064E3B 100%)',
+          accent: '#34D399',
+          icon: 'fa-hotel',
+          cta: 'Gabung Mitra'
         },
         {
-          nama: 'Pasang Banner Promo & Diskon Usaha',
-          sub: 'Tarif terjangkau dengan eksposur tinggi seluruh Ranah Minang',
-          badge: 'Slot Iklan Beranda 3',
-          bg: 'linear-gradient(135deg, #1E1B4B 0%, #0F172A 100%)',
-          accent: '#38BDF8',
-          icon: 'fa-rectangle-ad'
+          nama: 'Promosikan Rental Mobil & Tur Wisata',
+          sub: 'Armada & paket tur Anda langsung tampil di beranda depan!',
+          badge: 'Rental & Transport',
+          bg: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 50%, #312E81 100%)',
+          accent: '#818CF8',
+          icon: 'fa-car-side',
+          cta: 'Daftar Armada'
         },
         {
-          nama: 'Sponsori Destinasi & Atraksi Lokal',
-          sub: 'Tingkatkan brand awareness langsung ke WhatsApp Anda',
-          badge: 'Slot Iklan Beranda 4',
-          bg: 'linear-gradient(135deg, #064E3B 0%, #022C22 100%)',
-          accent: '#10B981',
-          icon: 'fa-store'
+          nama: 'Resto, Kafe Hits & Oleh-Oleh Khas',
+          sub: 'Jadikan kuliner Anda pilihan nomor 1 wisatawan Minang!',
+          badge: 'Kuliner & UMKM',
+          bg: 'linear-gradient(135deg, #E11D48 0%, #BE123C 50%, #881337 100%)',
+          accent: '#FB7185',
+          icon: 'fa-utensils',
+          cta: 'Chat Admin'
         }
       ];
 
@@ -1868,12 +1947,15 @@ const INITIAL_CITIES = [
         return `
           <div class="ad-card ad-card-placeholder" onclick="bukaKontakPasangIklan('${b.badge}')" title="Klik untuk pasang iklan usaha Anda di sini">
             <div class="ad-placeholder-inner" style="background: ${b.bg};">
+              <div class="ad-decor-watermark">
+                <i class="fa-solid ${b.icon}"></i>
+              </div>
               <div class="ad-placeholder-top">
-                <span class="ad-slot-badge" style="color: ${b.accent}; border-color: ${b.accent}40;">
-                  <i class="fa-solid ${b.icon}"></i> ${b.badge}
+                <span class="ad-slot-badge">
+                  <span class="ad-pulse-dot" style="background: ${b.accent}; box-shadow: 0 0 6px ${b.accent};"></span> ${b.badge}
                 </span>
-                <span class="ad-slot-cta" style="background: ${b.accent};">
-                  <i class="fa-brands fa-whatsapp"></i> Pasang
+                <span class="ad-slot-cta">
+                  <i class="fa-brands fa-whatsapp"></i> ${b.cta || 'Pasang Iklan'}
                 </span>
               </div>
               <div class="ad-placeholder-body">
