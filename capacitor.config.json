@@ -1,0 +1,8 @@
+{
+  "appId": "id.kamawak.app",
+  "appName": "Kamawak",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}
