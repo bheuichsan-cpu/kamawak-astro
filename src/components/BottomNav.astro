@@ -25,7 +25,7 @@ const { current = 'home' } = Astro.props;
     </div>
     <span class="nav-label">Favorit</span>
   </a>
-  <a href="/profil" class={`bottom-nav-item ${current === 'orders' ? 'active' : ''}`} id="btnNavTiket">
+  <a href="/profil?tab=tiket" class={`bottom-nav-item ${current === 'orders' ? 'active' : ''}`} id="btnNavTiket">
     <div class="nav-icon-pod">
       <i class="fa-solid fa-ticket"></i>
     </div>
@@ -193,14 +193,28 @@ const { current = 'home' } = Astro.props;
           if (labelAkun) labelAkun.innerText = "Admin";
           if (iconAkun) iconAkun.className = "fa-solid fa-gauge-high";
         } else {
-          btnAkun.href = "/profil";
-          if (labelAkun) labelAkun.innerText = "Profil";
+          btnAkun.href = "/profil?tab=akun";
+          if (labelAkun) labelAkun.innerText = "Akun";
           if (iconAkun) iconAkun.className = "fa-solid fa-circle-user";
         }
       } else {
         btnAkun.href = "/login";
         if (labelAkun) labelAkun.innerText = "Masuk";
         if (iconAkun) iconAkun.className = "fa-solid fa-circle-user";
+      }
+
+      // Atur status aktif jika sedang di halaman profil
+      if (window.location.pathname.replace(/\/$/, '') === '/profil') {
+        let params = new URLSearchParams(window.location.search);
+        let tab = params.get('tab') || 'akun';
+        let btnTiket = document.getElementById("btnNavTiket");
+        if (tab === 'tiket') {
+          if (btnTiket) btnTiket.classList.add('active');
+          if (btnAkun) btnAkun.classList.remove('active');
+        } else {
+          if (btnAkun) btnAkun.classList.add('active');
+          if (btnTiket) btnTiket.classList.remove('active');
+        }
       }
 
       // Sinkronisasi badge wishlist pada tombol Favorit

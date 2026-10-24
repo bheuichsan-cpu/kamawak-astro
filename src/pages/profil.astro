@@ -7,61 +7,420 @@ import BottomNav from '../components/BottomNav.astro';
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profil & Pesanan - Kamawak.id</title>
+  <title>Profil Wisatawan - Kamawak.id</title>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style is:inline>
-    :root { --primary: #FF5E1F; --bg-color: #F5F7FA; --text-dark: #1C2430; --text-gray: #6B7280; --white: #FFFFFF; --shadow: 0 4px 20px rgba(0,0,0,0.08); --radius: 12px; }
+    :root { 
+      --primary: #FF5E1F; 
+      --primary-dark: #EA580C;
+      --bg-color: #F8FAFC; 
+      --text-dark: #0F172A; 
+      --text-gray: #64748B; 
+      --white: #FFFFFF; 
+      --shadow: 0 4px 20px rgba(0,0,0,0.06); 
+      --radius: 16px; 
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-dark); }
     
-    .navbar { background: var(--white); padding: 18px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
-    .logo { font-family: 'Poppins', sans-serif; font-size: 24px; font-weight: 700; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 8px; }
-    
-    .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
-    .card { background: var(--white); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px; }
-    
-    .profile-header { display: flex; align-items: center; gap: 20px; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
-    .avatar { width: 80px; height: 80px; background: #FFF0EB; color: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 32px; font-weight: bold; }
-    .profile-info h1 { font-size: 24px; font-family: 'Poppins', sans-serif; margin-bottom: 5px; }
-    .profile-info p { color: var(--text-gray); font-size: 14px; }
-    
-    .section-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-    
-    .order-item { border: 1px solid #eee; border-radius: 8px; padding: 16px; margin-bottom: 16px; transition: 0.2s; }
-    .order-item:hover { border-color: var(--primary); }
-    .order-header { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; color: var(--text-gray); }
-    .order-status { padding: 4px 10px; border-radius: 50px; font-size: 12px; font-weight: 600; }
-    .status-lunas { background: #E8F5E9; color: #2E7D32; }
-    .status-menunggu { background: #FFF8E1; color: #F57F17; }
-    .status-batal { background: #FFEBEE; color: #C62828; }
-    
-    .order-body { display: flex; justify-content: space-between; align-items: center; }
-    .order-title { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
-    .order-detail { font-size: 14px; color: var(--text-gray); }
-    .order-price { font-weight: 700; font-size: 18px; color: var(--primary); }
-    
-    .btn-back { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 16px; border-radius: 50px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 14px; font-weight: 500; transition: 0.2s; }
+    .navbar { 
+      background: var(--white); 
+      padding: 14px 5%; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+      position: sticky; 
+      top: 0; 
+      z-index: 100; 
+    }
+    .logo { 
+      font-family: 'Poppins', sans-serif; 
+      font-size: 22px; 
+      font-weight: 800; 
+      color: var(--text-dark); 
+      text-decoration: none; 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+    }
+    .logo i { color: var(--primary); }
+    .btn-back { 
+      background: #FFF7ED; 
+      border: 1px solid #FFEDD5; 
+      color: var(--primary); 
+      padding: 7px 16px; 
+      border-radius: 50px; 
+      cursor: pointer; 
+      text-decoration: none; 
+      display: inline-flex; 
+      align-items: center;
+      gap: 6px;
+      font-size: 13px; 
+      font-weight: 600; 
+      transition: 0.2s; 
+    }
     .btn-back:hover { background: var(--primary); color: var(--white); }
     
-    .empty-state { text-align: center; padding: 40px 0; color: var(--text-gray); }
-    .empty-state i { font-size: 48px; color: #ddd; margin-bottom: 16px; }
+    .container { max-width: 800px; margin: 25px auto; padding: 0 16px; }
+    .card { background: var(--white); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid #F1F5F9; }
     
-    .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 30px auto; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-  
-    /* RESPONSIVE DESIGN (MOBILE) */
-    @media (max-width: 768px) {
-        .navbar { padding: 12px 15px; flex-direction: column; gap: 10px; }
-        .profile-header { flex-direction: column; text-align: center; }
-        .order-body { flex-direction: column; align-items: flex-start; gap: 5px; }
-        .order-price { align-self: flex-start; margin-top: 5px; }
-        .container { padding: 0 15px; margin: 20px auto; }
+    /* SEGMENT SWITCHER TABS: AKUN VS TIKET */
+    .profile-tabs-pill-box {
+      display: flex;
+      background: #E2E8F0;
+      padding: 5px;
+      border-radius: 14px;
+      margin-bottom: 22px;
+      gap: 6px;
+    }
+    .tab-pill-btn {
+      flex: 1;
+      padding: 11px 16px;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #64748B;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.25s ease;
+    }
+    .tab-pill-btn.active {
+      background: #FFFFFF;
+      color: var(--primary);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .tab-badge-pill {
+      background: var(--primary);
+      color: white;
+      font-size: 11px;
+      padding: 1px 7px;
+      border-radius: 10px;
+      font-weight: 800;
     }
 
-    .btn-tiket { background: var(--primary); color: white; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; box-shadow: 0 2px 6px rgba(255, 94, 31, 0.25); }
+    /* KARTU IDENTITAS PROFIL */
+    .profile-hero-card {
+      background: linear-gradient(135deg, #FFFFFF 0%, #FFFBF9 100%);
+      border: 1px solid #FED7AA;
+      position: relative;
+      overflow: hidden;
+    }
+    .profile-hero-top {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .profile-avatar-container {
+      position: relative;
+      flex-shrink: 0;
+    }
+    .avatar { 
+      width: 82px; 
+      height: 82px; 
+      background: linear-gradient(135deg, #FF5E1F 0%, #EA580C 100%); 
+      color: #FFFFFF; 
+      border-radius: 50%; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      font-size: 32px; 
+      font-weight: 800; 
+      box-shadow: 0 6px 16px rgba(255, 94, 31, 0.35);
+      border: 3px solid #FFFFFF;
+    }
+    .avatar-edit-badge {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      transition: transform 0.2s;
+    }
+    .avatar-edit-badge:hover { transform: scale(1.1); }
+
+    .profile-hero-details { flex: 1; }
+    .profile-name-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+    .profile-name-row h1 {
+      font-size: 22px;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      color: var(--text-dark);
+      line-height: 1.2;
+    }
+    .badge-role-verified {
+      background: #ECFDF5;
+      color: #059669;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid #A7F3D0;
+    }
+    .profile-meta-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13px;
+      color: var(--text-gray);
+    }
+    .profile-meta-list span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .profile-hero-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid #F1F5F9;
+    }
+    .btn-hero-action {
+      flex: 1;
+      padding: 9px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--primary);
+      background: var(--primary);
+      color: #FFFFFF;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(255, 94, 31, 0.25);
+    }
+    .btn-hero-action:hover {
+      background: #E04D14;
+      transform: translateY(-1px);
+    }
+    .btn-hero-action.secondary {
+      background: #FFFFFF;
+      color: #475569;
+      border-color: #CBD5E1;
+      box-shadow: none;
+    }
+    .btn-hero-action.secondary:hover {
+      background: #F8FAFC;
+      color: var(--text-dark);
+    }
+
+    /* 3 KOTAK RINGKASAN WISATAWAN */
+    .profile-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: #FFFFFF;
+      border-radius: 14px;
+      padding: 14px 12px;
+      border: 1px solid #F1F5F9;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: #FED7AA;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    }
+    .stat-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .stat-num {
+      font-family: 'Poppins', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-dark);
+      line-height: 1.1;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-gray);
+      margin-top: 2px;
+    }
+
+    /* LIST MENU PENGATURAN AKUN */
+    .account-menu-list {
+      display: flex;
+      flex-direction: column;
+    }
+    .account-menu-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid #F1F5F9;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.15s;
+    }
+    .account-menu-item:hover {
+      background: #F8FAFC;
+    }
+    .account-menu-item:last-child {
+      border-bottom: none;
+    }
+    .menu-item-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .menu-item-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .menu-item-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text-dark);
+    }
+    .menu-item-sub {
+      font-size: 11.5px;
+      color: var(--text-gray);
+      margin-top: 2px;
+    }
+    .menu-item-arrow {
+      color: #CBD5E1;
+      font-size: 13px;
+    }
+
+    .btn-logout-full {
+      width: 100%;
+      padding: 12px;
+      background: #FEE2E2;
+      color: #DC2626;
+      border: 1px solid #FECACA;
+      border-radius: 10px;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: 13.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-logout-full:hover {
+      background: #FCA5A5;
+      color: #B91C1C;
+    }
+
+    /* TIKET & PESANAN STYLING */
+    .ticket-filter-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+    .filter-chip {
+      padding: 7px 15px;
+      border-radius: 50px;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      color: #64748B;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .filter-chip.active {
+      background: var(--primary);
+      color: #FFFFFF;
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(255, 94, 31, 0.3);
+    }
+
+    .order-item { border: 1px solid #E2E8F0; background: #FFFFFF; border-radius: 14px; padding: 18px; margin-bottom: 16px; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    .order-item:hover { border-color: var(--primary); box-shadow: 0 6px 16px rgba(255, 94, 31, 0.08); }
+    .order-header { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--text-gray); }
+    .order-status { padding: 4px 10px; border-radius: 50px; font-size: 12px; font-weight: 700; }
+    .status-lunas { background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; }
+    .status-menunggu { background: #FFFBEB; color: #D97706; border: 1px solid #FDE68A; }
+    .status-batal { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
+    
+    .order-body { display: flex; justify-content: space-between; align-items: center; }
+    .order-title { font-weight: 800; font-size: 16px; margin-bottom: 5px; color: var(--text-dark); }
+    .order-detail { font-size: 13px; color: var(--text-gray); line-height: 1.5; }
+    .order-price { font-weight: 800; font-size: 18px; color: var(--primary); }
+    
+    .btn-tiket { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; box-shadow: 0 2px 8px rgba(255, 94, 31, 0.25); }
     .btn-tiket:hover { background: #E04D14; transform: translateY(-1px); }
+
+    .btn-beri-ulasan {
+      background: #FFFBEB;
+      color: #D97706;
+      border: 1px solid #FCD34D;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 12.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: 0.2s;
+    }
+    .btn-beri-ulasan:hover { background: #FEF3C7; transform: translateY(-1px); }
+
+    .empty-state { text-align: center; padding: 50px 20px; color: var(--text-gray); background: #FFFFFF; border-radius: 16px; border: 1px dashed #CBD5E1; }
+    .empty-state i { font-size: 52px; color: #CBD5E1; margin-bottom: 16px; }
+    .empty-state p { font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
+    .btn-jelajah { background: var(--primary); color: white; text-decoration: none; padding: 10px 20px; border-radius: 50px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(255, 94, 31, 0.3); }
+
+    .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 30px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     /* BOARDING PASS DIGITAL STYLING */
     .boarding-card {
@@ -136,7 +495,6 @@ import BottomNav from '../components/BottomNav.astro';
       background: #FFFFFF;
       position: relative;
     }
-    /* Ticket notch cut-outs */
     .boarding-notch-left, .boarding-notch-right {
       position: absolute;
       width: 24px;
@@ -203,40 +561,48 @@ import BottomNav from '../components/BottomNav.astro';
       opacity: 0.85;
     }
 
-    /* BERI ULASAN BUTTON & MODAL */
-    .btn-beri-ulasan {
-      background: #FFFBEB;
-      color: #D97706;
-      border: 1px solid #FCD34D;
-      padding: 6px 13px;
-      border-radius: 6px;
-      font-weight: 600;
+    /* MODAL FORM INPUTS */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
       font-size: 12px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      transition: 0.2s;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    .btn-beri-ulasan:hover {
-      background: #FEF3C7;
-      transform: translateY(-1px);
+    .form-control {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid #CBD5E1;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+      background: #F8FAFC;
     }
-    .star-picker {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin: 15px 0;
-      font-size: 32px;
-      cursor: pointer;
+    .form-control:focus {
+      border-color: var(--primary);
+      background: #FFFFFF;
+      box-shadow: 0 0 0 3px rgba(255, 94, 31, 0.15);
     }
-    .star-picker i {
-      color: #D1D5DB;
-      transition: color 0.15s, transform 0.15s;
-    }
-    .star-picker i:hover, .star-picker i.selected {
-      color: #F59E0B;
-      transform: scale(1.15);
+
+    /* RESPONSIVE DESIGN (MOBILE) */
+    @media (max-width: 768px) {
+        .navbar { padding: 12px 16px; }
+        .logo { font-size: 19px; }
+        .profile-hero-top { flex-direction: column; text-align: center; }
+        .profile-name-row { justify-content: center; }
+        .profile-meta-list { align-items: center; }
+        .profile-stats-grid { grid-template-columns: 1fr; gap: 8px; }
+        .order-body { flex-direction: column; align-items: flex-start; gap: 6px; }
+        .order-price { align-self: flex-start; margin-top: 4px; }
+        .container { padding: 0 14px; margin: 15px auto; }
     }
 
     @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -254,36 +620,247 @@ import BottomNav from '../components/BottomNav.astro';
 </head>
 <body>
   <nav class="navbar">
-    <a href="/" onclick="kembaliKeHome()" class="logo"><i class="fa-solid fa-umbrella-beach"></i> Kamawak</a>
-    <a href="#" onclick="kembaliKeHome()" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+    <a href="/" onclick="kembaliKeHome()" class="logo">
+      <i class="fa-solid fa-mountain-sun"></i> Kamawak<span style="color:var(--primary);">.</span>
+    </a>
+    <a href="/" onclick="kembaliKeHome()" class="btn-back">
+      <i class="fa-solid fa-arrow-left"></i> Kembali
+    </a>
   </nav>
 
   <div class="container" id="mainBody" style="display:none;">
-    <div class="card profile-header">
-      <div class="avatar" id="uiAvatar">U</div>
-      <div class="profile-info">
-        <h1 id="uiNama">Memuat...</h1>
-        <p><i class="fa-solid fa-user"></i> <span id="uiRole">Wisatawan</span></p>
-      </div>
-    </div>
     
-    <!-- KARTU VOUCHER & KUPON DISKON SAYA -->
-    <div class="card" id="cardVoucherProfil" style="background: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 100%); border-left: 4px solid var(--primary);">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-        <div class="section-title" style="margin-bottom: 0;"><i class="fa-solid fa-tags" style="color: var(--primary);"></i> Kupon Diskon Spesial Anda</div>
-        <span style="font-size: 11px; background: #FFEDD5; color: #EA580C; font-weight: 700; padding: 3px 8px; border-radius: 12px;">Siap Digunakan</span>
+    <!-- SEGMENT SWITCHER TABS: AKUN SAYA VS TIKET SAYA -->
+    <div class="profile-tabs-pill-box">
+      <button class="tab-pill-btn active" id="pillAkun" onclick="pindahTab('akun')">
+        <i class="fa-solid fa-circle-user"></i> Akun Saya
+      </button>
+      <button class="tab-pill-btn" id="pillTiket" onclick="pindahTab('tiket')">
+        <i class="fa-solid fa-ticket"></i> Tiket & Pesanan <span id="badgeTiketCount" class="tab-badge-pill" style="display:none;">0</span>
+      </button>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- VIEW 1: AKUN & PENGATURAN WISATAWAN -->
+    <!-- ============================================== -->
+    <div id="seksiAkun">
+      <!-- KARTU HERO IDENTITAS PROFIL -->
+      <div class="card profile-hero-card">
+        <div class="profile-hero-top">
+          <div class="profile-avatar-container">
+            <div class="avatar" id="uiAvatar">U</div>
+            <button class="avatar-edit-badge" onclick="bukaModalEditProfil()" title="Ubah Profil">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+          </div>
+          <div class="profile-hero-details">
+            <div class="profile-name-row">
+              <h1 id="uiNama">Memuat...</h1>
+              <span class="badge-role-verified"><i class="fa-solid fa-circle-check"></i> Wisatawan</span>
+            </div>
+            <div class="profile-meta-list">
+              <span><i class="fa-brands fa-whatsapp" style="color: #25D366; font-size:14px;"></i> <span id="uiWaDisplay">WhatsApp: Belum diisi</span></span>
+              <span><i class="fa-regular fa-envelope" style="color: #3B82F6; font-size:14px;"></i> <span id="uiEmailDisplay">Email: Belum diisi</span></span>
+            </div>
+          </div>
+        </div>
+        <div class="profile-hero-actions">
+          <button class="btn-hero-action" onclick="bukaModalEditProfil()">
+            <i class="fa-solid fa-user-pen"></i> Edit Profil
+          </button>
+          <button class="btn-hero-action secondary" onclick="bukaModalGantiSandi()">
+            <i class="fa-solid fa-key"></i> Ganti Sandi
+          </button>
+        </div>
       </div>
-      <p style="font-size: 13px; color: var(--text-gray); margin-bottom: 14px;">Gunakan kode kupon di bawah ini saat memesan paket wisata untuk menikmati potongan harga langsung:</p>
-      
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;" id="listVoucherProfil">
-        <!-- Diisi otomatis oleh JS -->
+
+      <!-- 3 KOTAK RINGKASAN WISATAWAN -->
+      <div class="profile-stats-grid">
+        <div class="stat-card" onclick="pindahTab('tiket')">
+          <div class="stat-icon" style="background:#FFF7ED; color:#FF5E1F;">
+            <i class="fa-solid fa-ticket"></i>
+          </div>
+          <div>
+            <div class="stat-num" id="statTiketAktif">0</div>
+            <div class="stat-label">Tiket Aktif</div>
+          </div>
+        </div>
+        <div class="stat-card" onclick="scrollKeVoucher()">
+          <div class="stat-icon" style="background:#ECFDF5; color:#10B981;">
+            <i class="fa-solid fa-tags"></i>
+          </div>
+          <div>
+            <div class="stat-num" id="statKuponAktif">0</div>
+            <div class="stat-label">Kupon Tersedia</div>
+          </div>
+        </div>
+        <div class="stat-card" onclick="window.location.href='/?cat=Favorit#areaKatalog'">
+          <div class="stat-icon" style="background:#FEF2F2; color:#EF4444;">
+            <i class="fa-solid fa-heart"></i>
+          </div>
+          <div>
+            <div class="stat-num" id="statWishlistAktif">0</div>
+            <div class="stat-label">Destinasi Favorit</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KARTU VOUCHER & KUPON DISKON SAYA -->
+      <div class="card" id="cardVoucherProfil" style="background: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 100%); border-left: 4px solid var(--primary);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+          <div style="font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-tags" style="color: var(--primary);"></i> Kupon Diskon Spesial Anda</div>
+          <span style="font-size: 11px; background: #FFEDD5; color: #EA580C; font-weight: 700; padding: 3px 8px; border-radius: 12px;">Siap Digunakan</span>
+        </div>
+        <p style="font-size: 13px; color: var(--text-gray); margin-bottom: 14px;">Gunakan kode kupon di bawah ini saat memesan paket wisata untuk menikmati potongan harga langsung:</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;" id="listVoucherProfil">
+          <!-- Diisi otomatis oleh JS -->
+        </div>
+      </div>
+
+      <!-- MENU PENGATURAN & LAYANAN AKUN -->
+      <div class="card" style="padding: 6px 0;">
+        <div class="account-menu-list">
+          <a href="#" onclick="pindahTab('tiket'); return false;" class="account-menu-item">
+            <div class="menu-item-left">
+              <div class="menu-item-icon" style="background:#FFF7ED; color:#EA580C;"><i class="fa-solid fa-receipt"></i></div>
+              <div>
+                <div class="menu-item-title">Riwayat & E-Tiket Saya</div>
+                <div class="menu-item-sub">Lihat QR code boarding pass & bukti reservasi</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right menu-item-arrow"></i>
+          </a>
+
+          <a href="/?cat=Favorit#areaKatalog" class="account-menu-item">
+            <div class="menu-item-left">
+              <div class="menu-item-icon" style="background:#FEF2F2; color:#EF4444;"><i class="fa-solid fa-heart"></i></div>
+              <div>
+                <div class="menu-item-title">Wishlist & Destinasi Favorit</div>
+                <div class="menu-item-sub">Koleksi wisata impian yang Anda sukai</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right menu-item-arrow"></i>
+          </a>
+
+          <a href="#" onclick="hubungiCSWhatsApp(); return false;" class="account-menu-item">
+            <div class="menu-item-left">
+              <div class="menu-item-icon" style="background:#ECFDF5; color:#059669;"><i class="fa-brands fa-whatsapp"></i></div>
+              <div>
+                <div class="menu-item-title">Bantuan & Layanan CS (24 Jam)</div>
+                <div class="menu-item-sub">Hubungi admin resmi seputar tiket & perjalanan</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right menu-item-arrow"></i>
+          </a>
+
+          <a href="#" onclick="bukaModalSyarat(); return false;" class="account-menu-item">
+            <div class="menu-item-left">
+              <div class="menu-item-icon" style="background:#F1F5F9; color:#475569;"><i class="fa-solid fa-shield-halved"></i></div>
+              <div>
+                <div class="menu-item-title">Kebijakan Privasi & Ketentuan Layanan</div>
+                <div class="menu-item-sub">Standar keamanan & aturan operasional Kamawak.id</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right menu-item-arrow"></i>
+          </a>
+
+          <div style="padding: 16px 20px 8px;">
+            <button onclick="konfirmasiKeluarAkun()" class="btn-logout-full">
+              <i class="fa-solid fa-right-from-bracket"></i> Keluar dari Akun
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="section-title"><i class="fa-solid fa-ticket"></i> Histori Pesanan Anda</div>
+    <!-- ============================================== -->
+    <!-- VIEW 2: TIKET & HISTORI PESANAN WISATAWAN -->
+    <!-- ============================================== -->
+    <div id="seksiTiket" style="display:none;">
+      <!-- Filter Chips -->
+      <div class="ticket-filter-bar">
+        <button class="filter-chip active" id="chipSemua" onclick="filterHistori('semua', this)">Semua (<span id="countSemua">0</span>)</button>
+        <button class="filter-chip" id="chipAktif" onclick="filterHistori('aktif', this)">Siap Digunakan (<span id="countAktif">0</span>)</button>
+        <button class="filter-chip" id="chipSelesai" onclick="filterHistori('selesai', this)">Sudah Digunakan (<span id="countSelesai">0</span>)</button>
+      </div>
+
       <div id="orderList">
         <div class="loader"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL EDIT DATA PROFIL -->
+  <div id="modalEditProfil" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.7); backdrop-filter: blur(5px); z-index:9999; justify-content:center; align-items:center; padding: 15px; overflow-y: auto;">
+    <div style="background: white; border-radius: 16px; width: 100%; max-width: 440px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); overflow: hidden; position: relative; animation: slideUp 0.3s ease; padding: 24px;">
+      <button onclick="tutupModalEditProfil()" style="position: absolute; top: 16px; right: 16px; background: #F1F5F9; border: none; color: var(--text-gray); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;">&times;</button>
+      
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="width: 52px; height: 52px; background: #FFF7ED; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 10px;">
+          <i class="fa-solid fa-user-pen"></i>
+        </div>
+        <h3 style="font-family: 'Poppins', sans-serif; font-size: 18px; color: var(--text-dark); margin-bottom: 4px;">Ubah Data Profil</h3>
+        <p style="font-size: 12px; color: var(--text-gray);">Perbarui identitas kontak Anda agar mudah dihubungi mitra</p>
+      </div>
+
+      <div class="form-group">
+        <label>Nama Lengkap</label>
+        <input type="text" id="editNama" class="form-control" placeholder="Nama lengkap Anda">
+      </div>
+
+      <div class="form-group">
+        <label>Nomor WhatsApp (Aktif)</label>
+        <input type="tel" id="editWa" class="form-control" placeholder="Contoh: 081234567890">
+      </div>
+
+      <div class="form-group">
+        <label>Alamat Email</label>
+        <input type="email" id="editEmail" class="form-control" placeholder="nama@email.com">
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button id="btnSimpanProfil" onclick="simpanDataProfil()" style="flex: 1; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(255, 94, 31, 0.3);">
+          Simpan Perubahan
+        </button>
+        <button onclick="tutupModalEditProfil()" style="padding: 12px 16px; border: 1px solid #CBD5E1; background: white; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; color: var(--text-dark);">
+          Batal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL GANTI KATA SANDI -->
+  <div id="modalGantiSandi" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.7); backdrop-filter: blur(5px); z-index:9999; justify-content:center; align-items:center; padding: 15px; overflow-y: auto;">
+    <div style="background: white; border-radius: 16px; width: 100%; max-width: 440px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); overflow: hidden; position: relative; animation: slideUp 0.3s ease; padding: 24px;">
+      <button onclick="tutupModalGantiSandi()" style="position: absolute; top: 16px; right: 16px; background: #F1F5F9; border: none; color: var(--text-gray); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;">&times;</button>
+      
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="width: 52px; height: 52px; background: #EFF6FF; color: #2563EB; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 10px;">
+          <i class="fa-solid fa-key"></i>
+        </div>
+        <h3 style="font-family: 'Poppins', sans-serif; font-size: 18px; color: var(--text-dark); margin-bottom: 4px;">Ubah Kata Sandi</h3>
+        <p style="font-size: 12px; color: var(--text-gray);">Pastikan kata sandi baru Anda kuat dan mudah diingat</p>
+      </div>
+
+      <div class="form-group">
+        <label>Kata Sandi Baru</label>
+        <input type="password" id="passBaru" class="form-control" placeholder="Minimal 6 karakter">
+      </div>
+
+      <div class="form-group">
+        <label>Ulangi Kata Sandi Baru</label>
+        <input type="password" id="passKonfirmasi" class="form-control" placeholder="Ketik ulang sandi baru">
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button id="btnSimpanSandi" onclick="simpanKataSandi()" style="flex: 1; padding: 12px; background: #2563EB; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
+          Simpan Sandi Baru
+        </button>
+        <button onclick="tutupModalGantiSandi()" style="padding: 12px 16px; border: 1px solid #CBD5E1; background: white; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; color: var(--text-dark);">
+          Batal
+        </button>
       </div>
     </div>
   </div>
@@ -291,7 +868,6 @@ import BottomNav from '../components/BottomNav.astro';
   <!-- MODAL E-TIKET WISATA DIGITAL (AIRLINE BOARDING PASS STYLE) -->
   <div id="modalETiket" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.75); backdrop-filter: blur(6px); z-index:9999; justify-content:center; align-items:center; padding: 15px; overflow-y: auto;">
     <div id="eTiketCard" class="boarding-card">
-      <!-- Header Tiket Boarding Pass -->
       <div class="boarding-header">
         <button onclick="tutupETiket()" class="no-print" style="position: absolute; top: 14px; right: 14px; background: rgba(255,255,255,0.15); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: 0.2s;">&times;</button>
         <div class="boarding-brand">
@@ -306,13 +882,10 @@ import BottomNav from '../components/BottomNav.astro';
         </div>
       </div>
 
-      <!-- Body Boarding Pass -->
       <div class="boarding-body">
-        <!-- Notches on side borders -->
         <div class="boarding-notch-left no-print"></div>
         <div class="boarding-notch-right no-print"></div>
 
-        <!-- Detail Grid -->
         <div class="boarding-grid">
           <div>
             <div class="boarding-field-label">Wisatawan / Tamu</div>
@@ -340,7 +913,6 @@ import BottomNav from '../components/BottomNav.astro';
           </div>
         </div>
 
-        <!-- QR Code Validation Stub -->
         <div class="boarding-qr-section">
           <div style="font-size: 10px; font-weight: 700; color: #64748B; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;">DIGITAL VERIFICATION QR</div>
           <img id="tikQRImg" class="boarding-qr-img" src="" alt="QR Code Tiket" crossOrigin="anonymous">
@@ -349,12 +921,10 @@ import BottomNav from '../components/BottomNav.astro';
           <div style="font-size: 9px; color: #94A3B8; margin-top: 6px; letter-spacing: 1px;">OFFICIAL SECURE TRAVEL PASS</div>
         </div>
 
-        <!-- Info Instruksi -->
         <p class="no-print" style="font-size: 11px; color: var(--text-gray); margin-bottom: 16px; text-align: center; line-height: 1.4;">
           <i class="fa-solid fa-circle-check" style="color: #10B981;"></i> Tunjukkan QR Boarding Pass ini kepada pihak mitra/pemandu untuk dipindai saat kedatangan.
         </p>
 
-        <!-- Tombol Aksi (Download PNG, Print, Tutup) -->
         <div class="no-print" style="display: flex; gap: 8px; flex-wrap: wrap;">
           <button id="btnDownloadTiket" onclick="unduhGambarTiket()" style="flex: 2; padding: 11px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(255, 94, 31, 0.3);">
             <i class="fa-solid fa-download"></i> Unduh Gambar (PNG)
@@ -415,9 +985,66 @@ import BottomNav from '../components/BottomNav.astro';
     import { supabase } from '../lib/supabase.js';
     const BASE_URL = "";
 
+    let semuaPesananCache = [];
+    let filterAktifSekarang = 'semua';
+    let dataPenggunaAktif = null;
+
     function formatUang(angka) { return "Rp " + Number(angka || 0).toLocaleString('id-ID'); }
 
-    window.onload = function() {
+    async function hashPassword(str) {
+      const utf8 = new TextEncoder().encode(str);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // ==========================================
+    // SISTEM TAB: AKUN SAYA VS TIKET SAYA
+    // ==========================================
+    window.pindahTab = function(namaTab) {
+      const pillAkun = document.getElementById('pillAkun');
+      const pillTiket = document.getElementById('pillTiket');
+      const seksiAkun = document.getElementById('seksiAkun');
+      const seksiTiket = document.getElementById('seksiTiket');
+
+      if (namaTab === 'tiket') {
+        if (pillTiket) pillTiket.classList.add('active');
+        if (pillAkun) pillAkun.classList.remove('active');
+        if (seksiTiket) seksiTiket.style.display = 'block';
+        if (seksiAkun) seksiAkun.style.display = 'none';
+        try { window.history.replaceState(null, '', '/profil?tab=tiket'); } catch(e){}
+        sinkronkanBottomNavHighlight('orders');
+      } else {
+        if (pillAkun) pillAkun.classList.add('active');
+        if (pillTiket) pillTiket.classList.remove('active');
+        if (seksiAkun) seksiAkun.style.display = 'block';
+        if (seksiTiket) seksiTiket.style.display = 'none';
+        try { window.history.replaceState(null, '', '/profil?tab=akun'); } catch(e){}
+        sinkronkanBottomNavHighlight('profile');
+      }
+    };
+
+    function sinkronkanBottomNavHighlight(mode) {
+      let btnTiket = document.getElementById('btnNavTiket');
+      let btnAkun = document.getElementById('btnNavAkun');
+      if (mode === 'orders') {
+        if (btnTiket) btnTiket.classList.add('active');
+        if (btnAkun) btnAkun.classList.remove('active');
+      } else {
+        if (btnAkun) btnAkun.classList.add('active');
+        if (btnTiket) btnTiket.classList.remove('active');
+      }
+    }
+
+    window.scrollKeVoucher = function() {
+      const el = document.getElementById('cardVoucherProfil');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+
+    // ==========================================
+    // INITIALIZATION & USER DATA
+    // ==========================================
+    window.onload = async function() {
       if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
 
       let activeUser = localStorage.getItem("kamawak_user");
@@ -431,12 +1058,54 @@ import BottomNav from '../components/BottomNav.astro';
       document.getElementById("mainBody").style.display = "block";
       document.getElementById("uiNama").innerText = activeUser;
       document.getElementById("uiAvatar").innerText = activeUser.charAt(0).toUpperCase();
-      document.getElementById("uiRole").innerText = activeRole.charAt(0).toUpperCase() + activeRole.slice(1);
 
+      // Sinkronkan badge wishlist
+      try {
+        let favs = JSON.parse(localStorage.getItem('kamawak_wishlist') || '[]');
+        let statFav = document.getElementById('statWishlistAktif');
+        if (statFav) statFav.innerText = favs.length;
+      } catch(e) {}
+
+      // Muat Data Pengguna dari Supabase
+      muatDataLengkapPengguna(activeUser);
+
+      // Muat Histori Pesanan & Kupon
       loadHistoriPesanan(activeUser);
       muatVoucherProfil();
+
+      // Cek parameter URL untuk menentukan tab aktif
+      let params = new URLSearchParams(window.location.search);
+      let tabAwal = params.get('tab') || 'akun';
+      pindahTab(tabAwal);
     };
 
+    async function muatDataLengkapPengguna(namaUser) {
+      try {
+        let activeId = localStorage.getItem('kamawak_id');
+        let query = supabase.from('users').select('*');
+        if (activeId) {
+          query = query.eq('id', activeId);
+        } else {
+          query = query.eq('nama', namaUser);
+        }
+        const { data, error } = await query.single();
+        if (data && !error) {
+          dataPenggunaAktif = data;
+          if (data.wa && data.wa.trim() !== '') {
+            document.getElementById('uiWaDisplay').innerText = data.wa;
+          }
+          if (data.email && data.email.trim() !== '') {
+            document.getElementById('uiEmailDisplay').innerText = data.email;
+          }
+        }
+      } catch(e) {
+        console.warn("Info profil ekstra:", e.message);
+      }
+    }
+
+    // ==========================================
+    // HISTORI PESANAN & TIKET
+    // ==========================================
     async function loadHistoriPesanan(user) {
       try {
         const { data, error } = await supabase
@@ -447,81 +1116,303 @@ import BottomNav from '../components/BottomNav.astro';
 
         if (error) throw error;
 
-        let html = "";
-        if(data && data.length > 0) {
-          data.forEach(item => {
-            let statusText = (item.status || "menunggu").toLowerCase();
-            let badgeHtml = '';
-            let isTiketAktif = false;
-            if(statusText.includes("digunakan")) {
-              badgeHtml = `<span class="order-status" style="background:#E0E7FF; color:#3730A3;"><i class="fa-solid fa-circle-check"></i> Sudah Digunakan</span>`;
-              isTiketAktif = true;
-            } else if(statusText.includes("sukses") || statusText.includes("berhasil") || statusText.includes("lunas")) {
-              badgeHtml = `<span class="order-status status-lunas"><i class="fa-solid fa-ticket"></i> Siap Digunakan</span>`;
-              isTiketAktif = true;
-            } else if(statusText.includes("batal") || statusText.includes("gagal")) {
-              badgeHtml = `<span class="order-status status-batal">Dibatalkan</span>`;
-            } else {
-              badgeHtml = `<span class="order-status status-menunggu">Menunggu Pembayaran</span>`;
-            }
-            
-            let tglPesan = item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-';
-            let tglWisata = item.tanggal || '-';
-            let encodedItem = encodeURIComponent(JSON.stringify(item));
-            let reviewedOrders = JSON.parse(localStorage.getItem('kamawak_reviewed_orders') || '[]');
-            let isReviewed = reviewedOrders.includes(String(item.id));
-            let tombolUlasan = '';
-            if (isTiketAktif) {
-              if (isReviewed) {
-                tombolUlasan = `<span style="font-size: 11px; color: #059669; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; background: #ECFDF5; border-radius: 6px;"><i class="fa-solid fa-circle-check"></i> Ulasan Terkirim</span>`;
-              } else {
-                tombolUlasan = `<button class="btn-beri-ulasan" onclick="bukaModalUlasan('${encodedItem}')"><i class="fa-solid fa-star"></i> Beri Ulasan</button>`;
-              }
-            }
-            let tombolTiket = isTiketAktif 
-              ? `<button class="btn-tiket" onclick="bukaETiket('${encodedItem}')"><i class="fa-solid fa-qrcode"></i> Lihat E-Tiket</button>`
-              : '';
+        semuaPesananCache = data || [];
 
-            html += `
-              <div class="order-item">
-                <div class="order-header">
-                  <span><i class="fa-regular fa-clock"></i> ${tglPesan}</span>
-                  ${badgeHtml}
-                </div>
-                <div class="order-body">
-                  <div>
-                    <div class="order-title">${item.namaProduk || '-'}</div>
-                    <div class="order-detail">
-                      <i class="fa-solid fa-calendar-day"></i> Tgl Wisata: ${tglWisata} <br>
-                      <i class="fa-solid fa-users"></i> ${item.pax || 0} Pax | Paket: ${item.paket || '-'}
-                    </div>
-                  </div>
-                  <div class="order-price">${formatUang(item.totalBayar)}</div>
-                </div>
-                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #E5E7EB; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                  <span style="font-size: 12px; color: var(--text-gray); font-family: monospace;">Kode: ${item.id}</span>
-                  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                    ${tombolUlasan}
-                    ${tombolTiket}
-                  </div>
-                </div>
-              </div>
-            `;
-          });
-        } else {
-          html = `
-            <div class="empty-state">
-              <i class="fa-solid fa-receipt"></i>
-              <p>Belum ada histori pesanan.<br>Yuk mulai petualangan Anda bersama Kamawak!</p>
-            </div>
-          `;
+        // Hitung statistik
+        let countAktif = 0;
+        let countSelesai = 0;
+        semuaPesananCache.forEach(item => {
+          let st = (item.status || '').toLowerCase();
+          if (st.includes('digunakan')) countSelesai++;
+          else if (st.includes('sukses') || st.includes('berhasil') || st.includes('lunas')) countAktif++;
+        });
+
+        document.getElementById('countSemua').innerText = semuaPesananCache.length;
+        document.getElementById('countAktif').innerText = countAktif;
+        document.getElementById('countSelesai').innerText = countSelesai;
+        document.getElementById('statTiketAktif').innerText = countAktif;
+
+        let badgePill = document.getElementById('badgeTiketCount');
+        if (badgePill) {
+          if (countAktif > 0) {
+            badgePill.innerText = countAktif;
+            badgePill.style.display = 'inline-block';
+          } else {
+            badgePill.style.display = 'none';
+          }
         }
-        document.getElementById("orderList").innerHTML = html;
+
+        renderDaftarPesanan(semuaPesananCache);
       } catch (err) {
-        document.getElementById("orderList").innerHTML = `<div class="empty-state">Gagal memuat data: ${err.message}</div>`;
+        document.getElementById("orderList").innerHTML = `<div class="empty-state">Gagal memuat pesanan: ${err.message}</div>`;
       }
     }
 
+    window.filterHistori = function(kategori, btnEl) {
+      filterAktifSekarang = kategori;
+      document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+
+      let filtered = [];
+      if (kategori === 'aktif') {
+        filtered = semuaPesananCache.filter(x => {
+          let st = (x.status || '').toLowerCase();
+          return st.includes('sukses') || st.includes('berhasil') || st.includes('lunas');
+        });
+      } else if (kategori === 'selesai') {
+        filtered = semuaPesananCache.filter(x => {
+          let st = (x.status || '').toLowerCase();
+          return st.includes('digunakan');
+        });
+      } else {
+        filtered = semuaPesananCache;
+      }
+      renderDaftarPesanan(filtered);
+    };
+
+    function renderDaftarPesanan(list) {
+      let container = document.getElementById("orderList");
+      if (!list || list.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fa-solid fa-receipt"></i>
+            <p><strong>Belum ada tiket pada kategori ini.</strong><br>Ayo rencanakan liburan seru Anda di Ranah Minang sekarang!</p>
+            <a href="/#areaKatalog" class="btn-jelajah"><i class="fa-solid fa-compass"></i> Jelajahi Wisata</a>
+          </div>
+        `;
+        return;
+      }
+
+      let html = "";
+      list.forEach(item => {
+        let statusText = (item.status || "menunggu").toLowerCase();
+        let badgeHtml = '';
+        let isTiketAktif = false;
+        if(statusText.includes("digunakan")) {
+          badgeHtml = `<span class="order-status" style="background:#E0E7FF; color:#3730A3; border:1px solid #C7D2FE;"><i class="fa-solid fa-circle-check"></i> Sudah Digunakan</span>`;
+          isTiketAktif = true;
+        } else if(statusText.includes("sukses") || statusText.includes("berhasil") || statusText.includes("lunas")) {
+          badgeHtml = `<span class="order-status status-lunas"><i class="fa-solid fa-ticket"></i> Siap Digunakan</span>`;
+          isTiketAktif = true;
+        } else if(statusText.includes("batal") || statusText.includes("gagal")) {
+          badgeHtml = `<span class="order-status status-batal">Dibatalkan</span>`;
+        } else {
+          badgeHtml = `<span class="order-status status-menunggu">Menunggu Pembayaran</span>`;
+        }
+        
+        let tglPesan = item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-';
+        let tglWisata = item.tanggal || '-';
+        let encodedItem = encodeURIComponent(JSON.stringify(item));
+        let reviewedOrders = JSON.parse(localStorage.getItem('kamawak_reviewed_orders') || '[]');
+        let isReviewed = reviewedOrders.includes(String(item.id));
+        let tombolUlasan = '';
+        if (isTiketAktif) {
+          if (isReviewed) {
+            tombolUlasan = `<span style="font-size: 11px; color: #059669; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; background: #ECFDF5; border-radius: 6px;"><i class="fa-solid fa-circle-check"></i> Ulasan Terkirim</span>`;
+          } else {
+            tombolUlasan = `<button class="btn-beri-ulasan" onclick="bukaModalUlasan('${encodedItem}')"><i class="fa-solid fa-star"></i> Beri Ulasan</button>`;
+          }
+        }
+        let tombolTiket = isTiketAktif 
+          ? `<button class="btn-tiket" onclick="bukaETiket('${encodedItem}')"><i class="fa-solid fa-qrcode"></i> Lihat E-Tiket</button>`
+          : '';
+
+        html += `
+          <div class="order-item">
+            <div class="order-header">
+              <span><i class="fa-regular fa-clock"></i> Pesan: ${tglPesan}</span>
+              ${badgeHtml}
+            </div>
+            <div class="order-body">
+              <div>
+                <div class="order-title">${item.namaProduk || '-'}</div>
+                <div class="order-detail">
+                  <i class="fa-solid fa-calendar-day" style="color:var(--primary);"></i> Tgl Keberangkatan: <strong>${tglWisata}</strong> <br>
+                  <i class="fa-solid fa-users" style="color:#64748B;"></i> ${item.pax || 0} Pax | Paket: ${item.paket || '-'}
+                </div>
+              </div>
+              <div class="order-price">${formatUang(item.totalBayar)}</div>
+            </div>
+            <div style="margin-top: 14px; padding-top: 14px; border-top: 1px dashed #E2E8F0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <span style="font-size: 12px; color: var(--text-gray); font-family: monospace;"><i class="fa-solid fa-barcode"></i> ${item.id}</span>
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                ${tombolUlasan}
+                ${tombolTiket}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // ==========================================
+    // MODAL EDIT PROFIL
+    // ==========================================
+    window.bukaModalEditProfil = function() {
+      let activeUser = localStorage.getItem("kamawak_user") || "";
+      document.getElementById('editNama').value = activeUser;
+      if (dataPenggunaAktif) {
+        document.getElementById('editWa').value = dataPenggunaAktif.wa || "";
+        document.getElementById('editEmail').value = dataPenggunaAktif.email || "";
+      }
+      document.getElementById('modalEditProfil').style.display = 'flex';
+    };
+
+    window.tutupModalEditProfil = function() {
+      document.getElementById('modalEditProfil').style.display = 'none';
+    };
+
+    window.simpanDataProfil = async function() {
+      let namaBaru = document.getElementById('editNama').value.trim();
+      let waBaru = document.getElementById('editWa').value.trim();
+      let emailBaru = document.getElementById('editEmail').value.trim();
+
+      if (!namaBaru) {
+        Swal.fire('Perhatian', 'Nama lengkap tidak boleh kosong.', 'warning');
+        return;
+      }
+
+      let btn = document.getElementById('btnSimpanProfil');
+      let teksAsli = btn ? btn.innerText : '';
+      if (btn) { btn.innerText = 'Menyimpan...'; btn.disabled = true; }
+
+      try {
+        let activeId = localStorage.getItem('kamawak_id');
+        let oldUser = localStorage.getItem('kamawak_user');
+
+        let payload = { nama: namaBaru, wa: waBaru, email: emailBaru };
+        let query = supabase.from('users').update(payload);
+        if (activeId) {
+          query = query.eq('id', activeId);
+        } else {
+          query = query.eq('nama', oldUser);
+        }
+
+        const { error } = await query;
+        if (error) throw error;
+
+        // Perbarui localStorage & UI
+        localStorage.setItem('kamawak_user', namaBaru);
+        document.getElementById('uiNama').innerText = namaBaru;
+        document.getElementById('uiAvatar').innerText = namaBaru.charAt(0).toUpperCase();
+        if (waBaru) document.getElementById('uiWaDisplay').innerText = waBaru;
+        if (emailBaru) document.getElementById('uiEmailDisplay').innerText = emailBaru;
+
+        tutupModalEditProfil();
+        Swal.fire('Berhasil!', 'Data profil Anda berhasil diperbarui.', 'success');
+      } catch(err) {
+        console.error("Gagal update profil:", err);
+        Swal.fire('Gagal', 'Terjadi kendala saat menyimpan profil: ' + err.message, 'error');
+      } finally {
+        if (btn) { btn.innerText = teksAsli; btn.disabled = false; }
+      }
+    };
+
+    // ==========================================
+    // MODAL GANTI SANDI
+    // ==========================================
+    window.bukaModalGantiSandi = function() {
+      document.getElementById('passBaru').value = '';
+      document.getElementById('passKonfirmasi').value = '';
+      document.getElementById('modalGantiSandi').style.display = 'flex';
+    };
+
+    window.tutupModalGantiSandi = function() {
+      document.getElementById('modalGantiSandi').style.display = 'none';
+    };
+
+    window.simpanKataSandi = async function() {
+      let p1 = document.getElementById('passBaru').value;
+      let p2 = document.getElementById('passKonfirmasi').value;
+
+      if (!p1 || p1.length < 6) {
+        Swal.fire('Perhatian', 'Kata sandi baru minimal terdiri dari 6 karakter.', 'warning');
+        return;
+      }
+      if (p1 !== p2) {
+        Swal.fire('Perhatian', 'Konfirmasi kata sandi tidak cocok. Mohon periksa kembali.', 'warning');
+        return;
+      }
+
+      let btn = document.getElementById('btnSimpanSandi');
+      let teksAsli = btn ? btn.innerText : '';
+      if (btn) { btn.innerText = 'Menyimpan Sandi...'; btn.disabled = true; }
+
+      try {
+        let hashed = await hashPassword(p1);
+        let activeId = localStorage.getItem('kamawak_id');
+        let oldUser = localStorage.getItem('kamawak_user');
+
+        let query = supabase.from('users').update({ password: hashed });
+        if (activeId) {
+          query = query.eq('id', activeId);
+        } else {
+          query = query.eq('nama', oldUser);
+        }
+
+        const { error } = await query;
+        if (error) throw error;
+
+        tutupModalGantiSandi();
+        Swal.fire('Sandi Berhasil Diubah! 🔒', 'Kata sandi akun Anda telah diperbarui dengan aman.', 'success');
+      } catch(err) {
+        console.error("Gagal update sandi:", err);
+        Swal.fire('Gagal', 'Kendala ubah sandi: ' + err.message, 'error');
+      } finally {
+        if (btn) { btn.innerText = teksAsli; btn.disabled = false; }
+      }
+    };
+
+    // ==========================================
+    // LOGOUT & CS WHATSAPP
+    // ==========================================
+    window.konfirmasiKeluarAkun = function() {
+      Swal.fire({
+        title: 'Keluar dari Akun?',
+        text: 'Anda perlu masuk kembali untuk mengakses tiket & pesanan wisata.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#DC2626',
+        cancelButtonColor: '#64748B',
+        confirmButtonText: '<i class="fa-solid fa-right-from-bracket"></i> Ya, Keluar',
+        cancelButtonText: 'Batal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          localStorage.removeItem('kamawak_user');
+          localStorage.removeItem('kamawak_role');
+          localStorage.removeItem('kamawak_id');
+          window.location.href = '/login';
+        }
+      });
+    };
+
+    window.hubungiCSWhatsApp = function() {
+      let adminWa = localStorage.getItem('kamawak_prof_wa') || '6281234567890';
+      adminWa = adminWa.replace(/[^0-9]/g, '');
+      if (adminWa.startsWith('0')) adminWa = '62' + adminWa.substring(1);
+      let pesan = encodeURIComponent('Halo Customer Support Kamawak.id, saya wisatawan ingin bertanya seputar layanan dan pesanan tiket.');
+      window.open(`https://wa.me/${adminWa}?text=${pesan}`, '_blank');
+    };
+
+    window.bukaModalSyarat = function() {
+      Swal.fire({
+        title: 'Ketentuan Layanan & Privasi',
+        html: `
+          <div style="text-align:left; font-size:13px; line-height:1.6; color:#475569; max-height:300px; overflow-y:auto;">
+            <p><strong>1. Reservasi & Tiket:</strong> E-Tiket yang diterbitkan resmi oleh Kamawak.id berlaku untuk tanggal keberangkatan yang dipilih saat reservasi.</p>
+            <p style="margin-top:8px;"><strong>2. Check-in & Validasi:</strong> Tunjukkan kode QR pada E-Tiket kepada pemandu wisata atau mitra penyedia layanan di lokasi kedatangan.</p>
+            <p style="margin-top:8px;"><strong>3. Privasi Data:</strong> Data kontak Anda (Nama, WhatsApp, Email) dilindungi dan hanya digunakan untuk keperluan koordinasi wisata.</p>
+          </div>
+        `,
+        confirmButtonText: 'Saya Mengerti',
+        confirmButtonColor: '#FF5E1F'
+      });
+    };
+
+    // ==========================================
+    // BOARDING PASS & REVIEW FUNCTIONS
+    // ==========================================
     window.bukaETiket = function(itemEncoded) {
       try {
         let item = JSON.parse(decodeURIComponent(itemEncoded));
@@ -569,9 +1460,6 @@ import BottomNav from '../components/BottomNav.astro';
       document.getElementById('modalETiket').style.display = 'none';
     };
 
-    // ==========================================
-    // UNDUH GAMBAR E-TIKET BOARDING PASS (PNG)
-    // ==========================================
     window.unduhGambarTiket = async function() {
       const card = document.getElementById('eTiketCard');
       const btn = document.getElementById('btnDownloadTiket');
@@ -620,9 +1508,6 @@ import BottomNav from '../components/BottomNav.astro';
       }
     };
 
-    // ==========================================
-    // FITUR: REVIEW & RATING WISATAWAN
-    // ==========================================
     let orderAktifReview = null;
     let ratingDipilih = 5;
 
@@ -682,7 +1567,6 @@ import BottomNav from '../components/BottomNav.astro';
         tanggal: new Date().toISOString()
       };
 
-      // Simpan ke cache lokal agar langsung terlihat di PDP
       const pKey = 'kamawak_ulasan_' + payload.idProduk;
       let cached = JSON.parse(localStorage.getItem(pKey) || '[]');
       cached.unshift({
@@ -693,14 +1577,12 @@ import BottomNav from '../components/BottomNav.astro';
       });
       localStorage.setItem(pKey, JSON.stringify(cached));
 
-      // Tandai pesanan ini sudah diulas
       let reviewedOrders = JSON.parse(localStorage.getItem('kamawak_reviewed_orders') || '[]');
       if (!reviewedOrders.includes(String(orderAktifReview.id))) {
         reviewedOrders.push(String(orderAktifReview.id));
         localStorage.setItem('kamawak_reviewed_orders', JSON.stringify(reviewedOrders));
       }
 
-      // Kirim ke backend GAS jika tersedia
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         try {
           google.script.run.tambahUlasan(payload);
@@ -743,6 +1625,8 @@ import BottomNav from '../components/BottomNav.astro';
       }
 
       const activeList = Array.isArray(list) ? list.filter(p => p.aktif !== false) : [];
+      let statKupon = document.getElementById('statKuponAktif');
+      if (statKupon) statKupon.innerText = activeList.length;
 
       if (activeList.length === 0) {
         container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-gray); font-size: 13px; padding: 20px; background: #F9FAFB; border-radius: 8px;"><i class="fa-solid fa-tag"></i> Saat ini belum ada kupon promo aktif. Pantau terus penawaran menarik berikutnya!</div>';
@@ -770,21 +1654,6 @@ import BottomNav from '../components/BottomNav.astro';
       container.innerHTML = html;
     }
 
-    // Sinkronisasi cloud promo pada profil
-    if (typeof google !== 'undefined' && google.script && google.script.run) {
-      google.script.run.withSuccessHandler(function(config) {
-        if (!config) return;
-        if (config.VOUCHER_PROMO) {
-          let strVal = typeof config.VOUCHER_PROMO === 'string' ? config.VOUCHER_PROMO : JSON.stringify(config.VOUCHER_PROMO);
-          localStorage.setItem("kamawak_promo_codes", strVal);
-        }
-        if (config.FITUR_VOUCHER_AKTIF !== undefined) {
-          localStorage.setItem("kamawak_promo_master_aktif", String(config.FITUR_VOUCHER_AKTIF));
-        }
-        muatVoucherProfil();
-      }).getPengaturan();
-    }
-
     window.salinKuponProfil = function(kode) {
       navigator.clipboard.writeText(kode).then(() => {
         Swal.fire({
@@ -799,6 +1668,6 @@ import BottomNav from '../components/BottomNav.astro';
     };
   </script>
 
-  <BottomNav current="orders" />
+  <BottomNav current="profile" />
 </body>
 </html>
