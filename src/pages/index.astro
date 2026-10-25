@@ -24,14 +24,23 @@ const INITIAL_CITIES = [
   <meta name="keywords" content="wisata sumatera barat, paket tour padang, glamping lembah harau, villa bukittinggi, pulau mandeh, kamawak">
   <meta name="author" content="Kamawak Indonesia">
   <link rel="canonical" href="https://kamawak.id/">
+  <!-- Favicon Standar Google Search (Kelipatan 48px) & Browser -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512x512.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 
   <!-- Open Graph / Facebook / WhatsApp -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://kamawak.id/">
   <meta property="og:title" content="Kamawak - Pesona Wisata & Penginapan Sumatera Barat">
   <meta property="og:description" content="Jelajahi keindahan Sumatera Barat! Temukan dan pesan paket tur, villa, glamping, serta tiket wisata pilihan dengan harga terbaik.">
-  <meta property="og:image" content="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1200&auto=format&fit=crop&q=80">
+  <meta property="og:image" content="https://kamawak.id/kamawak-og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:site_name" content="Kamawak">
 
   <!-- Twitter / X -->
@@ -39,7 +48,28 @@ const INITIAL_CITIES = [
   <meta name="twitter:url" content="https://kamawak.id/">
   <meta name="twitter:title" content="Kamawak - Pesona Wisata & Penginapan Sumatera Barat">
   <meta name="twitter:description" content="Jelajahi keindahan Sumatera Barat! Temukan dan pesan paket tur, villa, glamping, serta tiket wisata pilihan.">
-  <meta name="twitter:image" content="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1200&auto=format&fit=crop&q=80">
+  <meta name="twitter:image" content="https://kamawak.id/kamawak-og-image.jpg">
+
+  <!-- Schema.org Structured Data (Google Search Knowledge Graph & Logo Resmi) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TravelAgency",
+    "name": "Kamawak",
+    "alternateName": ["Kamawak.id", "Kamawak Indonesia"],
+    "url": "https://kamawak.id/",
+    "logo": "https://kamawak.id/logo.png",
+    "image": "https://kamawak.id/kamawak-og-image.jpg",
+    "description": "Platform resmi reservasi paket wisata, glamping, villa, dan tiket atraksi terbaik di Sumatera Barat.",
+    "telephone": "+6281234567890",
+    "address": {
+      "@type": "PostalAddress",
+      "addressRegion": "Sumatera Barat",
+      "addressCountry": "ID"
+    },
+    "priceRange": "$$"
+  }
+  </script>
   <script>
     // SANITASI AWAL — hapus foto pulau & lembah dari SEMUA localStorage sebelum halaman render
     (function() {
