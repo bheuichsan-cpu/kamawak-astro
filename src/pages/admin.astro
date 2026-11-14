@@ -338,6 +338,7 @@ import BottomNav from '../components/BottomNav.astro';
       <button id="btnTabUsers" onclick="switchTab('tabUsers')"><i class="fa-solid fa-users-gear"></i> Hak Akses Pengguna</button>
       <button id="btnTabAds" onclick="switchTab('tabAds')"><i class="fa-solid fa-rectangle-ad"></i> Ad Space</button>
       <button id="btnTabComposer" onclick="switchTab('tabComposer')"><i class="fa-solid fa-layer-group"></i> Desain Halaman (UI)</button>
+      <button id="btnTabDraf" onclick="switchTab('tabDraf')"><i class="fa-solid fa-inbox"></i> Draf Wisata</button>
       <button id="btnTabPengaturan" onclick="switchTab('tabPengaturan')"><i class="fa-solid fa-gear"></i> Pengaturan</button>
     </div>
 
@@ -1239,6 +1240,46 @@ import BottomNav from '../components/BottomNav.astro';
       </div>
     </div>
     
+    <div id="tabDraf" style="display:none;">
+      <div class="card-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+          <h3 style="font-family: 'Poppins'; font-size: 18px; margin: 0;"><i class="fa-solid fa-inbox" style="color: var(--primary);"></i> Draf Wisata dari Agen</h3>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <label for="filterStatusDraf" style="font-size: 13px; font-weight: 600;">Status</label>
+            <select id="filterStatusDraf" class="form-control" style="width: auto; padding: 8px 12px;" onchange="muatDaftarDraf()">
+              <option value="draf">Draf (menunggu)</option>
+              <option value="siap_cek">Siap cek</option>
+              <option value="ditolak">Ditolak</option>
+              <option value="disetujui">Disetujui</option>
+              <option value="semua">Semua</option>
+            </select>
+            <button class="btn-admin" style="background: #64748B;" onclick="muatDaftarDraf()"><i class="fa-solid fa-rotate"></i> Muat ulang</button>
+          </div>
+        </div>
+        <div id="drafInfo" style="margin-bottom: 12px; font-weight: 600; font-size: 14px;"></div>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Kategori</th>
+                <th>Lokasi</th>
+                <th>Harga Mulai</th>
+                <th>Status</th>
+                <th>Tanggal</th>
+                <th>Diajukan Oleh</th>
+                <th style="text-align: center;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tableDrafBody">
+              <tr><td colspan="8" style="text-align: center; color: var(--text-gray);">Memuat draf wisata...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div id="detailDraf" class="card-section" style="display:none;"></div>
+    </div>
+
     <div id="tabPengaturan" style="display:none;">
       <!-- FORM PROFIL USAHA -->
       <div class="card-section" style="border-left: 5px solid #FF5E1F; margin-bottom: 25px;">
@@ -1614,7 +1655,7 @@ const BASE_URL = "";
 window.switchTab = function(tabId) {
   document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
   
-  const allTabs = ['tabDashboard', 'tabCMS', 'tabPromo', 'tabTransaksi', 'tabKeuangan', 'tabUsers', 'tabAds', 'tabComposer', 'tabPengaturan'];
+  const allTabs = ['tabDashboard', 'tabCMS', 'tabPromo', 'tabTransaksi', 'tabKeuangan', 'tabUsers', 'tabAds', 'tabComposer', 'tabPengaturan', 'tabDraf'];
   allTabs.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
@@ -1640,6 +1681,7 @@ window.switchTab = function(tabId) {
     targetBtn.style.boxShadow = '0 4px 14px rgba(255, 94, 31, 0.25)';
   }
 
+  if (tabId === 'tabDraf') muatDaftarDraf();
   if (tabId === 'tabCMS' && typeof muatDaftarWisataCMS === 'function') muatDaftarWisataCMS();
   if (tabId === 'tabPromo' && typeof muatDaftarPromo === 'function') muatDaftarPromo();
   if (tabId === 'tabAds' && typeof muatDaftarIklan === 'function') muatDaftarIklan();
@@ -1648,6 +1690,146 @@ window.switchTab = function(tabId) {
   if (tabId === 'tabKeuangan' && typeof muatKas === 'function') muatKas();
   if (tabId === 'tabDashboard' && typeof muatDaftarMitra === 'function') muatDaftarMitra();
 };
+
+// ===== DRAF WISATA (tabel wisata_draf; setujui lewat RPC setujui_draf) =====
+function escDraf(v) {
+  return String(v == null ? '' : v)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function fotoDrafAman(arr) {
+  // Hanya tautan berawalan https:// yang ditampilkan.
+  return (Array.isArray(arr) ? arr : []).filter(u => typeof u === 'string' && /^https:\/\//i.test(u));
+}
+function rupiahDraf(n) {
+  if (n == null || n === '' || isNaN(Number(n))) return '-';
+  return 'Rp ' + Number(n).toLocaleString('id-ID');
+}
+function tanggalDraf(t) {
+  if (!t) return '-';
+  const d = new Date(t);
+  return isNaN(d.getTime()) ? '-' : d.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+}
+function badgeStatusDraf(st) {
+  const warna = { draf: '#FEF3C7;color:#92400E', siap_cek: '#DBEAFE;color:#1E40AF', ditolak: '#FEE2E2;color:#991B1B', disetujui: '#D1FAE5;color:#065F46' }[st] || '#E5E7EB;color:#111827';
+  return `<span style="padding:4px 10px;border-radius:15px;font-size:12px;font-weight:600;background:${warna}">${escDraf(st)}</span>`;
+}
+let daftarDrafMuat = [];
+
+window.muatDaftarDraf = async function() {
+  const tbody = document.getElementById('tableDrafBody');
+  const info = document.getElementById('drafInfo');
+  const detail = document.getElementById('detailDraf');
+  if (!tbody) return;
+  if (detail) { detail.style.display = 'none'; detail.innerHTML = ''; }
+  const filter = document.getElementById('filterStatusDraf').value;
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-gray);"><i class="fa-solid fa-spinner fa-spin"></i> Memuat draf wisata...</td></tr>';
+  try {
+    let q = supabase.from('wisata_draf').select('*').order('dibuat_pada', { ascending: false });
+    if (filter !== 'semua') q = q.eq('status', filter);
+    const { data, error } = await q;
+    if (error) throw error;
+    daftarDrafMuat = data || [];
+    if (daftarDrafMuat.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-gray);">Tidak ada draf dengan status ini.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = daftarDrafMuat.map(d => `<tr>
+      <td><b>${escDraf(d.nama)}</b>${d.label_uji ? ' <span style="background:#FDE68A;color:#78350F;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;">UJI</span>' : ''}</td>
+      <td>${escDraf(d.kategori || '-')}</td>
+      <td>${escDraf(d.lokasi || '-')}</td>
+      <td>${escDraf(rupiahDraf(d.harga_mulai))}</td>
+      <td>${badgeStatusDraf(d.status)}</td>
+      <td>${escDraf(tanggalDraf(d.dibuat_pada))}</td>
+      <td style="font-size:12px;">${escDraf(d.diajukan_oleh || '-')}</td>
+      <td style="text-align:center;"><button class="btn-admin" data-draf-detail="${escDraf(d.id)}" style="background:var(--primary);padding:6px 12px;">Detail</button></td>
+    </tr>`).join('');
+  } catch (e) {
+    console.error('Draf err:', e);
+    tbody.innerHTML = `<tr><td colspan="8" style="color:red;">Gagal memuat draf: ${escDraf(e.message || JSON.stringify(e))}</td></tr>`;
+  }
+};
+
+function bukaDetailDraf(id) {
+  const d = daftarDrafMuat.find(x => x.id === id);
+  const box = document.getElementById('detailDraf');
+  if (!d || !box) return;
+  const fotos = fotoDrafAman(d.foto_url);
+  const fotoHtml = fotos.length
+    ? fotos.map(u => `<a href="${escDraf(u)}" target="_blank" rel="noopener noreferrer"><img src="${escDraf(u)}" alt="Foto draf" loading="lazy" referrerpolicy="no-referrer" style="width:160px;height:120px;object-fit:cover;border-radius:8px;border:1px solid #E5E7EB;"></a>`).join('')
+    : '<span style="color:var(--text-gray);">Tidak ada foto (atau tautan bukan https).</span>';
+  const baris = (label, nilai) => `<div style="margin-bottom:10px;"><div style="font-size:12px;font-weight:700;color:var(--text-gray);">${label}</div><div style="white-space:pre-wrap;word-break:break-word;">${escDraf(nilai || '-')}</div></div>`;
+  const boleh = d.status === 'draf' || d.status === 'siap_cek';
+  const waKosong = !d.wa_usaha || !String(d.wa_usaha).trim();
+  box.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+      <h3 style="font-family:'Poppins';font-size:17px;margin:0;">${escDraf(d.nama)} ${d.label_uji ? '<span style="background:#FDE68A;color:#78350F;padding:2px 8px;border-radius:10px;font-size:11px;">UJI</span>' : ''} ${badgeStatusDraf(d.status)}</h3>
+      <button class="btn-admin" style="background:#64748B;" data-draf-tutup="1">Tutup</button>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">${fotoHtml}</div>
+    ${baris('Kategori', d.kategori)}${baris('Lokasi', d.lokasi)}${baris('Harga mulai', rupiahDraf(d.harga_mulai))}
+    ${baris('Deskripsi', d.deskripsi)}${baris('Fasilitas', d.fasilitas)}
+    ${baris('WhatsApp usaha (wa_usaha)', d.wa_usaha)}${waKosong ? '<div style="color:#991B1B;font-weight:600;margin:-4px 0 10px;">wa_usaha kosong: draf tidak bisa disetujui sebelum diisi.</div>' : ''}
+    ${baris('Sumber', d.sumber)}${baris('Izin mitra', d.izin_mitra)}
+    ${baris('Diajukan oleh', d.diajukan_oleh)}${baris('Tanggal', tanggalDraf(d.dibuat_pada))}
+    ${d.wisata_id ? baris('ID wisata hasil persetujuan', d.wisata_id) : ''}
+    ${boleh ? `<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+      <button class="btn-admin" style="background:#16A34A;" data-draf-setujui="${escDraf(d.id)}"><i class="fa-solid fa-check"></i> Setujui</button>
+      <button class="btn-admin" style="background:#DC2626;" data-draf-tolak="${escDraf(d.id)}"><i class="fa-solid fa-xmark"></i> Tolak</button>
+    </div>` : '<div style="margin-top:12px;color:var(--text-gray);font-size:13px;">Draf ini sudah diproses.</div>'}`;
+  box.style.display = 'block';
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function setujuiDraf(id) {
+  const d = daftarDrafMuat.find(x => x.id === id);
+  const info = document.getElementById('drafInfo');
+  if (!d) return;
+  if (!confirm(`Setujui draf "${d.nama}"?\n\nDraf akan disalin ke daftar wisata dengan status Nonaktif (belum tampil di situs). Anda harus mengaktifkannya sendiri di menu Konten (CMS PDP) setelah dicek.`)) return;
+  info.style.color = '';
+  info.innerText = 'Menyetujui draf...';
+  // Status awal selalu 'Nonaktif'; admin yang mengaktifkan setelah dicek.
+  const { data, error } = await supabase.rpc('setujui_draf', { p_id: id, p_status: 'Nonaktif' });
+  if (error) {
+    info.style.color = 'red';
+    info.innerText = 'Gagal menyetujui: ' + (error.message || 'galat tidak diketahui');
+    return;
+  }
+  info.style.color = 'green';
+  info.innerText = 'Draf disetujui dan masuk ke daftar wisata berstatus Nonaktif. Aktifkan sendiri di menu Konten (CMS PDP) setelah dicek.' + (data ? ' (ID wisata: ' + data + ')' : '');
+  const msg = info.innerText;
+  await muatDaftarDraf();
+  info.style.color = 'green';
+  info.innerText = msg;
+}
+
+async function tolakDraf(id) {
+  const d = daftarDrafMuat.find(x => x.id === id);
+  const info = document.getElementById('drafInfo');
+  if (!d) return;
+  if (!confirm(`Tolak draf "${d.nama}"? Draf akan ditandai ditolak dan tidak masuk ke daftar wisata.`)) return;
+  info.style.color = '';
+  info.innerText = 'Menolak draf...';
+  // Hanya draf yang masih menunggu yang boleh ditolak (cegah menimpa draf yang sudah disetujui).
+  const { data, error } = await supabase.from('wisata_draf').update({ status: 'ditolak' }).eq('id', id).in('status', ['draf', 'siap_cek']).select('id');
+  if (error || !data || data.length === 0) {
+    info.style.color = 'red';
+    info.innerText = 'Gagal menolak: ' + (error ? (error.message || 'galat tidak diketahui') : 'draf tidak ditemukan atau sudah diproses.');
+    return;
+  }
+  await muatDaftarDraf();
+  info.style.color = 'green';
+  info.innerText = 'Draf ditandai ditolak.';
+}
+
+document.addEventListener('click', (ev) => {
+  const t = ev.target.closest && ev.target.closest('[data-draf-detail],[data-draf-setujui],[data-draf-tolak],[data-draf-tutup]');
+  if (!t) return;
+  if (t.dataset.drafDetail) bukaDetailDraf(t.dataset.drafDetail);
+  else if (t.dataset.drafSetujui) setujuiDraf(t.dataset.drafSetujui);
+  else if (t.dataset.drafTolak) tolakDraf(t.dataset.drafTolak);
+  else if (t.dataset.drafTutup) { const b = document.getElementById('detailDraf'); b.style.display = 'none'; b.innerHTML = ''; }
+});
 
 window.logout = function() {
   keluarAkun().then(() => { window.location.href = '/'; });
