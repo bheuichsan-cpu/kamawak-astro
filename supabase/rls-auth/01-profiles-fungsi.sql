@@ -107,45 +107,53 @@ security definer
 set search_path = ''
 as $$
 declare
-  l      record;
-  v_role text;
+  v_lid      uuid;
+  v_lnama    text;
+  v_luser    text;
+  v_lwa      text;
+  v_lrole    text;
+  v_lstatus  text;
+  v_role     text;
 begin
   if p_email is null or btrim(p_email) = '' then return; end if;
   if to_regclass('public.users') is null then return; end if;
   if exists (select 1 from public.profiles where id = p_id and legacy_user_id is not null) then return; end if;
 
+  -- CATATAN: EXECUTE ... INTO TIDAK mengubah FOUND di PL/pgSQL, jadi hasil dicek
+  -- lewat nilai v_lid (null = tidak ada baris legacy dengan email itu).
   execute 'select id, nama, username, wa, role, status_langganan from public.users '
           'where lower(btrim(email)) = lower(btrim($1)) order by created_at limit 1'
-    into l using p_email;
-  if not found then return; end if;
+    into v_lid, v_lnama, v_luser, v_lwa, v_lrole, v_lstatus
+    using p_email;
+  if v_lid is null then return; end if;
 
   v_role := case
-    when lower(btrim(coalesce(l.role, ''))) = 'admin' then 'Admin'
-    when lower(btrim(coalesce(l.role, ''))) = 'owner' then 'Owner'
-    when lower(btrim(coalesce(l.role, ''))) = 'mitra' then 'Mitra'
+    when lower(btrim(coalesce(v_lrole, ''))) = 'admin' then 'Admin'
+    when lower(btrim(coalesce(v_lrole, ''))) = 'owner' then 'Owner'
+    when lower(btrim(coalesce(v_lrole, ''))) = 'mitra' then 'Mitra'
     else 'Wisatawan'
   end;
+  if v_lstatus is null or v_lstatus not in ('Aktif', 'Pending', 'Nonaktif', 'Kadaluarsa') then
+    v_lstatus := null;
+  end if;
 
   begin
     update public.profiles
-       set nama = coalesce(nullif(btrim(l.nama), ''), nama),
-           username = coalesce(nullif(lower(btrim(l.username)), ''), username),
-           wa = coalesce(nullif(btrim(l.wa), ''), wa),
+       set nama = coalesce(nullif(btrim(v_lnama), ''), nama),
+           username = coalesce(nullif(lower(btrim(v_luser)), ''), username),
+           wa = coalesce(nullif(btrim(v_lwa), ''), wa),
            role = v_role,
-           status_langganan = case
-             when l.status_langganan in ('Aktif', 'Pending', 'Nonaktif', 'Kadaluarsa') then l.status_langganan
-             else status_langganan end,
-           legacy_user_id = l.id
+           status_langganan = coalesce(v_lstatus, status_langganan),
+           legacy_user_id = v_lid
      where id = p_id;
   exception when unique_violation then
-    -- username/legacy bentrok: pewarisan tanpa username
+    -- username bentrok: pewarisan tanpa username
     update public.profiles
-       set nama = coalesce(nullif(btrim(l.nama), ''), nama),
-           wa = coalesce(nullif(btrim(l.wa), ''), wa),
+       set nama = coalesce(nullif(btrim(v_lnama), ''), nama),
+           wa = coalesce(nullif(btrim(v_lwa), ''), wa),
            role = v_role,
-           status_langganan = case
-             when l.status_langganan in ('Aktif', 'Pending', 'Nonaktif', 'Kadaluarsa') then l.status_langganan
-             else status_langganan end
+           status_langganan = coalesce(v_lstatus, status_langganan),
+           legacy_user_id = v_lid
      where id = p_id;
   end;
 end;
