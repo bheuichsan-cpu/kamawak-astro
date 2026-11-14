@@ -42,6 +42,42 @@ alter table public.profiles enable row level security;
 revoke all on table public.profiles from public, anon, authenticated;
 
 -- ---------------------------------------------------------------------
+-- 1b. Kolom baru pada tabel yang ada (HARUS sebelum fungsi language sql yang memakainya,
+--     mis. is_owner_of memakai wisata.owner_id; fungsi SQL divalidasi saat CREATE) (tabel transaksi/leads/tarik_saldo
+--    produksi saat ini KOSONG; wisata 9 baris; kolom lama tidak diubah)
+-- ---------------------------------------------------------------------
+-- wisata: pemilik sebagai uuid (teks 'owner' lama tetap dipertahankan)
+alter table public.wisata add column if not exists owner_id uuid references public.profiles (id) on delete set null;
+create index if not exists wisata_owner_id_idx on public.wisata (owner_id);
+
+-- transaksi: skema produksi hanya (id, owner_nama, nominal, rekening, status, created_at),
+-- sedangkan kode checkout/tiket memakai kolom pemesanan. Kolom pemesanan ditambah di sini.
+-- Nama "namaProduk"/"totalBayar"/"rawVarian" sengaja camelCase karena kode situs sudah
+-- membacanya dengan nama itu (profil/owner/admin); kolom baru lain memakai snake_case.
+alter table public.transaksi add column if not exists wisata_id     uuid references public.wisata (id) on delete set null;
+alter table public.transaksi add column if not exists user_id       uuid references public.profiles (id) on delete set null;
+alter table public.transaksi add column if not exists nama_pemesan  text;
+alter table public.transaksi add column if not exists "namaProduk"  text;
+alter table public.transaksi add column if not exists tanggal       date;
+alter table public.transaksi add column if not exists pax           integer;
+alter table public.transaksi add column if not exists paket         text;
+alter table public.transaksi add column if not exists "rawVarian"   text;
+alter table public.transaksi add column if not exists "totalBayar"  numeric;
+alter table public.transaksi add column if not exists diskon        numeric not null default 0;
+alter table public.transaksi add column if not exists promo_kode    text;
+alter table public.transaksi add column if not exists waktu_checkin timestamptz;
+create index if not exists transaksi_user_id_idx   on public.transaksi (user_id);
+create index if not exists transaksi_wisata_id_idx on public.transaksi (wisata_id);
+
+-- tarik_saldo: pemilik sebagai uuid, diisi otomatis dari sesi login
+alter table public.tarik_saldo add column if not exists owner_id uuid default auth.uid() references public.profiles (id) on delete set null;
+create index if not exists tarik_saldo_owner_id_idx on public.tarik_saldo (owner_id);
+alter table public.tarik_saldo drop constraint if exists tarik_saldo_nominal_positif;
+alter table public.tarik_saldo add constraint tarik_saldo_nominal_positif check (nominal is null or nominal > 0) not valid;
+
+create index if not exists leads_wisata_id_idx on public.leads (wisata_id);
+
+-- ---------------------------------------------------------------------
 -- 2. Fungsi bantu normalisasi nomor WA (08xx -> 628xx, hanya digit)
 -- ---------------------------------------------------------------------
 create or replace function public.norm_wa(p text)
@@ -233,41 +269,6 @@ grant execute on function public.is_admin() to authenticated;
 grant execute on function public.is_mitra() to authenticated;
 grant execute on function public.is_agen() to authenticated;
 grant execute on function public.is_owner_of(uuid) to authenticated;
-
--- ---------------------------------------------------------------------
--- 6. Kolom baru pada tabel yang ada (tabel transaksi/leads/tarik_saldo
---    produksi saat ini KOSONG; wisata 9 baris; kolom lama tidak diubah)
--- ---------------------------------------------------------------------
--- wisata: pemilik sebagai uuid (teks 'owner' lama tetap dipertahankan)
-alter table public.wisata add column if not exists owner_id uuid references public.profiles (id) on delete set null;
-create index if not exists wisata_owner_id_idx on public.wisata (owner_id);
-
--- transaksi: skema produksi hanya (id, owner_nama, nominal, rekening, status, created_at),
--- sedangkan kode checkout/tiket memakai kolom pemesanan. Kolom pemesanan ditambah di sini.
--- Nama "namaProduk"/"totalBayar"/"rawVarian" sengaja camelCase karena kode situs sudah
--- membacanya dengan nama itu (profil/owner/admin); kolom baru lain memakai snake_case.
-alter table public.transaksi add column if not exists wisata_id     uuid references public.wisata (id) on delete set null;
-alter table public.transaksi add column if not exists user_id       uuid references public.profiles (id) on delete set null;
-alter table public.transaksi add column if not exists nama_pemesan  text;
-alter table public.transaksi add column if not exists "namaProduk"  text;
-alter table public.transaksi add column if not exists tanggal       date;
-alter table public.transaksi add column if not exists pax           integer;
-alter table public.transaksi add column if not exists paket         text;
-alter table public.transaksi add column if not exists "rawVarian"   text;
-alter table public.transaksi add column if not exists "totalBayar"  numeric;
-alter table public.transaksi add column if not exists diskon        numeric not null default 0;
-alter table public.transaksi add column if not exists promo_kode    text;
-alter table public.transaksi add column if not exists waktu_checkin timestamptz;
-create index if not exists transaksi_user_id_idx   on public.transaksi (user_id);
-create index if not exists transaksi_wisata_id_idx on public.transaksi (wisata_id);
-
--- tarik_saldo: pemilik sebagai uuid, diisi otomatis dari sesi login
-alter table public.tarik_saldo add column if not exists owner_id uuid default auth.uid() references public.profiles (id) on delete set null;
-create index if not exists tarik_saldo_owner_id_idx on public.tarik_saldo (owner_id);
-alter table public.tarik_saldo drop constraint if exists tarik_saldo_nominal_positif;
-alter table public.tarik_saldo add constraint tarik_saldo_nominal_positif check (nominal is null or nominal > 0) not valid;
-
-create index if not exists leads_wisata_id_idx on public.leads (wisata_id);
 
 -- ---------------------------------------------------------------------
 -- 7. Isi wisata.owner_id otomatis dari teks 'owner' bila tepat satu profil
