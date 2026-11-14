@@ -66,10 +66,9 @@ CREATE TABLE public.transaksi (
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- INSERT DATA AWAL (Admin & Wisatawan)
-INSERT INTO public.users (nama, password, role) VALUES 
-('admin1', 'admin123', 'Admin'),
-('bayu', 'bayu123', 'Wisatawan');
+-- Akun awal (Admin & Wisatawan) TIDAK lagi disimpan di berkas ini.
+-- Akun dibuat lewat Supabase Auth (Dashboard > Authentication > Users); peran diatur
+-- admin (lihat supabase/rls-auth/00-README.md). Sandi tidak boleh ditulis di berkas/repo.
 
 
 -- 5. Tabel Buku Kas (Laba/Rugi)

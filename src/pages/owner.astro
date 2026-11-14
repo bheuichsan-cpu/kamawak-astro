@@ -423,39 +423,24 @@ import BottomNav from '../components/BottomNav.astro';
   </div>
 
   <script>
-    import { supabase } from '../lib/supabase.js';
+    import { supabase, ambilProfilSaya, simpanSesiLokal, keluarAkun } from '../lib/supabase.js';
 
     const BASE_URL = "";
     let namaUser = localStorage.getItem("kamawak_user") || "";
+    let idUserAktif = null;
+    let profilAktif = null;
 
     function formatUang(angka) { return "Rp " + Number(angka || 0).toLocaleString('id-ID'); }
 
     window.onload = async function() {
       if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
 
-      const savedId = localStorage.getItem("kamawak_id");
-      const savedUser = localStorage.getItem("kamawak_user");
-      const savedRole = (localStorage.getItem("kamawak_role") || "").toLowerCase();
-
-      // Tolak jika tidak ada sesi atau role bukan Owner/Mitra/Admin
-      if ((!savedId && !savedUser) || (!savedRole.includes("owner") && !savedRole.includes("mitra") && !savedRole.includes("admin"))) {
-        localStorage.clear();
-        window.location.href = "/login";
-        return;
-      }
-
       try {
-        let query = supabase.from('users').select('*');
-        if (savedId) {
-          query = query.eq('id', savedId);
-        } else {
-          query = query.eq('nama', savedUser);
-        }
-        const { data: userData, error: userError } = await query.single();
+        // Peran dari sesi Supabase Auth + tabel profiles (bukan dari localStorage)
+        const userData = await ambilProfilSaya();
 
-        if (userError || !userData) {
-          console.warn("Akses ditolak: Data pengguna tidak ditemukan di database.");
-          localStorage.clear();
+        if (!userData) {
+          console.warn("Akses ditolak: tidak ada sesi login yang valid.");
           window.location.href = "/login";
           return;
         }
@@ -469,9 +454,9 @@ import BottomNav from '../components/BottomNav.astro';
 
         // Sinkronisasi data resmi dari database
         namaUser = userData.nama;
-        localStorage.setItem("kamawak_id", userData.id);
-        localStorage.setItem("kamawak_user", userData.nama);
-        localStorage.setItem("kamawak_role", userData.role);
+        idUserAktif = userData.id;
+        profilAktif = userData;
+        simpanSesiLokal(userData);
 
         // Buka tampilan setelah diverifikasi resmi
         const ownerBody = document.getElementById("ownerBody");
@@ -484,26 +469,29 @@ import BottomNav from '../components/BottomNav.astro';
         muatDashboardOwner(namaDecode);
       } catch (err) {
         console.error("Gagal verifikasi sesi mitra:", err);
-        localStorage.clear();
         window.location.href = "/login";
       }
     };
 
     async function muatDashboardOwner(namaOwner) {
       try {
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('nama', namaOwner)
-          .single();
+        const userData = profilAktif;
+
+        // Wisata milik owner ini (RLS: hanya baris dengan owner_id = auth.uid())
+        let idWisataSaya = [];
+        try {
+          const { data: wisataSaya } = await supabase.from('wisata').select('id').eq('owner_id', idUserAktif);
+          idWisataSaya = (wisataSaya || []).map(w => w.id);
+        } catch(e) {}
           
         let status = userData ? (userData.status_langganan || 'Pending') : "Tidak Terdaftar";
         
         let leadsCount = 0;
         try {
+           // RLS membatasi ke leads wisata milik sendiri; saring lagi untuk admin yang membuka halaman ini
            const { data: leadsData } = await supabase.from('leads').select('*');
            if (leadsData) {
-               leadsCount = leadsData.filter(l => (l.nama_usaha && l.nama_usaha.toLowerCase() === namaOwner.toLowerCase()) || (l.owner && l.owner.toLowerCase() === namaOwner.toLowerCase())).length;
+               leadsCount = leadsData.filter(l => idWisataSaya.includes(l.wisata_id)).length;
            }
         } catch(e) {}
 
@@ -515,10 +503,8 @@ import BottomNav from '../components/BottomNav.astro';
            const { data: trxData } = await supabase.from('transaksi').select('*').in('status', ['Berhasil', 'Sudah Digunakan']);
            if (trxData) {
                trxData.forEach(trx => {
-                   let trxOwner = (trx.owner || trx.idOwner || trx.namaProduk || "").toLowerCase();
-                   let uId = (userData && userData.id) ? userData.id.toString().toLowerCase() : "";
-                   
-                   if (trxOwner === namaOwner.toLowerCase() || (uId && trxOwner === uId)) {
+                   // Transaksi atas wisata milik owner ini (bukan pesanan pribadinya sebagai wisatawan)
+                   if (idWisataSaya.includes(trx.wisata_id)) {
                        let uang = Number(trx.totalBayar) || 0;
                        saldoOTA += uang;
                        riwayatTrx.push({
@@ -593,23 +579,9 @@ import BottomNav from '../components/BottomNav.astro';
       let namaDecode = decodeURIComponent(namaUser);
 
       try {
-        const { data: user, error: userError } = await supabase.from('users').select('*').eq('nama', namaDecode).single();
-        
-        if (user) {
-          const { error } = await supabase.from('users').update({
-             wa: wa,
-             status_langganan: 'Pending'
-          }).eq('id', user.id);
-          if (error) throw error;
-        } else {
-          const { error } = await supabase.from('users').insert([{
-             nama: namaDecode,
-             wa: wa,
-             role: 'Owner',
-             status_langganan: 'Pending'
-          }]);
-          if (error) throw error;
-        }
+        // Pengajuan lewat RPC: hanya mengisi WA/nama usaha dan menandai 'Pending'; peran diubah admin
+        const { error } = await supabase.rpc('ajukan_mitra', { p_wa: wa, p_nama_usaha: namaUsaha });
+        if (error) throw error;
         
         Swal.fire('Berhasil', 'Pendaftaran berhasil dikirim. Menunggu persetujuan admin.', 'success').then(() => {
             location.reload();
@@ -644,19 +616,20 @@ import BottomNav from '../components/BottomNav.astro';
       let namaDecode = decodeURIComponent(namaUser);
 
       try {
+        // owner_id terisi otomatis dari sesi login; kebijakan RLS menolak selain milik sendiri / bukan Pending
         const { error } = await supabase.from('tarik_saldo').insert([{
            owner: namaDecode,
            nominal: Number(nominal),
            rekening: rekening,
            status: 'Pending'
         }]);
+        if (error) throw error;
         
         Swal.fire('Berhasil', 'Pengajuan berhasil. Silakan tunggu konfirmasi admin.', 'success');
         window.tutupModalTarik();
         btn.innerText = "Ajukan Sekarang"; btn.disabled = false;
       } catch (e) {
-        Swal.fire('Berhasil', 'Pengajuan berhasil dicatat (simulasi). Silakan tunggu konfirmasi admin.', 'success');
-        window.tutupModalTarik();
+        Swal.fire('Gagal', 'Pengajuan tarik saldo gagal dicatat: ' + (e.message || 'terjadi kesalahan sistem'), 'error');
         btn.innerText = "Ajukan Sekarang"; btn.disabled = false;
       }
     };
@@ -873,17 +846,16 @@ import BottomNav from '../components/BottomNav.astro';
       });
 
       try {
-        const { data: trx, error } = await supabase
-          .from('transaksi')
-          .select('*')
-          .eq('id', kodeTiket)
-          .single();
+        // Check-in dilakukan di server (cek kepemilikan wisata, status, anti double-redeem)
+        const { data: res, error } = await supabase.rpc('checkin_tiket', { p_kode: kodeTiket });
+        const hasil = (!error && res) ? res.hasil : 'error';
+        const trx = (res && res.tiket) ? res.tiket : {};
 
-        if (error || !trx) {
+        if (error || hasil === 'tidak_ditemukan') {
           Swal.fire({
             icon: 'error',
             title: 'Tiket Tidak Ditemukan!',
-            html: `Kode tiket <b>${kodeTiket}</b> tidak terdaftar di sistem Kamawak.<br>Pastikan QR Code berasal dari akun pemesanan yang sah.`,
+            html: `Kode tiket <b>${kodeTiket}</b> tidak terdaftar di sistem Kamawak atau bukan tiket usaha Anda.<br>Pastikan QR Code berasal dari akun pemesanan yang sah.`,
             confirmButtonColor: '#EF4444'
           }).then(() => {
             bukaModalScanner();
@@ -891,10 +863,8 @@ import BottomNav from '../components/BottomNav.astro';
           return;
         }
 
-        let statusTrx = (trx.status || '').toLowerCase();
-
-        // 1. Cek jika sudah pernah digunakan (Anti-Double Redemption)
-        if (statusTrx.includes('digunakan') || statusTrx.includes('checked-in')) {
+        // 1. Sudah pernah digunakan (Anti-Double Redemption)
+        if (hasil === 'sudah_digunakan') {
           let tglCheckin = trx.waktu_checkin ? new Date(trx.waktu_checkin).toLocaleString('id-ID') : 'sebelumnya';
           Swal.fire({
             icon: 'warning',
@@ -903,7 +873,7 @@ import BottomNav from '../components/BottomNav.astro';
               <div style="text-align: left; background: #FEF3C7; padding: 14px; border-radius: 8px; font-size: 13px; line-height: 1.6; color: #92400E; margin-top: 10px; border: 1px solid #FDE68A;">
                 <b>Peringatan:</b> Tiket ini sudah pernah dipindai dan telah digunakan pada: <br>
                 <b>🕒 ${tglCheckin}</b><br><hr style="border:none; border-top:1px dashed #F59E0B; margin: 8px 0;">
-                <b>Nama Tamu:</b> ${trx.user || '-'}<br>
+                <b>Nama Tamu:</b> ${trx.nama_pemesan || '-'}<br>
                 <b>Produk:</b> ${trx.namaProduk || '-'}<br>
                 <b>Jumlah Peserta:</b> ${trx.pax || 0} Pax (${trx.paket || 'Reguler'})
               </div>
@@ -916,8 +886,8 @@ import BottomNav from '../components/BottomNav.astro';
           return;
         }
 
-        // 2. Cek jika status batal
-        if (statusTrx.includes('batal') || statusTrx.includes('gagal')) {
+        // 2. Status batal
+        if (hasil === 'dibatalkan') {
           Swal.fire({
             icon: 'error',
             title: 'Tiket Dibatalkan!',
@@ -929,16 +899,22 @@ import BottomNav from '../components/BottomNav.astro';
           return;
         }
 
-        // 3. Validasi BERHASIL -> Update ke 'Sudah Digunakan'
-        const nowIso = new Date().toISOString();
-        let updateData = { status: 'Sudah Digunakan', waktu_checkin: nowIso };
-        const { error: errUpdate } = await supabase
-          .from('transaksi')
-          .update(updateData)
-          .eq('id', kodeTiket);
+        // 3. Belum dikonfirmasi pembayarannya (status Pending)
+        if (hasil === 'belum_dibayar') {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Pembayaran Belum Dikonfirmasi',
+            text: 'Tiket ini belum berstatus lunas (Berhasil), sehingga belum bisa digunakan untuk check-in.',
+            confirmButtonColor: '#F59E0B'
+          }).then(() => {
+            bukaModalScanner();
+          });
+          return;
+        }
 
-        if (errUpdate) {
-          await supabase.from('transaksi').update({ status: 'Sudah Digunakan' }).eq('id', kodeTiket);
+        if (hasil !== 'ok') {
+          Swal.fire('Error', 'Check-in gagal diproses. Coba lagi.', 'error').then(() => { bukaModalScanner(); });
+          return;
         }
 
         // Beep feedback sound via AudioContext
@@ -963,7 +939,7 @@ import BottomNav from '../components/BottomNav.astro';
                 <i class="fa-solid fa-circle-check"></i> ${trx.namaProduk || '-'}
               </div>
               <b>Kode Tiket:</b> <span style="font-family: monospace;">${trx.id}</span><br>
-              <b>Nama Wisatawan:</b> ${trx.user || '-'}<br>
+              <b>Nama Wisatawan:</b> ${trx.nama_pemesan || '-'}<br>
               <b>Tgl Wisata:</b> ${trx.tanggal || '-'}<br>
               <b>Jumlah:</b> ${trx.pax || 0} Pax | Paket: ${trx.paket || 'Reguler'}<br>
               <b>Total Pembayaran:</b> Rp ${Number(trx.totalBayar || 0).toLocaleString('id-ID')}
@@ -984,7 +960,7 @@ import BottomNav from '../components/BottomNav.astro';
       }
     };
 
-    window.logout = function() { localStorage.clear(); window.open("/login", '_top'); };
+    window.logout = function() { keluarAkun().then(() => { window.open("/login", '_top'); }); };
 </script>
 
 <BottomNav current="owner" />

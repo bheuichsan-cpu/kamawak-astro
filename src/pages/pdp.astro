@@ -1910,9 +1910,10 @@ import BottomNav from '../components/BottomNav.astro';
 
     // --- CHECKOUT ---
     
-    function prosesCheckout() {
-      // 1. Validasi Status Login
-      let activeUser = localStorage.getItem("kamawak_user");
+    async function prosesCheckout() {
+      // 1. Validasi Status Login (sesi Supabase Auth; identitas pemesan ditentukan server dari sesi)
+      const { data: sesiAuth } = await supabase.auth.getSession();
+      let activeUser = sesiAuth && sesiAuth.session ? (localStorage.getItem("kamawak_user") || "ok") : null;
       if(!activeUser) {
         Swal.fire('Login Diperlukan', 'Anda harus masuk terlebih dahulu untuk membuat pesanan.', 'info').then(() => {
           window.open("/login", "_top");
@@ -1955,38 +1956,32 @@ import BottomNav from '../components/BottomNav.astro';
       // Mocking Midtrans token simulation directly
       Swal.fire({
         title: '⚡ SIMULASI MIDTRANS ⚡',
-        text: 'Ini adalah simulasi. Apakah Anda ingin mensimulasikan Pembayaran Berhasil?',
+        text: 'Ini adalah simulasi pembayaran. Pesanan akan dicatat dengan status Pending sampai pembayaran dikonfirmasi. Lanjutkan?',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#10B981',
         cancelButtonColor: '#EF4444',
-        confirmButtonText: 'Ya, Berhasil',
+        confirmButtonText: 'Ya, Buat Pesanan',
         cancelButtonText: 'Batal'
       }).then(async (result) => {
         if (result.isConfirmed) {
             btn.innerText = "Mencatat Transaksi...";
             
             try {
-              // Generate id transaksi acak
-              const trxId = 'TRX-' + Date.now();
-              const insertPayload = {
-                id: trxId,
-                idProduk: payload.idProduk,
-                namaProduk: payload.namaProduk,
-                owner: dataProduk.owner || dataProduk.namaUsaha || 'Admin',
-                tanggal: payload.tanggal,
-                pax: payload.pax,
-                paket: payload.promoKode ? `${payload.paket} (Kupon: ${payload.promoKode})` : payload.paket,
-                rawVarian: payload.rawVarian,
-                totalBayar: payload.totalBayar,
-                user: payload.user,
-                status: 'Berhasil'
-              };
-              
-              const { error } = await supabase.from('transaksi').insert([insertPayload]);
+              // Pesanan dibuat oleh server (RPC buat_transaksi): harga dihitung dari tabel,
+              // pemesan diambil dari sesi login, status awal 'Pending'.
+              const { data: hasil, error } = await supabase.rpc('buat_transaksi', {
+                p_wisata: payload.idProduk,
+                p_tanggal: payload.tanggal,
+                p_pax: payload.pax,
+                p_paket: payload.paket,
+                p_raw_varian: payload.rawVarian || '',
+                p_kupon: payload.promoKode || ''
+              });
               if (error) throw error;
-              
-              Swal.fire('Sukses', 'Pembayaran Simulasi Berhasil! Saldo diteruskan ke mitra.', 'success').then(() => {
+
+              let totalServer = hasil && hasil.total != null ? formatUang(hasil.total) : formatUang(payload.totalBayar);
+              Swal.fire('Pesanan Tercatat', 'Pesanan Anda berhasil dicatat dengan status Pending (menunggu konfirmasi pembayaran). Total: ' + totalServer + '.', 'success').then(() => {
                   window.open(BASE_URL + "/", "_top");
               });
             } catch (e) {

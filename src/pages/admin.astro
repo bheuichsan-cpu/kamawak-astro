@@ -1608,7 +1608,7 @@ import BottomNav from '../components/BottomNav.astro';
   </div>
 
   <script>
-import { supabase } from '../lib/supabase.js';
+import { supabase, ambilProfilSaya, simpanSesiLokal, keluarAkun } from '../lib/supabase.js';
 const BASE_URL = "";
 
 window.switchTab = function(tabId) {
@@ -1650,42 +1650,23 @@ window.switchTab = function(tabId) {
 };
 
 window.logout = function() {
-  localStorage.clear();
-  window.location.href = '/';
+  keluarAkun().then(() => { window.location.href = '/'; });
 };
 
 window.onload = async function() {
-  const savedId = localStorage.getItem("kamawak_id");
-  const savedUser = localStorage.getItem("kamawak_user");
-  const savedRole = localStorage.getItem("kamawak_role");
-
-  // Jika tidak ada session atau role bukan admin, tolak akses langsung
-  if ((!savedId && !savedUser) || !savedRole || savedRole.toLowerCase() !== "admin") {
-    localStorage.clear();
-    window.location.href = "/login";
-    return;
-  }
-
   try {
-    let query = supabase.from('users').select('id, nama, role');
-    if (savedId) {
-      query = query.eq('id', savedId);
-    } else {
-      query = query.eq('nama', savedUser);
-    }
-    const { data: userAuth, error: authErr } = await query.single();
+    // Peran admin ditentukan database dari sesi Supabase Auth (tabel profiles), bukan localStorage.
+    // Data admin lain hanya terbaca bila RLS meloloskan (is_admin()).
+    const userAuth = await ambilProfilSaya();
 
-    if (authErr || !userAuth || (userAuth.role || '').toLowerCase() !== 'admin') {
-      console.warn("Akses Admin ditolak: Kredensial tidak valid di database.");
-      localStorage.clear();
+    if (!userAuth || (userAuth.role || '').toLowerCase() !== 'admin') {
+      console.warn("Akses Admin ditolak: sesi tidak valid atau bukan admin.");
       window.location.href = "/login";
       return;
     }
 
-    // Perbarui session dari record database valid
-    localStorage.setItem("kamawak_id", userAuth.id);
-    localStorage.setItem("kamawak_user", userAuth.nama);
-    localStorage.setItem("kamawak_role", userAuth.role);
+    // Perbarui cache tampilan dari record database valid
+    simpanSesiLokal(userAuth);
 
     // Buka tampilan setelah diverifikasi resmi oleh database
     const mainBody = document.getElementById("mainBody");
@@ -1704,7 +1685,6 @@ window.onload = async function() {
     if (typeof muatDaftarPromo === 'function') muatDaftarPromo();
   } catch (err) {
     console.error("Gagal verifikasi sesi admin:", err);
-    localStorage.clear();
     window.location.href = "/login";
   }
 };
@@ -1712,7 +1692,7 @@ window.onload = async function() {
 async function muatStatistikGlobal() {
   try {
     const { data: wisataData, error: errWisata } = await supabase.from('wisata').select('id, status');
-    const { data: usersData, error: errUsers } = await supabase.from('users').select('id, role, status_langganan');
+    const { data: usersData, error: errUsers } = await supabase.from('profiles').select('id, role, status_langganan');
     const { data: leadsData, error: errLeads } = await supabase.from('leads').select('*');
     const { data: trxData, error: errTrx } = await supabase.from('transaksi').select('*').in('status', ['Berhasil', 'Sudah Digunakan']);
 
@@ -1830,7 +1810,7 @@ window.muatDaftarMitra = async function() {
 
   try {
     const { data: wisataData, error: errWisata } = await supabase.from('wisata').select('*').order('created_at', { ascending: false });
-    const { data: usersData, error: errUsers } = await supabase.from('users').select('*');
+    const { data: usersData, error: errUsers } = await supabase.from('profiles').select('*');
     const { data: leadsData } = await supabase.from('leads').select('*');
 
     let deletedList = [];
@@ -1873,6 +1853,7 @@ window.muatDaftarMitra = async function() {
         kategori: item.kategori || 'Penginapan',
         lokasi: item.lokasi || '-',
         wa: item.wa || (linkedUser ? linkedUser.wa : '') || '-',
+        owner_id: item.owner_id || null,
         email: linkedUser ? linkedUser.email : '-',
         leads: leadsCount,
         status: st,
@@ -2123,9 +2104,13 @@ window.prosesUpdateStatus = async function(idOverride, statusOverride) {
       localStorage.setItem('kamawak_override_' + targetId, JSON.stringify(currentOv));
     } catch(e) {}
 
-    // 2. Coba juga update di tabel users jika akunnya terdaftar
+    // 2. Perbarui juga status langganan akun pemiliknya (lewat RPC admin; kolom tidak bisa diubah langsung)
     try {
-      await supabase.from('users').update({ status_langganan: status }).or(`id.eq.${targetId},email.eq.${targetId},nama.eq.${targetId}`);
+      let uidLangganan = target ? (target.source === 'user' ? target.id : target.owner_id) : null;
+      if (uidLangganan) {
+        const { error: errLangganan } = await supabase.rpc('admin_set_langganan', { p_user: uidLangganan, p_status: status });
+        if (errLangganan) console.warn("Status langganan akun tidak diubah:", errLangganan.message);
+      }
     } catch(eU) {}
 
     if (info) {
@@ -2165,7 +2150,7 @@ async function muatTransaksi() {
            <td>${t.created_at || t.tanggal}</td>
            <td>${t.id}</td>
            <td>${t.namaProduk || '-'}</td>
-           <td>${t.owner || '-'}</td>
+           <td>${t.owner_nama || '-'}</td>
            <td>Rp ${Number(t.totalBayar||0).toLocaleString('id-ID')}</td>
         </tr>`;
     });
@@ -2178,7 +2163,7 @@ async function muatTransaksi() {
 async function muatDaftarPengguna() {
   let tbody = document.getElementById('tableUsersBody');
   try {
-     const { data, error } = await supabase.from('users').select('*');
+     const { data, error } = await supabase.from('profiles').select('*');
      if (error) throw error;
      
      if(!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Belum ada pengguna (Tabel kosong)</td></tr>'; return; }
@@ -2205,13 +2190,15 @@ window.prosesUpdateRole = async function() {
   if(!email) return;
   info.innerText = "Memperbarui...";
   
-  const { error } = await supabase.from('users').update({ role: role }).eq('email', email);
+  // Peran diubah lewat RPC admin_set_role (diperiksa di server: hanya admin, peran valid, admin terakhir tidak boleh turun)
+  const { error } = await supabase.rpc('admin_set_role', { p_email: email.trim(), p_role: role });
   if (!error) {
      info.innerText = "Berhasil update role!";
      info.style.color = "green";
      muatDaftarPengguna();
   } else {
-     info.innerText = "Gagal!";
+     info.innerText = "Gagal: " + (error.message || "");
+     info.style.color = "red";
   }
 };
 

@@ -990,21 +990,15 @@ import BottomNav from '../components/BottomNav.astro';
   </div>
 
   <script>
-    import { supabase } from '../lib/supabase.js';
+    import { supabase, ambilProfilSaya, simpanSesiLokal, keluarAkun } from '../lib/supabase.js';
     const BASE_URL = "";
 
     let semuaPesananCache = [];
     let filterAktifSekarang = 'semua';
     let dataPenggunaAktif = null;
+    let idPenggunaAktif = null;
 
     function formatUang(angka) { return "Rp " + Number(angka || 0).toLocaleString('id-ID'); }
-
-    async function hashPassword(str) {
-      const utf8 = new TextEncoder().encode(str);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-    }
 
     // ==========================================
     // SISTEM TAB: AKUN SAYA VS TIKET SAYA
@@ -1055,13 +1049,17 @@ import BottomNav from '../components/BottomNav.astro';
     window.onload = async function() {
       if (typeof window.updateNavbarLogo === 'function') window.updateNavbarLogo();
 
-      let activeUser = localStorage.getItem("kamawak_user");
-      let activeRole = localStorage.getItem("kamawak_role") || "Wisatawan";
-
-      if (!activeUser) {
+      // Identitas dari sesi Supabase Auth (bukan dari localStorage)
+      const profilSaya = await ambilProfilSaya();
+      if (!profilSaya) {
         window.location.href = "/login";
         return;
       }
+      simpanSesiLokal(profilSaya);
+      dataPenggunaAktif = profilSaya;
+      idPenggunaAktif = profilSaya.id;
+      let activeUser = profilSaya.nama || profilSaya.email || "";
+      let activeRole = profilSaya.role || "Wisatawan";
 
       document.getElementById("mainBody").style.display = "block";
       document.getElementById("uiNama").innerText = activeUser;
@@ -1089,14 +1087,8 @@ import BottomNav from '../components/BottomNav.astro';
 
     async function muatDataLengkapPengguna(namaUser) {
       try {
-        let activeId = localStorage.getItem('kamawak_id');
-        let query = supabase.from('users').select('*');
-        if (activeId) {
-          query = query.eq('id', activeId);
-        } else {
-          query = query.eq('nama', namaUser);
-        }
-        const { data, error } = await query.single();
+        // Baris profil milik sendiri (dijaga RLS: hanya baris dengan id = auth.uid())
+        const { data, error } = await supabase.from('profiles').select('*').eq('id', idPenggunaAktif).single();
         if (data && !error) {
           dataPenggunaAktif = data;
           if (data.wa && data.wa.trim() !== '') {
@@ -1119,7 +1111,7 @@ import BottomNav from '../components/BottomNav.astro';
         const { data, error } = await supabase
           .from('transaksi')
           .select('*')
-          .eq('user', user)
+          .eq('user_id', idPenggunaAktif)   // hanya pesanan milik sendiri (mitra juga bisa melihat pesanan wisatanya lewat RLS)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -1286,29 +1278,30 @@ import BottomNav from '../components/BottomNav.astro';
       if (btn) { btn.innerText = 'Menyimpan...'; btn.disabled = true; }
 
       try {
-        let activeId = localStorage.getItem('kamawak_id');
-        let oldUser = localStorage.getItem('kamawak_user');
-
-        let payload = { nama: namaBaru, wa: waBaru, email: emailBaru };
-        let query = supabase.from('users').update(payload);
-        if (activeId) {
-          query = query.eq('id', activeId);
-        } else {
-          query = query.eq('nama', oldUser);
-        }
-
-        const { error } = await query;
+        // Nama & WhatsApp: baris profil sendiri (hak kolom hanya nama, username, wa)
+        const { error } = await supabase.from('profiles').update({ nama: namaBaru, wa: waBaru }).eq('id', idPenggunaAktif);
         if (error) throw error;
+
+        // Email diubah lewat Supabase Auth (butuh konfirmasi lewat email)
+        let emailLama = (dataPenggunaAktif && dataPenggunaAktif.email) || '';
+        let emailBerubah = emailBaru && emailBaru.toLowerCase() !== emailLama.toLowerCase();
+        if (emailBerubah) {
+          const { error: errEmail } = await supabase.auth.updateUser({ email: emailBaru });
+          if (errEmail) throw errEmail;
+        }
+        if (dataPenggunaAktif) { dataPenggunaAktif.nama = namaBaru; dataPenggunaAktif.wa = waBaru; }
 
         // Perbarui localStorage & UI
         localStorage.setItem('kamawak_user', namaBaru);
         document.getElementById('uiNama').innerText = namaBaru;
         document.getElementById('uiAvatar').innerText = namaBaru.charAt(0).toUpperCase();
         if (waBaru) document.getElementById('uiWaDisplay').innerText = waBaru;
-        if (emailBaru) document.getElementById('uiEmailDisplay').innerText = emailBaru;
+        if (emailBaru && !emailBerubah) document.getElementById('uiEmailDisplay').innerText = emailBaru;
 
         tutupModalEditProfil();
-        Swal.fire('Berhasil!', 'Data profil Anda berhasil diperbarui.', 'success');
+        Swal.fire('Berhasil!', emailBerubah
+          ? 'Data profil diperbarui. Untuk mengganti email, buka tautan konfirmasi yang dikirim ke email baru Anda.'
+          : 'Data profil Anda berhasil diperbarui.', 'success');
       } catch(err) {
         console.error("Gagal update profil:", err);
         Swal.fire('Gagal', 'Terjadi kendala saat menyimpan profil: ' + err.message, 'error');
@@ -1348,18 +1341,8 @@ import BottomNav from '../components/BottomNav.astro';
       if (btn) { btn.innerText = 'Menyimpan Sandi...'; btn.disabled = true; }
 
       try {
-        let hashed = await hashPassword(p1);
-        let activeId = localStorage.getItem('kamawak_id');
-        let oldUser = localStorage.getItem('kamawak_user');
-
-        let query = supabase.from('users').update({ password: hashed });
-        if (activeId) {
-          query = query.eq('id', activeId);
-        } else {
-          query = query.eq('nama', oldUser);
-        }
-
-        const { error } = await query;
+        // Sandi dikelola Supabase Auth (tidak ada hash/sandi di tabel atau di peramban)
+        const { error } = await supabase.auth.updateUser({ password: p1 });
         if (error) throw error;
 
         tutupModalGantiSandi();
@@ -1387,10 +1370,7 @@ import BottomNav from '../components/BottomNav.astro';
         cancelButtonText: 'Batal'
       }).then((result) => {
         if (result.isConfirmed) {
-          localStorage.removeItem('kamawak_user');
-          localStorage.removeItem('kamawak_role');
-          localStorage.removeItem('kamawak_id');
-          window.location.href = '/login';
+          keluarAkun().then(() => { window.location.href = '/login'; });
         }
       });
     };
@@ -1568,7 +1548,7 @@ import BottomNav from '../components/BottomNav.astro';
       }
 
       const payload = {
-        idProduk: orderAktifReview.idProduk || orderAktifReview.id,
+        idProduk: orderAktifReview.idProduk || orderAktifReview.wisata_id || orderAktifReview.id,
         namaUser: localStorage.getItem('kamawak_user') || 'Wisatawan',
         rating: ratingDipilih,
         komentar: komentar,

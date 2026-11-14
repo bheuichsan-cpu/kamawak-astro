@@ -1532,7 +1532,7 @@ const INITIAL_CITIES = [
 
 
   <script>
-    import { supabase } from '../lib/supabase.js';
+    import { supabase, keluarAkun } from '../lib/supabase.js';
 
     const BASE_URL = "";
     let dataMaster = []; 
@@ -1616,8 +1616,11 @@ const INITIAL_CITIES = [
 
     // Fungsi tombol Keluar dari Halaman Utama
     window.logoutDariDepan = function() {
-      localStorage.clear();
-      window.location.href = '/'; // Memuat ulang dan menghapus sesi
+      // Akhiri sesi Supabase Auth, lalu bersihkan cache lokal (perilaku lama: localStorage.clear)
+      keluarAkun().then(() => {
+        try { localStorage.clear(); } catch(e) {}
+        window.location.href = '/'; // Memuat ulang dan menghapus sesi
+      });
     }
     // ==========================================
     
